@@ -162,7 +162,12 @@ canvas{display:block}
   .header-link,.header-btn{font-size:10px;padding:4px 9px}
   .theme-label{display:none}
   main{padding:12px 10px 48px;gap:12px}
-  .field-inline{grid-template-columns:1fr 1fr}
+  .field-inline{grid-template-columns:1fr}
+  .field-inline .field select{width:auto}
+  /* BC + BC Type: visa sida vid sida på mobil */
+  #bc_input{max-width:100px}
+  .field-inline:has(#bc_input){display:flex;flex-direction:row;gap:12px;align-items:flex-end}
+  .field-inline:has(#bc_input) .field{flex:1}
   .cards{grid-template-columns:1fr 1fr}
   .chart-wrap{height:190px}
   .result-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
@@ -186,7 +191,6 @@ canvas{display:block}
   .header-link{display:none}
   .theme-label{display:none}
   .cards{grid-template-columns:1fr}
-  .field-inline{grid-template-columns:1fr 1fr}
   .chart-wrap{height:170px}
   main{padding:10px 8px 48px}
 }

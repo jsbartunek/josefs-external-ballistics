@@ -51,10 +51,16 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
 
 /* ── Header ── */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:24px 40px 20px;display:flex;align-items:baseline;gap:20px;flex-wrap:wrap}
-header h1{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);letter-spacing:.05em}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.header-title{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+header h1{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header p{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.phase-badge{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:2px}
+.header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.header-link{font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:5px 12px;border-radius:2px;white-space:nowrap;transition:border-color .15s,color .15s}
+.header-link:hover{border-color:var(--accent);color:var(--accent)}
+.header-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:2px;cursor:pointer;white-space:nowrap;transition:border-color .15s,color .15s}
+.header-btn:hover{border-color:var(--accent);color:var(--accent)}
+.phase-badge{font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:2px}
 
 /* ── Layout ── */
 main{max-width:1120px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
@@ -74,9 +80,11 @@ main{max-width:1120px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-tem
 .field{margin-bottom:10px}
 .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
 .field-row{display:flex;gap:6px;align-items:center}
-.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px;outline:none;transition:border-color .15s}
+.field-row input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px;outline:none;transition:border-color .15s}
+.field-row input:focus{border-color:var(--accent)}
+.field input,.field select{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px;outline:none;transition:border-color .15s}
 .field input:focus,.field select:focus{border-color:var(--accent)}
-.field select{cursor:pointer}
+.field select{cursor:pointer;width:100%}
 .unit{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;min-width:32px}
 .field-inline{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
@@ -138,7 +146,7 @@ canvas{display:block}
 .status-warn{color:var(--orange)}
 
 /* ── Theme toggle switch ── */
-.theme-toggle{margin-left:auto;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.theme-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
 .toggle-track{width:36px;height:20px;border-radius:10px;background:var(--border);border:1px solid var(--border);position:relative;transition:background .2s}
 .toggle-track.on{background:var(--accent)}
 .toggle-knob{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
@@ -146,26 +154,42 @@ canvas{display:block}
 .theme-label{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
 
 /* ── Mobile responsive ── */
-@media(max-width:600px){
-  header{padding:16px 16px 14px;gap:10px;align-items:flex-start}
-  header h1{font-size:13px;letter-spacing:.03em}
-  header p{font-size:10px;display:none}
-  header>div:first-child{flex:1 1 100%}
-  .theme-toggle{margin-left:0}
-  main{padding:16px 12px 48px}
+@media(max-width:700px){
+  header{padding:12px 14px;gap:8px}
+  header h1{font-size:14px;letter-spacing:.03em}
+  header p{display:none}
+  .header-link,.header-btn{font-size:10px;padding:4px 9px}
+  .theme-label{display:none}
+  main{padding:12px 10px 48px;gap:12px}
   .field-inline{grid-template-columns:1fr 1fr}
   .cards{grid-template-columns:1fr 1fr}
-  .chart-wrap{height:180px}
+  .chart-wrap{height:190px}
   .result-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
-  .tip-box{left:auto;right:0;transform:none;width:240px}
   .sens-grid{font-size:10px}
   .sens-cell{padding:6px 7px}
+  .panel-body{padding:12px}
+  .field{margin-bottom:8px}
+  .card{padding:10px 12px}
+  .card-val{font-size:17px}
+  .btn-calc{padding:12px;font-size:12px}
+  .phase-info{gap:8px;font-size:10px;padding:8px 12px}
+  .status-bar{font-size:10px;padding:6px 12px}
+  /* Prevent iOS auto-zoom on focus */
+  .field-row input,.field input[type="text"]{font-size:16px}
+  .unit-sel{font-size:14px;padding:7px 5px}
+  /* Tooltip: fixed bottom-center on mobile */
+  .tip-btn .tip-box,.tip-box{position:fixed !important;bottom:16px !important;left:50% !important;top:auto !important;transform:translateX(-50%) !important;width:min(280px,88vw) !important;right:auto !important;z-index:500}
 }
-@media(max-width:400px){
+@media(max-width:420px){
   header h1{font-size:12px}
+  .header-link{display:none}
+  .theme-label{display:none}
   .cards{grid-template-columns:1fr}
+  .field-inline{grid-template-columns:1fr 1fr}
+  .chart-wrap{height:170px}
+  main{padding:10px 8px 48px}
 }
-.unit-sel{background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 6px;border-radius:2px;cursor:pointer;min-width:52px;outline:none}
+.unit-sel{flex-shrink:0;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 6px;border-radius:2px;cursor:pointer;width:auto;min-width:48px;max-width:80px;outline:none}
 .unit-sel:focus{border-color:var(--accent)}
 
 /* ── G1→G7 estimator ── */
@@ -215,15 +239,17 @@ canvas{display:block}
 </div>
 
 <header>
-  <div>
+  <div class="header-title">
     <h1>JOSEF'S EXTERNAL BALLISTICS</h1>
     <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2 · G1/G7 · RK4</p>
   </div>
-  <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:4px 12px;border-radius:2px;white-space:nowrap;transition:border-color .15s,color .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Stability Calc ↗</a>
-  <button onclick="openAbout()" style="background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:2px;cursor:pointer;transition:border-color .15s,color .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">About</button>
-  <div class="theme-toggle" onclick="toggleTheme()">
-    <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
-    <span class="theme-label" id="theme-label">Light mode</span>
+  <div class="header-actions">
+    <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" class="header-link">Stability ↗</a>
+    <button onclick="openAbout()" class="header-btn">About</button>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
+      <span class="theme-label" id="theme-label">Light mode</span>
+    </div>
   </div>
 </header>
 

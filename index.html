@@ -51,10 +51,11 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
 
 /* ── Header ── */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
-.header-title{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
-header h1{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.header-title{display:flex;flex-direction:column;gap:2px}
+header h1{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);letter-spacing:.05em;white-space:nowrap}
 header p{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.header-spacer{flex:1;min-width:8px}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .header-link{font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:5px 12px;border-radius:2px;white-space:nowrap;transition:border-color .15s,color .15s}
 .header-link:hover{border-color:var(--accent);color:var(--accent)}
@@ -153,11 +154,9 @@ canvas{display:block}
 
 /* ── Mobile responsive ── */
 @media(max-width:600px){
-  header{padding:12px 14px;gap:6px;flex-wrap:wrap}
-  header h1{font-size:13px;letter-spacing:.03em;white-space:nowrap;flex:1 1 100%}
-  #main-title{font-size:13px}
-  header p{display:none}
-  .header-actions{flex:1 1 100%}
+  header{padding:12px 14px;gap:8px}
+  header h1{font-size:14px}
+  header p{font-size:11px}
   .header-link,.header-btn{font-size:10px;padding:4px 9px}
   .theme-label{display:none}
   main{padding:16px 12px 48px}
@@ -228,6 +227,7 @@ canvas{display:block}
     <h1 id="main-title">JOSEF'S EXTERNAL BALLISTICS</h1>
     <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2 · G1/G7 · RK4</p>
   </div>
+  <div class="header-spacer"></div>
   <div class="header-actions">
     <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" class="header-link">Stability ↗</a>
     <button onclick="openAbout()" class="header-btn">About</button>

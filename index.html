@@ -79,8 +79,8 @@ main{max-width:1120px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-tem
 /* ── Inputs ── */
 .field{margin-bottom:10px}
 .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
-.field-row{display:flex;gap:6px;align-items:center}
-.field-row input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px;outline:none;transition:border-color .15s}
+.field-row{display:flex;gap:6px;align-items:center;width:100%;overflow:hidden}
+.field-row input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px;outline:none;transition:border-color .15s;width:auto}
 .field-row input:focus{border-color:var(--accent)}
 .field input,.field select{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px;outline:none;transition:border-color .15s}
 .field input:focus,.field select:focus{border-color:var(--accent)}
@@ -177,6 +177,12 @@ canvas{display:block}
   /* Prevent iOS auto-zoom on focus */
   .field-row input,.field input[type="text"]{font-size:16px}
   .unit-sel{font-size:14px;padding:7px 5px}
+  /* Field row: input grows, unit-sel stays compact */
+  .field-row{overflow:hidden}
+  .field-row input{flex:1;min-width:0;width:auto}
+  .field-row .unit-sel{flex-shrink:0;width:auto}
+  /* field-inline: narrower inputs so both columns fit */
+  .field-inline .field-row input{font-size:14px}
   /* Tooltip: fixed bottom-center on mobile */
   .tip-btn .tip-box,.tip-box{position:fixed !important;bottom:16px !important;left:50% !important;top:auto !important;transform:translateX(-50%) !important;width:min(280px,88vw) !important;right:auto !important;z-index:500}
 }

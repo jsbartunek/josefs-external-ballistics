@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Josef's External Ballistics Calculator</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f5f4f0'/><path d='M3 24 Q10 6 29 10' stroke='%238a6000' stroke-width='2.5' fill='none' stroke-linecap='round'/><circle cx='29' cy='10' r='2.5' fill='%238a6000'/><line x1='3' y1='24' x2='29' y2='24' stroke='%23d8d4cc' stroke-width='1'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f5f4f0;
+  --surface:  #ffffff;
+  --surface2: #f0ede8;
+  --border:   #d8d4cc;
+  --border2:  #e4e0d8;
+  --text:     #1a1a1a;
+  --muted:    #7a7060;
+  --accent:   #8a6000;
+  --blue:     #1565c0;
+  --green:    #2e7d52;
+  --orange:   #c0580a;
+  --red:      #b02020;
+  --mono:     'IBM Plex Mono', monospace;
+  --sans:     'IBM Plex Sans', sans-serif;
+}
+[data-theme="dark"] {
+  --bg:       #0d0f12;
+  --surface:  #13161b;
+  --surface2: #191d24;
+  --border:   #252a32;
+  --border2:  #1e2229;
+  --text:     #c8cdd6;
+  --muted:    #5a6172;
+  --accent:   #e8c36a;
+  --blue:     #4fc3f7;
+  --green:    #4caf7d;
+  --orange:   #e8943a;
+  --red:      #e05a5a;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── Header ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:24px 40px 20px;display:flex;align-items:baseline;gap:20px;flex-wrap:wrap}
+header h1{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);letter-spacing:.05em}
+header p{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.phase-badge{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:2px}
+
+/* ── Layout ── */
+main{max-width:1120px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+
+/* ── Panel ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:3px}
+.panel-head{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.panel-head span{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.panel-body{padding:16px}
+
+/* ── Sections ── */
+.section-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border2)}
+.section-title:first-child{margin-top:0}
+
+/* ── Inputs ── */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field-row{display:flex;gap:6px;align-items:center}
+.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select{cursor:pointer}
+.unit{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;min-width:32px}
+.field-inline{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* ── Buttons ── */
+.btn-calc{width:100%;margin-top:16px;padding:10px;background:var(--accent);color:#0d0f12;font-family:var(--mono);font-size:13px;font-weight:600;border:none;border-radius:2px;cursor:pointer;letter-spacing:.04em;transition:opacity .15s}
+.btn-calc:hover{opacity:.88}
+
+/* ── Right column ── */
+.right-col{display:flex;flex-direction:column;gap:16px}
+
+/* ── Results table ── */
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+.result-table th{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+.result-table th:first-child{text-align:left}
+.result-table td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--border2);color:var(--text)}
+.result-table td:first-child{text-align:left;color:var(--muted)}
+.result-table tr:last-child td{border-bottom:none}
+.result-table tr.zero-row td{color:var(--accent)}
+.val-pos{color:var(--green)}
+.val-neg{color:var(--orange)}
+.val-warn{color:var(--red)}
+.klass-badge{display:inline-block;padding:1px 7px;border-radius:2px;font-size:10px;font-weight:600}
+.k1{background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.3)}
+.k2{background:rgba(79,195,247,.1);color:var(--blue);border:1px solid rgba(79,195,247,.25)}
+.k3{background:rgba(232,148,58,.1);color:var(--orange);border:1px solid rgba(232,148,58,.25)}
+.k4{background:rgba(224,90,90,.1);color:var(--red);border:1px solid rgba(224,90,90,.25)}
+
+/* ── Summary cards ── */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:600px){.cards{grid-template-columns:1fr 1fr}}
+.card{background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:12px 14px}
+.card-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.card-val{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--accent);line-height:1}
+.card-sub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+
+/* ── Canvas ── */
+.chart-wrap{position:relative;height:220px}
+canvas{display:block}
+
+/* ── Phase indicator ── */
+.phase-info{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;padding:10px 16px;border-top:1px solid var(--border2)}
+.phase-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.dot-ref{background:#aaa}
+.dot-shoot{background:var(--blue)}
+
+/* ── Sensitivity mini table ── */
+.sens-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border2);border:1px solid var(--border2);border-radius:2px;overflow:hidden;font-family:var(--mono);font-size:11px}
+.sens-cell{background:var(--bg);padding:8px 10px}
+.sens-head{background:var(--surface2);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:6px 10px}
+.sens-label{color:var(--muted)}
+.sens-val{color:var(--text);text-align:right}
+
+/* ── Placeholder ── */
+.placeholder{display:flex;align-items:center;justify-content:center;height:180px;color:var(--muted);font-family:var(--mono);font-size:12px;border:1px dashed var(--border);border-radius:3px}
+
+/* ── Status ── */
+.status-bar{font-family:var(--mono);font-size:11px;color:var(--muted);padding:8px 16px;border-top:1px solid var(--border2);display:flex;gap:12px;flex-wrap:wrap}
+.status-ok{color:var(--green)}
+.status-warn{color:var(--orange)}
+
+/* ── Theme toggle switch ── */
+.theme-toggle{margin-left:auto;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.toggle-track{width:36px;height:20px;border-radius:10px;background:var(--border);border:1px solid var(--border);position:relative;transition:background .2s}
+.toggle-track.on{background:var(--accent)}
+.toggle-knob{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle-track.on .toggle-knob{left:18px}
+.theme-label{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* ── Mobile responsive ── */
+@media(max-width:600px){
+  header{padding:16px 16px 14px;gap:10px;align-items:flex-start}
+  header h1{font-size:13px;letter-spacing:.03em}
+  header p{font-size:10px;display:none}
+  header>div:first-child{flex:1 1 100%}
+  .theme-toggle{margin-left:0}
+  main{padding:16px 12px 48px}
+  .field-inline{grid-template-columns:1fr 1fr}
+  .cards{grid-template-columns:1fr 1fr}
+  .chart-wrap{height:180px}
+  .result-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+  .tip-box{left:auto;right:0;transform:none;width:240px}
+  .sens-grid{font-size:10px}
+  .sens-cell{padding:6px 7px}
+}
+@media(max-width:400px){
+  header h1{font-size:12px}
+  .cards{grid-template-columns:1fr}
+}
+.unit-sel{background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 6px;border-radius:2px;cursor:pointer;min-width:52px;outline:none}
+.unit-sel:focus{border-color:var(--accent)}
+
+/* ── G1→G7 estimator ── */
+.g7-estimator{margin-bottom:10px;border:1px solid var(--border2);border-radius:2px;overflow:visible}
+.g7-toggle{padding:6px 10px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;user-select:none;letter-spacing:.05em}
+.g7-toggle:hover{color:var(--accent)}
+.g7-body{padding:0 10px 10px}
+.g7-result{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;padding:6px 8px;background:var(--surface2);border-radius:2px}
+.g7-apply-btn{margin-left:auto;background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:10px;font-weight:600;border:none;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
+.g7-apply-btn:hover{opacity:.85}
+.tip-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:none;border:1px solid var(--muted);color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:600;cursor:help;position:relative;vertical-align:middle;margin-left:5px;flex-shrink:0;line-height:1}
+.tip-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tip-box{display:none;position:absolute;left:20px;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left}
+.tip-btn:hover .tip-box{display:block}
+.tip-box code{background:var(--border2);padding:1px 4px;border-radius:2px;font-size:10px}
+.field label{display:flex;align-items:center}
+</style>
+</head>
+<body>
+
+<!-- About modal -->
+<div id="about-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px;overflow-y:auto" onclick="if(event.target===this)closeAbout()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;max-width:520px;width:100%;padding:28px 32px;position:relative;font-family:var(--mono);font-size:12px;line-height:1.9;color:var(--text);margin:auto">
+    <button onclick="closeAbout()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;font-family:var(--mono)">✕</button>
+    <div style="font-size:15px;font-weight:600;color:var(--accent);margin-bottom:16px;letter-spacing:.04em">EXTERNAL BALLISTICS CALCULATOR</div>
+
+    <p style="margin-bottom:12px">Built by a passionate hunter and handloader from Sweden, primarily for practical hunting applications at ranges up to 200 m (220 yd) — rather than for precision long-range competition.</p>
+
+    <p style="margin-bottom:12px">A key goal is <b style="color:var(--accent)">pedagogy</b>. The three-phase model makes the causal chain explicit: what is the rifle's mechanical zero, what does the atmosphere contribute, and what does powder temperature contribute. The sensitivity analysis visualises which parameters actually matter. The Model &amp; Mathematics section exposes the equations openly, and the tooltips explain the physics behind each input. The aim is to build intuition, not just produce a number.</p>
+
+    <p style="margin-bottom:12px">The focus is on the three-phase model: separating the rifle's zero, the external ballistic effect of weather, and (in a future version) the internal ballistic effect of powder temperature on muzzle velocity.</p>
+
+    <p style="margin-bottom:16px">Trajectory validated against JBM Ballistics and QuickTARGET to &lt;10 mm (0.4 in) at ≤200 m (220 yd). Beyond 200 m, accuracy decreases — see Model &amp; Mathematics for details.</p>
+
+    <div style="border-top:1px solid var(--border2);padding-top:14px;color:var(--muted);font-size:11px;line-height:1.8">
+      <span style="color:var(--orange);font-weight:600">⚠ Disclaimer</span><br>
+      This calculator is provided for informational and educational purposes only. All ballistic calculations are theoretical models and may differ from real-world results due to ammunition variation, atmospheric conditions, barrel characteristics, and other factors.<br><br>
+      <b style="color:var(--text)">Never rely solely on software for safe firearm handling.</b> Always follow applicable firearms laws and hunting regulations. The author accepts no liability for any use of this tool.
+    </div>
+
+    <div style="margin-top:16px;font-size:10px;color:var(--muted)">
+      Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
+      Last updated: April 5, 2026 &nbsp;·&nbsp;
+      <a href="https://github.com/jsbartunek/josefs-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div>
+    <h1>JOSEF'S EXTERNAL BALLISTICS</h1>
+    <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2 · G1/G7 · RK4</p>
+  </div>
+  <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:4px 12px;border-radius:2px;white-space:nowrap;transition:border-color .15s,color .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Stability Calc ↗</a>
+  <button onclick="openAbout()" style="background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:2px;cursor:pointer;transition:border-color .15s,color .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">About</button>
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
+    <span class="theme-label" id="theme-label">Light mode</span>
+  </div>
+</header>
+
+<main>
+  <!-- ══════════════ LEFT: INPUTS ══════════════ -->
+  <div class="panel">
+    <div class="panel-head"><span>Input Parameters</span></div>
+    <div class="panel-body">
+
+      <div class="section-title">Rifle &amp; Bullet</div>
+      <div class="field">
+        <label>Muzzle Velocity <button class="tip-btn">?<div class="tip-box">Bullet speed at the muzzle.<br>Used as <i>v₀</i> in all trajectory calculations via RK4 integration.<br><br>Typical hunting loads: 700–1050 m/s (2300–3450 fps).</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="v0_val" value="2575">
+          <select id="v0_unit" class="unit-sel" onchange="onUnitChange('v0')">
+            <option value="fps">fps</option>
+            <option value="ms">m/s</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Chronograph distance <button class="tip-btn">?<div class="tip-box">Distance from muzzle to chronograph.<br>The model integrates drag over this distance and uses the resulting speed as true v₀.<br><br>0 mm = muzzle (MagnetoSpeed, LabRadar close)<br>~3000 mm (118 in) = typical optical chronograph<br>~5000 mm (197 in) = further away setups<br><br>Leave at 0 if using manufacturer data or unsure.</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="chrono_cm" value="0">
+          <select id="chrono_unit" class="unit-sel" onchange="onUnitChange('chrono')">
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Bullet Weight <button class="tip-btn">?<div class="tip-box">Total mass of the projectile.<br>Heavier bullets carry more energy and are less affected by wind, but require more drop compensation at distance.</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="m_val" value="165">
+          <select id="m_unit" class="unit-sel" onchange="onUnitChange('m')">
+            <option value="gr">gr</option>
+            <option value="g">g</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-inline">
+        <div class="field">
+          <label>BC <button class="tip-btn">?<div class="tip-box">Ballistic Coefficient — measures how well the bullet resists air drag.<br>Higher BC = less drag = flatter trajectory and less wind drift.<br><br>Typical G1 BC ranges:<br>· Flat-base (FB): 0.20–0.35<br>· Round-nose (RN): 0.15–0.25<br>· Boat-tail SP (BT): 0.35–0.55<br>· HPBT / VLD: 0.45–0.65<br>· Polymer-tip BT: 0.40–0.60<br><br>G7 BC is typically 55–65% of the G1 value for the same bullet.</div></button></label>
+          <input type="text" inputmode="decimal" id="bc_input" value="0.447">
+        </div>
+        <div class="field">
+          <label>BC Type <button class="tip-btn">?<div class="tip-box"><b>G1</b> — Traditional reference projectile (flat-base blunt). Used by most manufacturers. Best suited for:<br>· Flat-base (FB) bullets<br>· Round-nose (RN) bullets<br>· Shorter soft-point boat-tails<br><br><b>G7</b> — Long boat-tail spitzer reference. More accurate at long range for:<br>· Pointed boat-tail (BT) soft-points<br>· HPBT match bullets<br>· Polymer-tip / VLD bullets<br><br>Rule of thumb: if your bullet has a long secant ogive and boat-tail, use G7. Otherwise G1.</div></button></label>
+          <select id="bc_type">
+            <option value="G1" selected>G1</option>
+            <option value="G7">G7</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- G1→G7 estimator -->
+      <div class="g7-estimator" id="g7-estimator">
+        <div class="g7-toggle" onclick="toggleG7()">
+          <span id="g7-toggle-label">▶ Estimate G7 from G1</span>
+        </div>
+        <div class="g7-body" id="g7-body" style="display:none">
+          <div class="field" style="margin-top:8px">
+            <label>Bullet type <button class="tip-btn">?<div class="tip-box">Conversion factor from G1 to G7 BC:<br><br>· Polymer-tip BT: ÷ 1.52<br>· VLD / Hybrid BT: ÷ 1.43<br>· Soft-point BT: ÷ 1.60<br>· Flat-base: not applicable (G1 recommended)<br>· Round-nose: not applicable (G1 recommended)<br><br>Source: Litz, Bryan. <i>Applied Ballistics for Long Range Shooting.</i></div></button></label>
+            <select id="g7_bullet_type" onchange="estimateG7()">
+              <option value="">— select type —</option>
+              <option value="1.52">Polymer-tip BT (÷ 1.52)</option>
+              <option value="1.43">VLD / Hybrid BT (÷ 1.43)</option>
+              <option value="1.60">Soft-point BT (÷ 1.60)</option>
+            </select>
+          </div>
+          <div class="g7-result" id="g7-result" style="display:none">
+            Estimated G7 BC: <span id="g7-result-val" style="color:var(--accent);font-weight:600"></span>
+            <button class="g7-apply-btn" onclick="applyG7()">Apply →</button>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Sight Height <button class="tip-btn">?<div class="tip-box">Vertical distance from the centre of the bore to the centre of the scope's objective lens.<br>Typically 40–60 mm (1.6–2.4 in) for hunting rifles with standard rings.</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="sight_val" value="45">
+          <select id="sight_unit" class="unit-sel" onchange="onUnitChange('sight')">
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Zero Range <button class="tip-btn">?<div class="tip-box">The distance at which the bullet path crosses the line of sight (POI = POA).<br><br>150 m (164 yd) zero is recommended for Swedish hunting — keeps the bullet within ±80 mm (±3.1 in) out to 200 m (219 yd) without hold-over.</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="zero_val" value="150">
+          <select id="zero_unit" class="unit-sel" onchange="onUnitChange('zero')">
+            <option value="m">m</option>
+            <option value="yd">yd</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">Zero Atmosphere (Phase 1)</div>
+      <div class="field-inline">
+        <div class="field">
+          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature when zeroing the rifle.<br>Affects air density and sound speed (Mach number), which influences drag.<br><br>Effect on external ballistics at ≤200 m (219 yd): &lt;0.2 mm (&lt;0.01 in). Main effect is on powder burn rate (internal ballistics).</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="temp_zero_val" value="15">
+            <select id="temp_unit" class="unit-sel" onchange="onUnitChange('temp')">
+              <option value="C">°C</option>
+              <option value="F">°F</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure when zeroing.<br>Determines air density: ρ = 1.225 × (P/1013.25) × (288.15/T)<br><br>Effect at ≤200 m (219 yd): &lt;0.1 mm per ±20 hPa (±0.59 inHg). Negligible for hunting.</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="press_zero_val" value="1013">
+            <select id="press_unit" class="unit-sel" onchange="onUnitChange('press')">
+              <option value="hPa">hPa</option>
+              <option value="inHg">inHg</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Shooting Atmosphere (Phase 2)</div>
+      <div class="field-inline">
+        <div class="field">
+          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature on the day of the hunt.<br>The model computes a second trajectory with this atmosphere using the fixed zero angle — showing the pure external ballistic effect.</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="temp_shoot_val" value="-5">
+            <span class="unit" id="temp_shoot_unit_lbl">°C</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure on the day of the hunt.<br>Combined with temperature to compute shooting-day air density.<br>Typical range in Sweden: 980–1030 hPa (28.9–30.4 inHg).</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="press_shoot_val" value="1013">
+            <span class="unit" id="press_shoot_unit_lbl">hPa</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Environment</div>
+      <div class="field-inline">
+        <div class="field">
+          <label>Crosswind <button class="tip-btn">?<div class="tip-box">Wind speed perpendicular to the line of fire (positive = left to right).<br>Wind drift is calculated using the lag-time method:<br><code>z = w × (t_flight − x/v₀)</code><br><br>Wind dominates all other uncertainties at 200 m.</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="wind_val" value="5.0">
+            <select id="wind_unit" class="unit-sel" onchange="onUnitChange('wind')">
+              <option value="ms">m/s</option>
+              <option value="mph">mph</option>
+              <option value="kts">kts</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Shooting Angle <button class="tip-btn">?<div class="tip-box">Angle of the shot relative to horizontal.<br>Positive = uphill, negative = downhill.<br><br>Reduces effective gravity: <code>g_eff = 9.81 × cos(α)</code><br>Both uphill and downhill shots hit higher than level shots.</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="alpha_deg" value="0">
+            <span class="unit">°</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Display</div>
+      <div class="field">
+        <label>Vital Zone (radius) <button class="tip-btn">?<div class="tip-box">Radius of the target's vital zone (heart/lung area).<br>Shown as red dashed lines in the trajectory chart.<br><br>Typical values:<br>Roe deer: 60–70 mm (2.4–2.8 in)<br>Red deer: 100–120 mm (3.9–4.7 in)<br>Moose: 150–180 mm (5.9–7.1 in)</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="vital_val" value="60">
+          <select id="vital_unit" class="unit-sel" onchange="onUnitChange('vital')">
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>v₀ spread ± (chronograph) <button class="tip-btn">?<div class="tip-box">Shot-to-shot muzzle velocity variation measured with a chronograph.<br>The green dashed band shows the trajectory envelope for v₀ ± this value.<br><br>Good handloads: 3–5 m/s (10–15 fps)<br>Factory ammo: 7–15 m/s (25–50 fps)</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="v0spread_val" value="10">
+          <span class="unit" id="v0spread_unit_lbl">m/s</span>
+        </div>
+      </div>
+      <div class="field-inline">
+        <div class="field">
+          <label>Max Range</label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="maxrange_val" value="200">
+            <span class="unit" id="maxrange_unit_lbl">m</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Table Step</label>
+          <div class="field-row">
+            <input type="text" inputmode="decimal" id="step_val" value="25">
+            <span class="unit" id="step_unit_lbl">m</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-calc" onclick="calculate()">CALCULATE TRAJECTORY</button>
+    </div>
+    <div class="status-bar" id="status-bar">
+      <span>Ready — press Calculate</span>
+    </div>
+  </div>
+
+  <!-- ══════════════ RIGHT: RESULTS ══════════════ -->
+  <div class="right-col">
+
+    <!-- Summary cards -->
+    <div class="panel">
+      <div class="panel-head"><span>Summary at Zero Range</span></div>
+      <div class="panel-body" style="padding-bottom:12px">
+        <div class="cards" id="summary-cards">
+          <div class="card"><div class="card-label">Zero Angle</div><div class="card-val" id="c-theta">—</div><div class="card-sub">mrad</div></div>
+          <div class="card"><div class="card-label" id="c-vnull-label">v₀ → v@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
+          <div class="card"><div class="card-label">Energy E₁₀₀</div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart: trajectory -->
+    <div class="panel">
+      <div class="panel-head">
+        <span>Trajectory <button class="tip-btn" style="text-transform:none;letter-spacing:0;vertical-align:middle">?<div class="tip-box" style="left:20px;top:-4px">
+          <b>Chart curves:</b><br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:#aaa;vertical-align:middle;margin-right:6px"></span><b>Grey solid</b> — zero-day trajectory (Phase 1 atmosphere). This is the reference line the rifle is zeroed to.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — hunt-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--green);border-top:2px dashed var(--green);vertical-align:middle;margin-right:6px"></span><b>Green dashed band</b> — v₀ ± spread envelope. Width shows how much shot-to-shot velocity variation affects the trajectory at each range.<br><br>
+          <span style="display:inline-block;width:10px;height:2px;background:var(--red);opacity:.7;vertical-align:middle;margin-right:6px"></span><b>Red dashed lines</b> — vital zone radius (±). Bullet must stay within these lines for an ethical shot without hold-over.
+        </div></button></span>
+      </div>
+      <div class="panel-body" style="padding:10px 8px 8px">
+        <div class="chart-wrap"><canvas id="chartTraj"></canvas></div>
+      </div>
+      <div class="phase-info">
+        <span><span class="phase-dot dot-ref"></span>Zero atmosphere</span>
+        <span><span class="phase-dot dot-shoot"></span>Shooting atmosphere</span>
+        <span><span class="phase-dot" style="background:var(--green)"></span>v₀ ±<span id="v0band-label">10</span> <span id="v0band-unit">m/s</span> band</span>
+        <span style="color:var(--muted)">— — Vital zone ±<span id="vz-label">60</span> <span id="vz-unit">mm</span></span>
+      </div>
+    </div>
+
+    <!-- Result table -->
+    <div class="panel">
+      <div class="panel-head"><span>Ballistic Table</span></div>
+      <div class="panel-body" style="padding:0">
+        <div id="table-wrap"><div class="placeholder">No data yet — press Calculate</div></div>
+      </div>
+    </div>
+
+    <!-- Chart: wind -->
+    <div class="panel">
+      <div class="panel-head"><span>Wind Drift</span></div>
+      <div class="panel-body" style="padding:10px 8px 8px">
+        <div class="chart-wrap" style="height:160px"><canvas id="chartWind"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Sensitivity -->
+    <div class="panel">
+      <div class="panel-head"><span id="sens-panel-title">Sensitivity Analysis at 200 m (fixed zero angle)</span></div>
+      <div class="panel-body" style="padding:12px">
+        <div id="sens-wrap"><div class="placeholder" style="height:80px">—</div></div>
+      </div>
+    </div>
+
+    <!-- Model & Math -->
+    <div class="panel">
+      <div class="panel-head" style="cursor:pointer;user-select:none" onclick="toggleMath()">
+        <span>Model &amp; Mathematics</span>
+        <span id="math-toggle-icon" style="font-family:var(--mono);font-size:11px;color:var(--muted)">▶ expand</span>
+      </div>
+      <div id="math-body" style="display:none">
+
+        <!-- Physics -->
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border2)">
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Trajectory Model</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
+            Point-mass ODE integrated with RK4 (dt = 1 ms):<br>
+            <span style="color:var(--accent)">dvx/dt = −a_drag · (vx/v)</span><br>
+            <span style="color:var(--accent)">dvy/dt = −g·cos(α) − a_drag · (vy/v)</span><br>
+            <br>
+            <span style="color:var(--muted)">where:</span><br>
+            <span style="padding-left:16px">a_drag = ½ · ρ · v² · C<sub>d</sub>(M) / BC<sub>SI</sub></span><br>
+            <span style="padding-left:16px">BC<sub>SI</sub> = BC<sub>G1</sub> × 703.07 &nbsp;[kg/m²]</span><br>
+            <span style="padding-left:16px">ρ = 1.225 · (P/1013.25) · (288.15/T) &nbsp;[kg/m³]</span><br>
+            <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) &nbsp;[m/s]</span><br>
+            <span style="padding-left:16px">M = v / v<sub>s</sub> &nbsp;(Mach number)</span><br>
+            <br>
+            <span style="color:var(--muted)">G1 drag function C<sub>d</sub>(M):</span> standard PRODAS tabulation (22 Mach points, 0–5).<br>
+            <span style="color:var(--muted)">Zero angle θ:</span> found by bisection (60 iterations, ε &lt; 10⁻¹⁰ rad).<br>
+            <span style="color:var(--muted)">Wind drift:</span> lag-time method — z = w · (t<sub>flight</sub> − x/v₀).<br>
+            <span style="color:var(--muted)">Shooting angle α:</span> reduces effective gravity (g·cos α). Both uphill and downhill hit higher than level.
+          </div>
+        </div>
+
+        <!-- Three-phase model -->
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border2)">
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Three-Phase Model</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
+            <span style="color:var(--accent)">Phase 1 — Zero:</span> bisection solves for θ under zero-day atmosphere (T<sub>zero</sub>, P<sub>zero</sub>). θ is fixed thereafter — it represents the rifle's mechanical setting.<br>
+            <span style="color:var(--accent)">Phase 2 — Hunt:</span> same θ, new atmosphere (T<sub>hunt</sub>, P<sub>hunt</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
+            <span style="color:var(--accent)">Phase 3 — Propellant (planned):</span> powder temperature affects v₀ via burn rate (internal ballistics). This is the dominant weather effect in practice and will be added in a future version.
+          </div>
+        </div>
+
+        <!-- Validation -->
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border2)">
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Validation vs JBM Ballistics &amp; QuickTARGET</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Test conditions: 165 gr Hornady InterBond · G1 BC 0.447 · v₀ = 785 m/s · sight 45 mm · zero 150 m · 15°C / 1013 hPa · no wind</div>
+          <div style="display:grid;grid-template-columns:60px repeat(4,1fr);gap:2px 0;font-family:var(--mono);font-size:11px">
+            <span style="color:var(--muted);padding:3px 8px">Range</span>
+            <span style="color:var(--muted);padding:3px 8px">This app</span>
+            <span style="color:var(--muted);padding:3px 8px">JBM</span>
+            <span style="color:var(--muted);padding:3px 8px">QuickTARGET</span>
+            <span style="color:var(--muted);padding:3px 8px">Δ traj.</span>
+
+            <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">50 m</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+13 mm</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+15 mm</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+15 mm</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">−2 mm</span>
+
+            <span style="color:var(--muted);padding:3px 8px">100 m</span>
+            <span style="color:var(--text);padding:3px 8px">+29 mm</span>
+            <span style="color:var(--text);padding:3px 8px">+30 mm</span>
+            <span style="color:var(--text);padding:3px 8px">+31 mm</span>
+            <span style="color:var(--green);padding:3px 8px">−1 mm</span>
+
+            <span style="color:var(--muted);padding:3px 8px">150 m</span>
+            <span style="color:var(--text);padding:3px 8px">0 mm</span>
+            <span style="color:var(--text);padding:3px 8px">0 mm</span>
+            <span style="color:var(--text);padding:3px 8px">0 mm</span>
+            <span style="color:var(--green);padding:3px 8px">0 mm</span>
+
+            <span style="color:var(--muted);padding:3px 8px">200 m</span>
+            <span style="color:var(--text);padding:3px 8px">−76 mm</span>
+            <span style="color:var(--text);padding:3px 8px">−84 mm</span>
+            <span style="color:var(--text);padding:3px 8px">−83 mm</span>
+            <span style="color:var(--orange);padding:3px 8px">+8 mm</span>
+
+            <span style="color:var(--muted);padding:3px 8px">300 m</span>
+            <span style="color:var(--text);padding:3px 8px">−359 mm</span>
+            <span style="color:var(--text);padding:3px 8px">−424 mm</span>
+            <span style="color:var(--text);padding:3px 8px">−419 mm</span>
+            <span style="color:var(--red);padding:3px 8px">+60 mm</span>
+          </div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px">
+            JBM and QuickTARGET agree with each other to &lt;5 mm at ≤300 m, confirming they share the same underlying drag model. More test cases will be added as validation progresses.
+          </div>
+        </div>
+
+        <!-- Known limitations -->
+        <div style="padding:14px 16px">
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Known Limitations</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
+            <span style="color:var(--orange)">▸ Trajectory diverges beyond ~250 m</span> — error grows to ~60 mm at 300 m vs JBM. Cause: our standard PRODAS G1 C<sub>d</sub> table gives less drag than JBM's proprietary implementation. Three independent tables (PRODAS, Ingalls, GNU) show the same discrepancy, ruling out a simple table error.<br>
+            <span style="color:var(--orange)">▸ Velocity/energy optimistic by ~5%</span> — same root cause. Use chronograph-measured v₀ for best accuracy; the trajectory shape will be correct even if absolute velocity is off.<br>
+            <span style="color:var(--green)">▸ Trajectory ≤200 m reliable to &lt;10 mm</span> — this covers the full practical hunting range for most applications.<br>
+            <span style="color:var(--muted)">▸ No spin drift, Coriolis, or aerodynamic jump</span> — negligible at ≤300 m.<br>
+            <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) not yet implemented</span> — this is the dominant real-world weather effect.
+          </div>
+        </div>
+
+      </div><!-- end math-body -->
+    </div>
+
+  </div><!-- end right-col -->
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+// ══════════════════════════════════════════
+//   External Ballistics — RK4 trajectory model
+//   Port of SensitivityAnalys.m (MATLAB)
+//   Unit system + localStorage persistence
+// ══════════════════════════════════════════
+
+// ── Unit conversion helpers ──
+const CONV = {
+  // To SI (m/s, kg, m, °C, hPa, m/s, m, cm)
+  v0:    { fps: v=>v*0.3048,      ms:  v=>v          },
+  m:     { gr:  v=>v*6.47989e-5,  g:   v=>v/1000     },
+  sight: { mm:  v=>v/1000,        in:  v=>v*0.0254    },
+  zero:  { m:   v=>v,             yd:  v=>v*0.9144    },
+  temp:  { C:   v=>v,             F:   v=>(v-32)*5/9  },
+  press: { hPa: v=>v,             inHg:v=>v*33.8639   },
+  wind:  { ms:  v=>v,             mph: v=>v*0.44704,  kts:v=>v*0.514444 },
+  vital: { mm:  v=>v/10,           in:  v=>v*2.54      },
+  chrono:{ mm:  v=>v/1000,         in:  v=>v*0.0254    },
+};
+
+// Display conversions (SI → display unit)
+const CONV_FROM = {
+  v0:    { fps: v=>v/0.3048,      ms:  v=>v          },
+  m:     { gr:  v=>v/6.47989e-5,  g:   v=>v*1000     },
+  sight: { mm:  v=>v*1000,        in:  v=>v/0.0254    },
+  zero:  { m:   v=>v,             yd:  v=>v/0.9144    },
+  temp:  { C:   v=>v,             F:   v=>v*9/5+32    },
+  press: { hPa: v=>v,             inHg:v=>v/33.8639   },
+  wind:  { ms:  v=>v,             mph: v=>v/0.44704,  kts:v=>v/0.514444 },
+  vital: { mm:  v=>v*10,           in:  v=>v/2.54      },
+  chrono:{ mm:  v=>v*1000,         in:  v=>v/0.0254    },
+};
+
+// ── localStorage keys ──
+const LS = 'jaktballistik_v3';
+function loadPrefs() {
+  try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch { return {}; }
+}
+function savePrefs(obj) {
+  try { localStorage.setItem(LS, JSON.stringify(obj)); } catch {}
+}
+
+// ── Comma → dot fix for all decimal inputs ──
+function fixComma(el) {
+  el.addEventListener('input', function() {
+    const pos = this.selectionStart;
+    const before = this.value;
+    this.value = before.replace(',', '.');
+    if (before !== this.value) this.setSelectionRange(pos, pos);
+  });
+}
+
+// ── Unit change: convert displayed value to new unit ──
+function onUnitChange(field) {
+  const prefs = loadPrefs();
+  const selEl = document.getElementById(field + '_unit');
+  const newUnit = selEl.value;
+  const oldUnit = prefs['unit_' + field] || selEl.options[0].value;
+
+  // Fields that have multiple inputs sharing one unit selector
+  const multiFields = {
+    temp:  ['temp_zero_val', 'temp_shoot_val'],
+    press: ['press_zero_val', 'press_shoot_val'],
+    v0:    ['v0_val', 'v0spread_val'],
+  };
+
+  const fieldIds = multiFields[field] ? multiFields[field] : [field + '_val'];
+
+  fieldIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const rawVal = parseFloat(el.value.replace(',', '.'));
+    if (!isNaN(rawVal)) {
+      const si = CONV[field][oldUnit](rawVal);
+      el.value = parseFloat(CONV_FROM[field][newUnit](si).toFixed(4));
+    }
+  });
+
+  // Sync unit labels
+  if (field === 'temp')  document.getElementById('temp_shoot_unit_lbl').textContent  = newUnit === 'C' ? '°C' : '°F';
+  if (field === 'press') document.getElementById('press_shoot_unit_lbl').textContent = newUnit;
+  if (field === 'v0')    document.getElementById('v0spread_unit_lbl').textContent    = newUnit === 'fps' ? 'fps' : 'm/s';
+  // Sync max range and step labels when range unit changes
+  if (field === 'zero') {
+    document.getElementById('maxrange_unit_lbl').textContent = newUnit;
+    document.getElementById('step_unit_lbl').textContent     = newUnit;
+    const mrEl = document.getElementById('maxrange_val');
+    const stEl = document.getElementById('step_val');
+    const oldRangeUnit = prefs['unit_zero'] || 'm';
+    [mrEl, stEl].forEach(el => {
+      const v = parseFloat(el.value.replace(',','.'));
+      if (!isNaN(v)) {
+        const si = CONV.zero[oldRangeUnit](v);
+        el.value = parseFloat(CONV_FROM.zero[newUnit](si).toFixed(1));
+      }
+    });
+  }
+
+  prefs['unit_' + field] = newUnit;
+  savePrefs(prefs);
+}
+
+// ── Read SI value from a field ──
+// field: key in CONV tables; valId/unitId: explicit element IDs
+function getSI(field, valId, unitId) {
+  valId  = valId  || (field + '_val');
+  unitId = unitId || (field + '_unit');
+  const valEl  = document.getElementById(valId);
+  const unitEl = document.getElementById(unitId);
+  if (!valEl) return NaN;
+  const unit = unitEl ? unitEl.value : null;
+  const raw = parseFloat(valEl.value.replace(',', '.'));
+  if (isNaN(raw)) return NaN;
+  return unit ? CONV[field][unit](raw) : raw;
+}
+
+// ── Persist input values on change ──
+function persistInputs() {
+  const prefs = loadPrefs();
+  const ids = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
+               'temp_zero_val','press_zero_val','temp_shoot_val','press_shoot_val',
+               'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
+               'v0_unit','m_unit','sight_unit','zero_unit','temp_unit','press_unit','wind_unit','vital_unit','chrono_unit'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) prefs['inp_' + id] = el.value;
+  });
+  prefs['theme'] = document.documentElement.getAttribute('data-theme');
+  savePrefs(prefs);
+}
+
+// ── Restore all prefs on load ──
+function restorePrefs() {
+  const prefs = loadPrefs();
+
+  // Theme
+  if (prefs.theme) {
+    applyTheme(prefs.theme);
+  }
+
+  // Units first (so labels are correct before values)
+  ['v0','m','sight','zero','temp','press','wind','vital','chrono'].forEach(f => {
+    const k = 'unit_' + f;
+    if (prefs[k]) {
+      const el = document.getElementById(f + '_unit');
+      if (el) el.value = prefs[k];
+    }
+  });
+
+  // Sync shoot atmosphere labels
+  const tempUnit  = document.getElementById('temp_unit')?.value  || 'C';
+  const pressUnit = document.getElementById('press_unit')?.value || 'hPa';
+  const rangeUnit = document.getElementById('zero_unit')?.value  || 'm';
+  const v0Unit_r  = document.getElementById('v0_unit')?.value    || 'fps';
+  document.getElementById('temp_shoot_unit_lbl').textContent  = tempUnit === 'C' ? '°C' : '°F';
+  document.getElementById('press_shoot_unit_lbl').textContent = pressUnit;
+  document.getElementById('maxrange_unit_lbl').textContent    = rangeUnit;
+  document.getElementById('step_unit_lbl').textContent        = rangeUnit;
+  document.getElementById('v0spread_unit_lbl').textContent    = v0Unit_r === 'fps' ? 'fps' : 'm/s';
+
+  // Input values
+  const valIds = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
+                  'temp_zero_val','press_zero_val','temp_shoot_val','press_shoot_val',
+                  'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm'];
+  valIds.forEach(id => {
+    const k = 'inp_' + id;
+    if (prefs[k] !== undefined) {
+      const el = document.getElementById(id);
+      if (el) el.value = prefs[k];
+    }
+  });
+}
+
+// ── Apply comma fix + persistence to all inputs ──
+function initInputs() {
+  document.querySelectorAll('input[type="text"], input[type="number"]').forEach(el => {
+    fixComma(el);
+    el.addEventListener('change', persistInputs);
+    if (el.id === 'bc_input') el.addEventListener('input', () => {
+      if (document.getElementById('g7-body').style.display !== 'none') estimateG7();
+    });
+  });
+  document.querySelectorAll('select').forEach(el => {
+    el.addEventListener('change', persistInputs);
+  });
+}
+
+const G1_MACH = [0.00,0.50,0.70,0.80,0.90,0.95,1.00,1.05,1.10,1.20,1.30,1.40,1.50,1.60,1.80,2.00,2.50,3.00,3.50,4.00,4.50,5.00];
+const G1_CD   = [0.2629,0.2620,0.2615,0.2626,0.2768,0.3006,0.3789,0.4103,0.4169,0.4133,0.4000,0.3864,0.3713,0.3567,0.3286,0.3030,0.2613,0.2302,0.2083,0.1910,0.1769,0.1654];
+const G7_MACH = [0.00,0.50,0.70,0.80,0.90,0.95,1.00,1.05,1.10,1.20,1.30,1.40,1.50,1.60,1.80,2.00,2.50,3.00,3.50,4.00,4.50,5.00];
+const G7_CD   = [0.1198,0.1197,0.1196,0.1209,0.1306,0.1564,0.1884,0.2065,0.2174,0.2191,0.2132,0.2050,0.1965,0.1881,0.1728,0.1594,0.1350,0.1176,0.1048,0.0955,0.0878,0.0816];
+
+function interp1(xs, ys, x) {
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[xs.length-1]) return ys[ys.length-1];
+  let i = 0;
+  while (i < xs.length-1 && xs[i+1] < x) i++;
+  const t = (x - xs[i]) / (xs[i+1] - xs[i]);
+  return ys[i] + t * (ys[i+1] - ys[i]);
+}
+
+function getCd(mach, dragModel) {
+  if (dragModel === 'G7') return interp1(G7_MACH, G7_CD, mach);
+  return interp1(G1_MACH, G1_CD, mach);
+}
+
+// RK4 integration — returns array of {x, y, vx, vy, t}
+function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5, dt=0.001) {
+  let x=0, y=-sight_h, vx=v0*Math.cos(theta), vy=v0*Math.sin(theta), t=0;
+  const out = [{x,y,vx,vy,t}];
+
+  function deriv(x,y,vx,vy) {
+    const v = Math.sqrt(vx*vx+vy*vy);
+    const mach = v/vs;
+    const Cd = getCd(mach, dragModel);
+    const a_drag = 0.5*rho*v*v*Cd/BC_final;
+    return {dx:vx, dy:vy, dvx:-a_drag*(vx/v), dvy:-g - a_drag*(vy/v)};
+  }
+
+  while (t < tMax && x < 260) {
+    const d1 = deriv(x,y,vx,vy);
+    const d2 = deriv(x+dt/2*d1.dx, y+dt/2*d1.dy, vx+dt/2*d1.dvx, vy+dt/2*d1.dvy);
+    const d3 = deriv(x+dt/2*d2.dx, y+dt/2*d2.dy, vx+dt/2*d2.dvx, vy+dt/2*d2.dvy);
+    const d4 = deriv(x+dt*d3.dx,   y+dt*d3.dy,   vx+dt*d3.dvx,   vy+dt*d3.dvy);
+    x  += dt*(d1.dx+2*d2.dx+2*d3.dx+d4.dx)/6;
+    y  += dt*(d1.dy+2*d2.dy+2*d3.dy+d4.dy)/6;
+    vx += dt*(d1.dvx+2*d2.dvx+2*d3.dvx+d4.dvx)/6;
+    vy += dt*(d1.dvy+2*d2.dvy+2*d3.dvy+d4.dvy)/6;
+    t  += dt;
+    out.push({x,y,vx,vy,t});
+  }
+  return out;
+}
+
+// Interpolate y at given x from trajectory
+function interpY(traj, xTarget) {
+  for (let i=1; i<traj.length; i++) {
+    if (traj[i].x >= xTarget) {
+      const t0=traj[i-1], t1=traj[i];
+      const frac=(xTarget-t0.x)/(t1.x-t0.x);
+      return t0.y + frac*(t1.y-t0.y);
+    }
+  }
+  return NaN;
+}
+function interpT(traj, xTarget) {
+  for (let i=1; i<traj.length; i++) {
+    if (traj[i].x >= xTarget) {
+      const t0=traj[i-1], t1=traj[i];
+      const frac=(xTarget-t0.x)/(t1.x-t0.x);
+      return t0.t + frac*(t1.t-t0.t);
+    }
+  }
+  return NaN;
+}
+function interpV(traj, xTarget) {
+  for (let i=1; i<traj.length; i++) {
+    if (traj[i].x >= xTarget) {
+      const t0=traj[i-1], t1=traj[i];
+      const frac=(xTarget-t0.x)/(t1.x-t0.x);
+      const vx=t0.vx+frac*(t1.vx-t0.vx);
+      const vy=t0.vy+frac*(t1.vy-t0.vy);
+      return Math.sqrt(vx*vx+vy*vy);
+    }
+  }
+  return NaN;
+}
+
+// Bisection: find theta so y(zero_m)=0
+function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g) {
+  let lo=-0.05, hi=0.05;
+  for (let iter=0; iter<60; iter++) {
+    const mid=(lo+hi)/2;
+    const traj=integrate(mid,v0,sight_h,rho,vs,BC_final,dragModel,g);
+    const y=interpY(traj,zero_m);
+    if (y>0) hi=mid; else lo=mid;
+    if ((hi-lo)<1e-10) break;
+  }
+  return (lo+hi)/2;
+}
+
+// Atmosphere helpers
+function calcAtmo(temp_C, press_hPa) {
+  const T=temp_C+273.15;
+  const rho=1.225*(press_hPa/1013.25)*(288.15/T);
+  const vs=331.3*Math.sqrt(T/273.15);
+  return {rho, vs, T};
+}
+
+// Swedish hunt class at 100 m
+function huntClass(m_kg, E) {
+  if (m_kg>=0.010 && E>=2000) return 'K1';
+  if (m_kg>=0.009 && E>=2700) return 'K1';
+  if (m_kg>=0.0032 && E>=800) return 'K2';
+  if (m_kg>=0.0025 && E>=200) return 'K3';
+  return 'K4';
+}
+
+let chartTraj=null, chartWind=null;
+
+function setStatus(msg, type='ok') {
+  const el=document.getElementById('status-bar');
+  el.innerHTML=`<span class="status-${type}">${msg}</span>`;
+}
+
+// ── G1→G7 estimator ──
+function toggleG7() {
+  const body = document.getElementById('g7-body');
+  const label = document.getElementById('g7-toggle-label');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  label.textContent = (open ? '▼' : '▶') + ' Estimate G7 from G1';
+}
+
+function estimateG7() {
+  const factor = parseFloat(document.getElementById('g7_bullet_type').value);
+  const g1 = parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+  const resultDiv = document.getElementById('g7-result');
+  if (!factor || isNaN(g1)) { resultDiv.style.display='none'; return; }
+  const g7 = (g1 / factor).toFixed(3);
+  document.getElementById('g7-result-val').textContent = g7;
+  resultDiv.style.display = 'flex';
+}
+
+function applyG7() {
+  const g7val = document.getElementById('g7-result-val').textContent;
+  document.getElementById('bc_input').value = g7val;
+  document.getElementById('bc_type').value = 'G7';
+  // collapse estimator
+  document.getElementById('g7-body').style.display = 'none';
+  document.getElementById('g7-toggle-label').textContent = '▶ Estimate G7 from G1';
+  document.getElementById('g7-result').style.display = 'none';
+  document.getElementById('g7_bullet_type').value = '';
+  persistInputs();
+  calculate();
+}
+
+function calculate() {
+  try {
+    // Read all inputs via unit-aware getSI(field, valId, unitId)
+    const v0      = getSI('v0',    'v0_val',    'v0_unit');     // m/s
+    const m_kg    = getSI('m',     'm_val',     'm_unit');      // kg
+    const BC_input= parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+    const bc_type = document.getElementById('bc_type').value;
+    const sight_h = getSI('sight', 'sight_val', 'sight_unit');  // m
+    const zero_m  = getSI('zero',  'zero_val',  'zero_unit');   // m
+
+    // Atmosphere — temp and press share one unit selector per quantity
+    const tempUnit  = document.getElementById('temp_unit').value;
+    const pressUnit = document.getElementById('press_unit').value;
+    const temp_zero_C    = getSI('temp',  'temp_zero_val',   'temp_unit');
+    const press_zero_hPa = getSI('press', 'press_zero_val',  'press_unit');
+    const temp_shoot_raw  = parseFloat(document.getElementById('temp_shoot_val').value.replace(',','.'));
+    const press_shoot_raw = parseFloat(document.getElementById('press_shoot_val').value.replace(',','.'));
+    const temp_shoot_C    = CONV.temp[tempUnit](temp_shoot_raw);
+    const press_shoot_hPa = CONV.press[pressUnit](press_shoot_raw);
+
+    const wind_ms   = getSI('wind',  'wind_val',  'wind_unit');  // m/s
+    const alpha_deg = parseFloat(document.getElementById('alpha_deg').value.replace(',','.'));
+    const vital_cm  = getSI('vital', 'vital_val', 'vital_unit'); // cm
+    const v0Unit    = document.getElementById('v0_unit').value;
+
+    const alpha   = alpha_deg * Math.PI / 180;
+    const g       = 9.81 * Math.cos(alpha);
+    // BC: same conversion as MATLAB (BC_final = BC_input * 703.07)
+    const BC_final = BC_input * 703.07;
+    const dragModel = bc_type;
+
+    setStatus('Solving zero angle (bisection)…');
+
+    const atmoZ = calcAtmo(temp_zero_C, press_zero_hPa);
+    const atmoS = calcAtmo(temp_shoot_C, press_shoot_hPa);
+
+    // ── Chronograph distance correction ──
+    // User measured v0 at chrono, not at muzzle.
+    // We integrate drag over chrono_m to recover true muzzle v0.
+    const chrono_cm = getSI('chrono', 'chrono_cm', 'chrono_unit');  // returns metres
+    const chrono_m  = chrono_cm;  // getSI returns SI = metres
+    let v0_true = v0;
+    if (chrono_m > 0.005) {
+      // Forward Euler: find speed lost over chrono distance, add it back
+      let vv = v0, x = 0;
+      const dt = 0.00005;
+      while (x < chrono_m) {
+        const mach = vv / atmoZ.vs;
+        const Cd   = getCd(mach, dragModel);
+        const a    = 0.5 * atmoZ.rho * vv * vv * Cd / BC_final;
+        vv -= a * dt;
+        x  += vv * dt;
+      }
+      v0_true = v0 + (v0 - vv); // add back the drag loss
+    }
+
+    // Fas 1: bisection for theta (use v0_true = corrected muzzle velocity)
+    const theta = findTheta(v0_true, sight_h, zero_m, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g);
+
+    // ── Display units ──
+    const rangeUnit = document.getElementById('zero_unit').value;   // 'm' or 'yd'
+    const vitalUnit = document.getElementById('vital_unit').value;  // 'cm' or 'in'
+    const rangeLabel = rangeUnit;
+    const devLabel   = vitalUnit === 'in' ? 'in' : 'mm';
+    const windLabel  = vitalUnit === 'in' ? 'in' : 'mm';
+
+    // Conversion helpers for display (internal = cm)
+    const toRangeDisp = r => rangeUnit === 'yd' ? r / 0.9144 : r;
+    const toDevDisp   = v => vitalUnit === 'in' ? v / 2.54 : v * 10;  // cm → mm or in
+    const devPrec     = vitalUnit === 'in' ? 2 : 0;
+
+    // Velocity and energy display units
+    const velLabel  = v0Unit === 'fps' ? 'fps' : 'm/s';
+    const toVelDisp = v => v0Unit === 'fps' ? v / 0.3048 : v;
+    const eLabel    = v0Unit === 'fps' ? 'ft·lbf' : 'J';
+    const toEDisp   = E => v0Unit === 'fps' ? E * 0.737562 : E;
+    const ePrec     = 0;
+
+    // Max range and step — read as display units, convert to metres
+    const maxrange_disp = parseFloat(document.getElementById('maxrange_val').value.replace(',','.')) || 200;
+    const step_disp     = parseFloat(document.getElementById('step_val').value.replace(',','.'))     || 25;
+    const maxrange_m    = CONV.zero[rangeUnit](maxrange_disp);
+    const step_m        = CONV.zero[rangeUnit](step_disp);
+
+    // Build RANGES array in metres
+    const RANGES = [];
+    for (let r = 0; r <= maxrange_m + 0.001; r += step_m) {
+      RANGES.push(Math.round(r * 1000) / 1000); // avoid float drift
+    }
+    // Always include zero range in table (highlighted)
+    if (!RANGES.some(r => Math.abs(r - zero_m) < 0.5)) RANGES.push(zero_m);
+    RANGES.sort((a,b) => a-b);
+
+    // Extend integration if needed
+    const tMax = maxrange_m/v0 + 2;
+    const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.')) || 10;
+    const v0spread = v0Unit === 'fps' ? v0spread_raw * 0.3048 : v0spread_raw; // → m/s
+
+    // Update legend
+    document.getElementById('v0band-label').textContent = v0spread_raw;
+    document.getElementById('v0band-unit').textContent  = v0Unit === 'fps' ? 'fps' : 'm/s';
+    const trajRef   = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
+    const trajShoot = integrate(theta, v0_true, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax);
+    const trajV0hi  = integrate(theta, v0_true+v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
+    const trajV0lo  = integrate(theta, v0_true-v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
+
+    // ── Energy and class at 100 m ──
+    const v100 = interpV(trajRef, 100);
+    const E100 = 0.5 * m_kg * v100 * v100;
+    const klass = huntClass(m_kg, E100);
+
+    // v at zero_m
+    const vAtZero = interpV(trajRef, zero_m);
+
+    // Update cards
+    document.getElementById('c-vnull-label').textContent = chrono_m > 0.005
+      ? `v₀ corrected → v@zero` : `v₀ → v@zero`;
+    document.getElementById('c-theta').textContent = (theta*1000).toFixed(3);
+    document.getElementById('c-vnull').textContent = toVelDisp(vAtZero).toFixed(0);
+    document.getElementById('c-vnull-unit').textContent = velLabel;
+    document.getElementById('c-e100').textContent  = toEDisp(E100).toFixed(0);
+    document.getElementById('c-e100-unit').textContent  = eLabel;
+    const klassBadge = document.getElementById('c-klass');
+    klassBadge.textContent = klass;
+    klassBadge.className = 'klass-badge ' + klass.toLowerCase();
+
+    document.getElementById('vz-label').textContent = toDevDisp(vital_cm).toFixed(devPrec);
+
+    // ── Build table data ──
+    const maxX = Math.max(...trajRef.map(p=>p.x));
+    const rows = RANGES.map(r => {
+      if (r > maxX + 0.5) return null;
+      const yRef_cm  = interpY(trajRef,   r) * 100;
+      const yShoot_cm= interpY(trajShoot, r) * 100;
+      const v        = interpV(trajRef,   r);
+      const E        = 0.5 * m_kg * v * v;
+      const tFlyg    = interpT(trajRef,   r);
+      const zVind_cm = wind_ms * (tFlyg - r/v0_true) * 100;
+      const diff_cm  = yShoot_cm - yRef_cm;
+      // Convert deviations to display unit
+      const yRef   = toDevDisp(yRef_cm);
+      const yShoot = toDevDisp(yShoot_cm);
+      const diff   = toDevDisp(diff_cm);
+      const zVind  = toDevDisp(zVind_cm);
+      const isZeroRow = Math.abs(r - zero_m) < 0.5;
+      const k      = isZeroRow ? '' : (Math.abs(r - 100) < 0.5 ? huntClass(m_kg,E) : '');
+      return {r, yRef, yShoot, diff, v, E, zVind, k, isZeroRow};
+    }).filter(Boolean);
+
+    // ── Render table ──
+    let html='<table class="result-table"><thead><tr>';
+    html+=`<th>Range (${rangeLabel})</th><th>Ref (${devLabel})</th><th>Hunt (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th><th>Class</th>`;
+    html+='</tr></thead><tbody>';
+    rows.forEach(row => {
+      const yClass = y => y>0 ? 'val-pos' : (y<0 ? 'val-neg' : '');
+      const warnThresh = vitalUnit === 'in' ? 2 : 5;
+      html+=`<tr${row.isZeroRow?' class="zero-row"':''}>`;
+      html+=`<td>${toRangeDisp(row.r).toFixed(0)} ${rangeLabel}</td>`;
+      html+=`<td class="${yClass(row.yRef)}">${row.yRef>=0?'+':''}${row.yRef.toFixed(devPrec)}</td>`;
+      html+=`<td class="${yClass(row.yShoot)}">${row.yShoot>=0?'+':''}${row.yShoot.toFixed(devPrec)}</td>`;
+      html+=`<td class="${Math.abs(row.diff)>toDevDisp(1)?'val-warn':''}">${row.diff>=0?'+':''}${row.diff.toFixed(devPrec)}</td>`;
+      html+=`<td>${toVelDisp(row.v).toFixed(0)}</td>`;
+      html+=`<td>${toEDisp(row.E).toFixed(ePrec)}</td>`;
+      html+=`<td class="${Math.abs(row.zVind)>warnThresh?'val-warn':''}">${row.zVind>=0?'+':''}${row.zVind.toFixed(devPrec)}</td>`;
+      html+=`<td>${row.k ? `<span class="klass-badge ${row.k.toLowerCase()}">${row.k}</span>` : ''}</td>`;
+      html+='</tr>';
+    });
+    html+='</tbody></table>';
+    document.getElementById('table-wrap').innerHTML=html;
+
+    // ── Chart: trajectory (dense) ──
+    const trajData = [], shootData = [], v0hiData = [], v0loData = [];
+    const chartStep = maxrange_m / 200;
+    for (let x=0; x<=maxrange_m+chartStep; x+=chartStep) {
+      const yr  = interpY(trajRef,x)*100;
+      const ys  = interpY(trajShoot,x)*100;
+      const yhi = interpY(trajV0hi,x)*100;
+      const ylo = interpY(trajV0lo,x)*100;
+      if (!isNaN(yr)) {
+        const xd = parseFloat(toRangeDisp(x).toFixed(2));
+        trajData.push( {x: xd, y: toDevDisp(yr)});
+        shootData.push({x: xd, y: toDevDisp(ys)});
+        v0hiData.push( {x: xd, y: toDevDisp(yhi)});
+        v0loData.push( {x: xd, y: toDevDisp(ylo)});
+      }
+    }
+
+    // Y-axis: autoscale — exclude x=0 (muzzle, below sight line)
+    const allY = [...trajData.filter(p=>p.x>0).map(p=>p.y),
+                  ...shootData.filter(p=>p.x>0).map(p=>p.y)].filter(v=>!isNaN(v));
+    const yMin = Math.min(...allY, toDevDisp(-vital_cm));
+    const yMax = Math.max(...allY, toDevDisp(vital_cm));
+    const yPad = (yMax - yMin) * 0.12 || 5;
+    const yAxisMin = Math.floor(yMin - yPad);
+    const yAxisMax = Math.ceil(yMax  + yPad);
+
+    if (chartTraj) chartTraj.destroy();
+
+    // Read current theme colors
+    const cs = getComputedStyle(document.documentElement);
+    const cMuted  = cs.getPropertyValue('--muted').trim();
+    const cBorder2= cs.getPropertyValue('--border2').trim();
+    const cRed    = cs.getPropertyValue('--red').trim();
+    const cAccent = cs.getPropertyValue('--accent').trim();
+    const cBlue   = cs.getPropertyValue('--blue').trim();
+    const cOrange = cs.getPropertyValue('--orange').trim();
+    const cGreen  = cs.getPropertyValue('--green').trim();
+
+    chartTraj = new Chart(document.getElementById('chartTraj'), {
+      type: 'line',
+      data: {
+        datasets: [
+          {label:'Zero atmosphere',      data:trajData,  borderColor:cMuted,  borderWidth:2,   pointRadius:0, tension:0.3},
+          {label:'Shooting atmosphere',  data:shootData, borderColor:cBlue,   borderWidth:2,   borderDash:[6,4], pointRadius:0, tension:0.3},
+          {label:`v₀ +${v0spread_raw} ${v0Unit === 'fps' ? 'fps' : 'm/s'}`,  data:v0hiData,  borderColor:cGreen,  borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3},
+          {label:`v₀ −${v0spread_raw} ${v0Unit === 'fps' ? 'fps' : 'm/s'}`,  data:v0loData,  borderColor:cGreen,  borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3},
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        animation:{duration:400},
+        interaction:{mode:'index', intersect:false},
+        plugins:{
+          legend:{display:false},
+          annotation:{},
+          tooltip:{
+            callbacks:{
+              title: items => `Range: ${items[0].parsed.x.toFixed(0)} ${rangeLabel}`,
+              label: ctx => {
+                const v = ctx.parsed.y;
+                return `  ${ctx.dataset.label}: ${v>=0?'+':''}${v.toFixed(devPrec)} ${devLabel}`;
+              }
+            }
+          }
+        },
+        scales:{
+          x:{
+            type:'linear',
+            title:{display:true,text:`Range (${rangeLabel})`,color:cMuted,font:{family:'IBM Plex Mono',size:11}},
+            ticks:{color:cMuted,font:{family:'IBM Plex Mono',size:10},
+                   stepSize: step_disp,
+                   callback: v => v.toFixed(0)},
+            min: 0, max: parseFloat(toRangeDisp(maxrange_m).toFixed(1)),
+            grid:{color:cBorder2}
+          },
+          y:{
+            title:{display:true,text:`Deviation (${devLabel})`,color:cMuted,font:{family:'IBM Plex Mono',size:11}},
+            ticks:{color:cMuted,font:{family:'IBM Plex Mono',size:10},callback:v=>(v>=0?'+':'')+v.toFixed(devPrec)},
+            grid:{color:cBorder2},
+            min: yAxisMin, max: yAxisMax
+          }
+        }
+      },
+      plugins:[{
+        id:'vitalLines',
+        afterDraw(chart){
+          const {ctx,chartArea:{left,right},scales:{y}} = chart;
+          function hline(val, color, dash) {
+            const yp=y.getPixelForValue(val);
+            ctx.save(); ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1;
+            if(dash) ctx.setLineDash([4,4]); else ctx.setLineDash([]);
+            ctx.moveTo(left,yp); ctx.lineTo(right,yp); ctx.stroke(); ctx.restore();
+          }
+          hline(0, cMuted, false);
+          hline(toDevDisp(vital_cm), cRed, true);
+          hline(toDevDisp(-vital_cm), cRed, true);
+          // zero line vertical
+          if (zero_m<=210) {
+            const {scales:{x}} = chart;
+            const xp=x.getPixelForValue(zero_m);
+            ctx.save(); ctx.beginPath(); ctx.strokeStyle=cAccent; ctx.globalAlpha=0.3; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+            ctx.moveTo(xp,chart.chartArea.top); ctx.lineTo(xp,chart.chartArea.bottom);
+            ctx.stroke(); ctx.restore();
+          }
+        }
+      }]
+    });
+
+    // ── Chart: wind drift ──
+    const zVindArr = rows.map(r => r.zVind);
+    const rArr     = rows.map(r => parseFloat(toRangeDisp(r.r).toFixed(1)));
+    if (chartWind) chartWind.destroy();
+    chartWind = new Chart(document.getElementById('chartWind'), {
+      type:'line',
+      data:{
+        labels:rArr,
+        datasets:[{
+          label:`Wind drift (${wind_ms.toFixed(1)} m/s)`,
+          data:zVindArr,
+          borderColor:cOrange, borderWidth:2, pointRadius:4,
+          pointBackgroundColor:cOrange, tension:0.3, fill:false
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        animation:{duration:400},
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{ticks:{color:cMuted,font:{family:'IBM Plex Mono',size:10}},grid:{color:cBorder2},
+             title:{display:true,text:`Range (${rangeLabel})`,color:cMuted,font:{family:'IBM Plex Mono',size:11}}},
+          y:{ticks:{color:cMuted,font:{family:'IBM Plex Mono',size:10},callback:v=>(v>=0?'+':'')+v.toFixed(devPrec)},
+             grid:{color:cBorder2},
+             title:{display:true,text:`Wind drift (${windLabel})`,color:cMuted,font:{family:'IBM Plex Mono',size:11}}}
+        }
+      }
+    });
+
+    // ── Sensitivity analysis ──
+    function calcDropFixed(v0p, tempC, pressHPa, thetaFix, rangeM) {
+      const atm=calcAtmo(tempC, pressHPa);
+      const traj=integrate(thetaFix, v0p, sight_h, atm.rho, atm.vs, BC_final, dragModel, g);
+      return interpY(traj, rangeM)*100;
+    }
+    const R = maxrange_m;
+    const R_disp = toRangeDisp(R).toFixed(0);
+    document.getElementById('sens-panel-title').textContent =
+      `Sensitivity Analysis at ${R_disp} ${rangeLabel} (fixed zero angle)`;
+    const yBas    = calcDropFixed(v0,    temp_zero_C, press_zero_hPa, theta, R);
+    const yV0hi   = calcDropFixed(v0+v0spread, temp_zero_C, press_zero_hPa, theta, R);
+    const yV0lo   = calcDropFixed(v0-v0spread, temp_zero_C, press_zero_hPa, theta, R);
+    const yPp20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa+20, theta, R);
+    const yPm20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa-20, theta, R);
+    const yThi    = calcDropFixed(v0,    temp_zero_C+15, press_zero_hPa, theta, R);
+    const yTlo    = calcDropFixed(v0,    temp_zero_C-15, press_zero_hPa, theta, R);
+
+    function diffStr(d_cm) {
+      const d = toDevDisp(d_cm);  // cm → mm (or in)
+      const thresh1 = vitalUnit === 'in' ? 0.4 : 10;  // 10mm / 0.4in
+      const thresh2 = vitalUnit === 'in' ? 0.1 : 3;
+      const cls = Math.abs(d)>thresh1 ? 'val-warn' : (Math.abs(d)>thresh2 ? '' : 'val-pos');
+      return `<span class="${cls}">${d>=0?'+':''}${d.toFixed(devPrec)} ${devLabel}</span>`;
+    }
+
+    const yBas_mm = toDevDisp(yBas);
+    document.getElementById('sens-wrap').innerHTML=`
+    <div class="sens-grid">
+      <div class="sens-head">Parameter</div><div class="sens-head">Value</div><div class="sens-head">Δ@200 m</div>
+      <div class="sens-cell sens-label">v₀ +${v0spread_raw} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0+v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0hi-yBas)}</div>
+      <div class="sens-cell sens-label">v₀ −${v0spread_raw} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0-v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0lo-yBas)}</div>
+      <div class="sens-cell sens-label">Pressure +20 hPa</div><div class="sens-cell">${(press_zero_hPa+20).toFixed(0)} hPa</div><div class="sens-cell sens-val">${diffStr(yPp20-yBas)}</div>
+      <div class="sens-cell sens-label">Pressure −20 hPa</div><div class="sens-cell">${(press_zero_hPa-20).toFixed(0)} hPa</div><div class="sens-cell sens-val">${diffStr(yPm20-yBas)}</div>
+      <div class="sens-cell sens-label">Temp +15°C</div><div class="sens-cell">${(temp_zero_C+15).toFixed(0)}°C</div><div class="sens-cell sens-val">${diffStr(yThi-yBas)}</div>
+      <div class="sens-cell sens-label">Temp −15°C</div><div class="sens-cell">${(temp_zero_C-15).toFixed(0)}°C</div><div class="sens-cell sens-val">${diffStr(yTlo-yBas)}</div>
+    </div>
+    <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Base: ${yBas_mm.toFixed(devPrec)} ${devLabel} at 200 m &nbsp;·&nbsp; Zero angle fixed</p>`;
+
+    const row200 = rows.reduce((best, r) => Math.abs(r.r-200) < Math.abs(best.r-200) ? r : best, rows[rows.length-1]);
+    setStatus(`OK — θ=${(theta*1000).toFixed(3)} mrad · E₁₀₀=${toEDisp(E100).toFixed(0)} ${eLabel} · ${klass} · wind drift@${toRangeDisp(row200.r).toFixed(0)}${rangeLabel}: ${row200.zVind.toFixed(devPrec)} ${windLabel}`, 'ok');
+
+  } catch(e) {
+    setStatus('Error: ' + e.message, 'warn');
+    console.error(e);
+  }
+}
+
+function toggleMath() {
+  const body = document.getElementById('math-body');
+  const icon = document.getElementById('math-toggle-icon');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▼ collapse' : '▶ expand';
+}
+
+function openAbout() {
+  const el = document.getElementById('about-overlay');
+  el.style.display = 'flex';
+}
+function closeAbout() {
+  document.getElementById('about-overlay').style.display = 'none';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAbout(); });
+
+// Auto-calc on load
+window.addEventListener('load', () => {
+  restorePrefs();
+  initInputs();
+  setTimeout(calculate, 150);
+});
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const track = document.getElementById('toggle-track');
+  const label = document.getElementById('theme-label');
+  if (!track) return;
+  if (theme === 'light') {
+    track.classList.add('on');
+    label.textContent = 'Light mode';
+  } else {
+    track.classList.remove('on');
+    label.textContent = 'Dark mode';
+  }
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const newTheme = cur === 'light' ? 'dark' : 'light';
+  applyTheme(newTheme);
+  persistInputs();
+  if (document.getElementById('chartTraj').getContext) calculate();
+}
+</script>
+</body>
+</html>

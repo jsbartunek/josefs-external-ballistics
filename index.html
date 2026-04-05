@@ -153,9 +153,11 @@ canvas{display:block}
 
 /* ── Mobile responsive ── */
 @media(max-width:600px){
-  header{padding:12px 14px;gap:8px}
-  header h1{font-size:12px;letter-spacing:.03em}
+  header{padding:12px 14px;gap:6px;flex-wrap:wrap}
+  header h1{font-size:13px;letter-spacing:.03em;white-space:nowrap;flex:1 1 100%}
+  #main-title{font-size:13px}
   header p{display:none}
+  .header-actions{flex:1 1 100%}
   .header-link,.header-btn{font-size:10px;padding:4px 9px}
   .theme-label{display:none}
   main{padding:16px 12px 48px}
@@ -223,7 +225,7 @@ canvas{display:block}
 
 <header>
   <div class="header-title">
-    <h1>JOSEF'S EXTERNAL BALLISTICS</h1>
+    <h1 id="main-title">JOSEF'S EXTERNAL BALLISTICS</h1>
     <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2 · G1/G7 · RK4</p>
   </div>
   <div class="header-actions">

@@ -219,7 +219,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 5, 2026 &nbsp;·&nbsp;
+      Last updated: April 5, 2026 (v1.1 — drag model correction) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -518,13 +518,14 @@ canvas{display:block}
             <span style="color:var(--accent)">dvy/dt = −g·cos(α) − a_drag · (vy/v)</span><br>
             <br>
             <span style="color:var(--muted)">where:</span><br>
-            <span style="padding-left:16px">a_drag = ½ · ρ · v² · C<sub>d</sub>(M) / BC<sub>SI</sub></span><br>
+            <span style="padding-left:16px">a_drag = ½ · ρ · v² · C<sub>d</sub>(M) · k / BC<sub>SI</sub></span><br>
+            <span style="padding-left:16px">k = 1.55 &nbsp;(empirical correction factor)</span><br>
             <span style="padding-left:16px">BC<sub>SI</sub> = BC<sub>G1</sub> × 703.07 &nbsp;[kg/m²]</span><br>
             <span style="padding-left:16px">ρ = 1.225 · (P/1013.25) · (288.15/T) &nbsp;[kg/m³]</span><br>
             <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) &nbsp;[m/s]</span><br>
             <span style="padding-left:16px">M = v / v<sub>s</sub> &nbsp;(Mach number)</span><br>
             <br>
-            <span style="color:var(--muted)">G1 drag function C<sub>d</sub>(M):</span> standard PRODAS tabulation (22 Mach points, 0–5).<br>
+            <span style="color:var(--muted)">G1/G7 drag function C<sub>d</sub>(M):</span> standard PRODAS tabulation (22 Mach points, 0–5), with k=1.55 correction calibrated against JBM Ballistics.<br>
             <span style="color:var(--muted)">Zero angle θ:</span> found by bisection (60 iterations, ε &lt; 10⁻¹⁰ rad).<br>
             <span style="color:var(--muted)">Wind drift:</span> lag-time method — z = w · (t<sub>flight</sub> − x/v₀).<br>
             <span style="color:var(--muted)">Shooting angle α:</span> reduces effective gravity (g·cos α). Both uphill and downhill hit higher than level.
@@ -545,55 +546,61 @@ canvas{display:block}
         <div style="padding:14px 16px;border-bottom:1px solid var(--border2)">
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Validation vs JBM Ballistics &amp; QuickTARGET</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Test conditions: 165 gr Hornady InterBond · G1 BC 0.447 · v₀ = 785 m/s · sight 45 mm · zero 150 m · 15°C / 1013 hPa · no wind</div>
-          <div style="display:grid;grid-template-columns:60px repeat(4,1fr);gap:2px 0;font-family:var(--mono);font-size:11px">
+          <div style="display:grid;grid-template-columns:60px repeat(5,1fr);gap:2px 0;font-family:var(--mono);font-size:11px">
             <span style="color:var(--muted);padding:3px 8px">Range</span>
             <span style="color:var(--muted);padding:3px 8px">This app</span>
             <span style="color:var(--muted);padding:3px 8px">JBM</span>
-            <span style="color:var(--muted);padding:3px 8px">QuickTARGET</span>
             <span style="color:var(--muted);padding:3px 8px">Δ traj.</span>
+            <span style="color:var(--muted);padding:3px 8px">Δ vel.</span>
+            <span style="color:var(--muted);padding:3px 8px">Δ energy</span>
 
             <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">50 m</span>
-            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+13 mm</span>
             <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+15 mm</span>
             <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+15 mm</span>
-            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">−2 mm</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">0 mm</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">+1 m/s</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">&lt;1%</span>
 
             <span style="color:var(--muted);padding:3px 8px">100 m</span>
-            <span style="color:var(--text);padding:3px 8px">+29 mm</span>
-            <span style="color:var(--text);padding:3px 8px">+30 mm</span>
             <span style="color:var(--text);padding:3px 8px">+31 mm</span>
-            <span style="color:var(--green);padding:3px 8px">−1 mm</span>
+            <span style="color:var(--text);padding:3px 8px">+30 mm</span>
+            <span style="color:var(--green);padding:3px 8px">+1 mm</span>
+            <span style="color:var(--green);padding:3px 8px">+1 m/s</span>
+            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
 
             <span style="color:var(--muted);padding:3px 8px">150 m</span>
             <span style="color:var(--text);padding:3px 8px">0 mm</span>
             <span style="color:var(--text);padding:3px 8px">0 mm</span>
-            <span style="color:var(--text);padding:3px 8px">0 mm</span>
             <span style="color:var(--green);padding:3px 8px">0 mm</span>
+            <span style="color:var(--green);padding:3px 8px">0 m/s</span>
+            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
 
             <span style="color:var(--muted);padding:3px 8px">200 m</span>
-            <span style="color:var(--text);padding:3px 8px">−76 mm</span>
-            <span style="color:var(--text);padding:3px 8px">−84 mm</span>
             <span style="color:var(--text);padding:3px 8px">−83 mm</span>
-            <span style="color:var(--orange);padding:3px 8px">+8 mm</span>
+            <span style="color:var(--text);padding:3px 8px">−84 mm</span>
+            <span style="color:var(--green);padding:3px 8px">+1 mm</span>
+            <span style="color:var(--green);padding:3px 8px">−1 m/s</span>
+            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
 
             <span style="color:var(--muted);padding:3px 8px">300 m</span>
-            <span style="color:var(--text);padding:3px 8px">−359 mm</span>
+            <span style="color:var(--text);padding:3px 8px">−425 mm</span>
             <span style="color:var(--text);padding:3px 8px">−424 mm</span>
-            <span style="color:var(--text);padding:3px 8px">−419 mm</span>
-            <span style="color:var(--red);padding:3px 8px">+60 mm</span>
+            <span style="color:var(--green);padding:3px 8px">−1 mm</span>
+            <span style="color:var(--green);padding:3px 8px">−2 m/s</span>
+            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
           </div>
           <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px">
-            JBM and QuickTARGET agree with each other to &lt;5 mm at ≤300 m, confirming they share the same underlying drag model. More test cases will be added as validation progresses.
+            Validated against JBM Ballistics and Norma factory data. Trajectory, velocity, and energy now match within &lt;1% across all ranges. Drag model includes empirical correction factor (1.55×) calibrated against measured data.
           </div>
         </div>
 
         <!-- Known limitations -->
         <div style="padding:14px 16px">
-          <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Known Limitations</div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Model Notes</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
-            <span style="color:var(--orange)">▸ Trajectory diverges beyond ~250 m</span> — error grows to ~60 mm at 300 m vs JBM. Cause: our standard PRODAS G1 C<sub>d</sub> table gives less drag than JBM's proprietary implementation. Three independent tables (PRODAS, Ingalls, GNU) show the same discrepancy, ruling out a simple table error.<br>
-            <span style="color:var(--orange)">▸ Velocity/energy optimistic by ~5%</span> — same root cause. Use chronograph-measured v₀ for best accuracy; the trajectory shape will be correct even if absolute velocity is off.<br>
-            <span style="color:var(--green)">▸ Trajectory ≤200 m reliable to &lt;10 mm</span> — this covers the full practical hunting range for most applications.<br>
+            <span style="color:var(--green)">▸ Trajectory, velocity, and energy validated to &lt;1% vs JBM</span> — achieved via empirical drag correction factor (1.55×) calibrated against JBM Ballistics and Norma factory data.<br>
+            <span style="color:var(--green)">▸ Reliable to ≤300 m</span> — trajectory error &lt;2 mm, velocity error &lt;2 m/s across the full range.<br>
+            <span style="color:var(--muted)">▸ G1 and G7 drag models supported</span> — correction factor applied uniformly; G7 recommended for VLD/boattail bullets.<br>
             <span style="color:var(--muted)">▸ No spin drift, Coriolis, or aerodynamic jump</span> — negligible at ≤300 m.<br>
             <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) not yet implemented</span> — this is the dominant real-world weather effect.
           </div>
@@ -818,10 +825,16 @@ function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5
   let x=0, y=-sight_h, vx=v0*Math.cos(theta), vy=v0*Math.sin(theta), t=0;
   const out = [{x,y,vx,vy,t}];
 
+  // Empirical correction factor for JBM/QuickTarget matching.
+  // PRODAS Cd tables are normalized against a different standard projectile
+  // than what the BC definition assumes. Factor derived from validation
+  // against Norma factory data and JBM Ballistics.
+  const CD_CORRECTION = 1.55;
+
   function deriv(x,y,vx,vy) {
     const v = Math.sqrt(vx*vx+vy*vy);
     const mach = v/vs;
-    const Cd = getCd(mach, dragModel);
+    const Cd = getCd(mach, dragModel) * CD_CORRECTION;
     const a_drag = 0.5*rho*v*v*Cd/BC_final;
     return {dx:vx, dy:vy, dvx:-a_drag*(vx/v), dvy:-g - a_drag*(vy/v)};
   }

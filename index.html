@@ -29,6 +29,7 @@
   --green:    #2e7d52;
   --orange:   #c0580a;
   --red:      #b02020;
+  --vital:    #7b3a8a;
   --mono:     'IBM Plex Mono', monospace;
   --sans:     'IBM Plex Sans', sans-serif;
 }
@@ -45,6 +46,7 @@
   --green:    #4caf7d;
   --orange:   #e8943a;
   --red:      #e05a5a;
+  --vital:    #b07fcc;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -157,10 +159,8 @@ canvas{display:block}
   header{padding:12px 14px;gap:8px}
   header h1{font-size:14px}
   header p{font-size:10px;white-space:normal;max-width:100%}
-  .header-spacer{display:none}
-  .header-actions{width:100%;justify-content:space-between}
-  .header-link,.header-btn{font-size:10px;padding:4px 9px;flex:1;text-align:center}
-  .theme-toggle{margin-left:auto}
+  .header-spacer{flex:1}
+  .header-link,.header-btn{font-size:10px;padding:4px 9px}
   .theme-label{display:none}
   main{padding:16px 12px 48px}
   .cards{grid-template-columns:1fr 1fr}
@@ -221,7 +221,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 5, 2026 (v1.1 — drag model correction) &nbsp;·&nbsp;
+      Last updated: April 6, 2026 (v1.2 — Phase 3 propellant temperature, experimental) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -230,16 +230,14 @@ canvas{display:block}
 <header>
   <div class="header-title">
     <h1 id="main-title">JOSEF'S EXTERNAL BALLISTICS</h1>
-    <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2 · G1/G7 · RK4</p>
+    <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2+3 · G1/G7 · RK4</p>
   </div>
+  <button onclick="openAbout()" class="header-btn">About</button>
+  <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" class="header-link">Stability ↗</a>
   <div class="header-spacer"></div>
-  <div class="header-actions">
-    <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" class="header-link">Stability ↗</a>
-    <button onclick="openAbout()" class="header-btn">About</button>
-    <div class="theme-toggle" onclick="toggleTheme()">
-      <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
-      <span class="theme-label" id="theme-label">Light mode</span>
-    </div>
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
+    <span class="theme-label" id="theme-label">Light mode</span>
   </div>
 </header>
 
@@ -378,6 +376,15 @@ canvas{display:block}
         </div>
       </div>
 
+      <div class="section-title">Propellant Temperature (Phase 3) <span style="font-family:var(--mono);font-size:8px;color:var(--orange);border:1px solid var(--orange);padding:1px 5px;border-radius:2px;letter-spacing:.06em;vertical-align:middle">EXPERIMENTAL</span></div>
+      <div class="field">
+        <label>v₀ sensitivity <button class="tip-btn">?<div class="tip-box"><b>Muzzle Velocity Temperature Sensitivity</b><br><br>How much v₀ changes per °C of propellant temperature, relative to the zero reference temperature (Phase 1). Phase 3 assumes propellant temperature = shooting temperature (Phase 2).<br><br><b>How to measure:</b> Chronograph the same load at two temperatures. Divide the velocity difference by the temperature difference.<br><br>Example: 800 m/s at +20°C, 782 m/s at −10°C<br>→ (800−782) / (20−(−10)) = 0.6 m/s/°C<br><br>Typical values:<br>· Insensitive powders: 0.1–0.2 m/s/°C<br>· Average: 0.3–0.5 m/s/°C<br>· Sensitive: 0.5–1.0 m/s/°C<br><br><b>Set to 0 to disable Phase 3.</b></div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="v0_sensitivity" value="0">
+          <span class="unit" id="v0sens_unit_lbl">m/s/°C</span>
+        </div>
+      </div>
+
       <div class="section-title">Environment</div>
       <div class="field-inline">
         <div class="field">
@@ -464,8 +471,9 @@ canvas{display:block}
           <b>Chart curves:</b><br><br>
           <span style="display:inline-block;width:10px;height:3px;background:#aaa;vertical-align:middle;margin-right:6px"></span><b>Grey solid</b> — zero-day trajectory (Phase 1 atmosphere). This is the reference line the rifle is zeroed to.<br><br>
           <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — hunt-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--red);border-top:2px dashed var(--red);vertical-align:middle;margin-right:6px"></span><b>Red dashed</b> — Phase 3: hunt-day atmosphere + propellant temperature correction. Shows combined real-world effect including v₀ shift from cold/warm propellant. Only shown when v₀ sensitivity &gt; 0.<br><br>
           <span style="display:inline-block;width:10px;height:3px;background:var(--green);border-top:2px dashed var(--green);vertical-align:middle;margin-right:6px"></span><b>Green dashed band</b> — v₀ ± spread envelope. Width shows how much shot-to-shot velocity variation affects the trajectory at each range.<br><br>
-          <span style="display:inline-block;width:10px;height:2px;background:var(--red);opacity:.7;vertical-align:middle;margin-right:6px"></span><b>Red dashed lines</b> — vital zone radius (±). Bullet must stay within these lines for an ethical shot without hold-over.
+          <span style="display:inline-block;width:10px;height:2px;background:var(--vital);opacity:.9;vertical-align:middle;margin-right:6px"></span><b>Purple dashed lines</b> — vital zone radius (±). Bullet must stay within these lines for an ethical shot without hold-over.
         </div></button></span>
       </div>
       <div class="panel-body" style="padding:10px 8px 8px">
@@ -474,6 +482,7 @@ canvas{display:block}
       <div class="phase-info">
         <span><span class="phase-dot dot-ref"></span>Zero atmosphere</span>
         <span><span class="phase-dot dot-shoot"></span>Shooting atmosphere</span>
+        <span id="phase3-legend" style="display:none"><span class="phase-dot" style="background:var(--red)"></span>Phase 3 (propellant)</span>
         <span><span class="phase-dot" style="background:var(--green)"></span>v₀ ±<span id="v0band-label">10</span> <span id="v0band-unit">m/s</span> band</span>
         <span style="color:var(--muted)">— — Vital zone ±<span id="vz-label">60</span> <span id="vz-unit">mm</span></span>
       </div>
@@ -540,7 +549,7 @@ canvas{display:block}
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
             <span style="color:var(--accent)">Phase 1 — Zero:</span> bisection solves for θ under zero-day atmosphere (T<sub>zero</sub>, P<sub>zero</sub>). θ is fixed thereafter — it represents the rifle's mechanical setting.<br>
             <span style="color:var(--accent)">Phase 2 — Hunt:</span> same θ, new atmosphere (T<sub>hunt</sub>, P<sub>hunt</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
-            <span style="color:var(--accent)">Phase 3 — Propellant (planned):</span> powder temperature affects v₀ via burn rate (internal ballistics). This is the dominant weather effect in practice and will be added in a future version.
+            <span style="color:var(--accent)">Phase 3 — Propellant temperature</span> <span style="color:var(--orange);font-size:9px;border:1px solid var(--orange);padding:1px 4px;border-radius:2px">EXPERIMENTAL</span><span style="color:var(--accent)">:</span> same θ and hunt atmosphere, but v₀ is shifted by the propellant temperature effect: <b>Δv₀ = k · (T<sub>shoot</sub> − T<sub>zero</sub>)</b>, where k is the user-measured sensitivity [m/s/°C] and propellant temperature is assumed equal to shooting temperature. This is the dominant real-world weather effect — a −30°C temperature swing with a sensitive powder (k = 0.5 m/s/°C) shifts v₀ by 15 m/s. Disabled when k = 0.
           </div>
         </div>
 
@@ -696,6 +705,7 @@ function onUnitChange(field) {
 
   // Sync unit labels
   if (field === 'temp')  document.getElementById('temp_shoot_unit_lbl').textContent  = newUnit === 'C' ? '°C' : '°F';
+  if (field === 'temp')  document.getElementById('v0sens_unit_lbl').textContent      = newUnit === 'C' ? 'm/s/°C' : 'fps/°F';
   if (field === 'press') document.getElementById('press_shoot_unit_lbl').textContent = newUnit;
   if (field === 'v0')    document.getElementById('v0spread_unit_lbl').textContent    = newUnit === 'fps' ? 'fps' : 'm/s';
   // Sync max range and step labels when range unit changes
@@ -737,6 +747,7 @@ function persistInputs() {
   const prefs = loadPrefs();
   const ids = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
                'temp_zero_val','press_zero_val','temp_shoot_val','press_shoot_val',
+               'v0_sensitivity',
                'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
                'v0_unit','m_unit','sight_unit','zero_unit','temp_unit','press_unit','wind_unit','vital_unit','chrono_unit'];
   ids.forEach(id => {
@@ -771,6 +782,7 @@ function restorePrefs() {
   const rangeUnit = document.getElementById('zero_unit')?.value  || 'm';
   const v0Unit_r  = document.getElementById('v0_unit')?.value    || 'fps';
   document.getElementById('temp_shoot_unit_lbl').textContent  = tempUnit === 'C' ? '°C' : '°F';
+  document.getElementById('v0sens_unit_lbl').textContent      = tempUnit === 'C' ? 'm/s/°C' : 'fps/°F';
   document.getElementById('press_shoot_unit_lbl').textContent = pressUnit;
   document.getElementById('maxrange_unit_lbl').textContent    = rangeUnit;
   document.getElementById('step_unit_lbl').textContent        = rangeUnit;
@@ -779,6 +791,7 @@ function restorePrefs() {
   // Input values
   const valIds = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
                   'temp_zero_val','press_zero_val','temp_shoot_val','press_shoot_val',
+                  'v0_sensitivity',
                   'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm'];
   valIds.forEach(id => {
     const k = 'inp_' + id;
@@ -979,6 +992,13 @@ function calculate() {
     const temp_shoot_C    = CONV.temp[tempUnit](temp_shoot_raw);
     const press_shoot_hPa = CONV.press[pressUnit](press_shoot_raw);
 
+    // Phase 3 — propellant temperature effect on v₀
+    // Propellant temp assumed = shooting temp (Phase 2)
+    const v0sens_raw      = parseFloat(document.getElementById('v0_sensitivity').value.replace(',','.')) || 0;
+    const v0sens_ms_C     = tempUnit === 'F' ? v0sens_raw * (5/9) / 0.3048 : v0sens_raw;
+    const delta_v0_phase3 = v0sens_ms_C * (temp_shoot_C - temp_zero_C);
+    const hasPhase3       = Math.abs(v0sens_ms_C) > 0.001;
+
     const wind_ms   = getSI('wind',  'wind_val',  'wind_unit');  // m/s
     const alpha_deg = parseFloat(document.getElementById('alpha_deg').value.replace(',','.'));
     const vital_cm  = getSI('vital', 'vital_val', 'vital_unit'); // cm
@@ -1062,6 +1082,9 @@ function calculate() {
     document.getElementById('v0band-unit').textContent  = v0Unit === 'fps' ? 'fps' : 'm/s';
     const trajRef   = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
     const trajShoot = integrate(theta, v0_true, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax);
+    const trajPhase3 = hasPhase3
+      ? integrate(theta, v0_true + delta_v0_phase3, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax)
+      : null;
     const trajV0hi  = integrate(theta, v0_true+v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
     const trajV0lo  = integrate(theta, v0_true-v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
 
@@ -1085,7 +1108,8 @@ function calculate() {
     klassBadge.textContent = klass;
     klassBadge.className = 'klass-badge ' + klass.toLowerCase();
 
-    document.getElementById('vz-label').textContent = toDevDisp(vital_cm).toFixed(devPrec);
+    // Show/hide Phase 3 legend entry
+    document.getElementById('phase3-legend').style.display = hasPhase3 ? 'inline' : 'none';
 
     // ── Build table data ──
     const maxX = Math.max(...trajRef.map(p=>p.x));
@@ -1130,17 +1154,19 @@ function calculate() {
     document.getElementById('table-wrap').innerHTML=html;
 
     // ── Chart: trajectory (dense) ──
-    const trajData = [], shootData = [], v0hiData = [], v0loData = [];
+    const trajData = [], shootData = [], phase3Data = [], v0hiData = [], v0loData = [];
     const chartStep = maxrange_m / 200;
     for (let x=0; x<=maxrange_m+chartStep; x+=chartStep) {
       const yr  = interpY(trajRef,x)*100;
       const ys  = interpY(trajShoot,x)*100;
+      const yp3 = trajPhase3 ? interpY(trajPhase3,x)*100 : NaN;
       const yhi = interpY(trajV0hi,x)*100;
       const ylo = interpY(trajV0lo,x)*100;
       if (!isNaN(yr)) {
         const xd = parseFloat(toRangeDisp(x).toFixed(2));
         trajData.push( {x: xd, y: toDevDisp(yr)});
         shootData.push({x: xd, y: toDevDisp(ys)});
+        if (!isNaN(yp3)) phase3Data.push({x: xd, y: toDevDisp(yp3)});
         v0hiData.push( {x: xd, y: toDevDisp(yhi)});
         v0loData.push( {x: xd, y: toDevDisp(ylo)});
       }
@@ -1162,6 +1188,7 @@ function calculate() {
     const cMuted  = cs.getPropertyValue('--muted').trim();
     const cBorder2= cs.getPropertyValue('--border2').trim();
     const cRed    = cs.getPropertyValue('--red').trim();
+    const cVital  = cs.getPropertyValue('--vital').trim();
     const cAccent = cs.getPropertyValue('--accent').trim();
     const cBlue   = cs.getPropertyValue('--blue').trim();
     const cOrange = cs.getPropertyValue('--orange').trim();
@@ -1171,8 +1198,9 @@ function calculate() {
       type: 'line',
       data: {
         datasets: [
-          {label:'Zero atmosphere',      data:trajData,  borderColor:cMuted,  borderWidth:2,   pointRadius:0, tension:0.3},
-          {label:'Shooting atmosphere',  data:shootData, borderColor:cBlue,   borderWidth:2,   borderDash:[6,4], pointRadius:0, tension:0.3},
+          {label:'Zero atmosphere',      data:trajData,   borderColor:cMuted,  borderWidth:2,   pointRadius:0, tension:0.3},
+          {label:'Shooting atmosphere',  data:shootData,  borderColor:cBlue,   borderWidth:2,   borderDash:[6,4], pointRadius:0, tension:0.3},
+          ...(hasPhase3 ? [{label:'Phase 3 (propellant temp)', data:phase3Data, borderColor:cRed, borderWidth:2, borderDash:[6,4], pointRadius:0, tension:0.3}] : []),
           {label:`v₀ +${v0spread_raw} ${v0Unit === 'fps' ? 'fps' : 'm/s'}`,  data:v0hiData,  borderColor:cGreen,  borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3},
           {label:`v₀ −${v0spread_raw} ${v0Unit === 'fps' ? 'fps' : 'm/s'}`,  data:v0loData,  borderColor:cGreen,  borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3},
         ]
@@ -1189,7 +1217,8 @@ function calculate() {
               title: items => `Range: ${items[0].parsed.x.toFixed(0)} ${rangeLabel}`,
               label: ctx => {
                 const v = ctx.parsed.y;
-                return `  ${ctx.dataset.label}: ${v>=0?'+':''}${v.toFixed(devPrec)} ${devLabel}`;
+                const lbl = ctx.dataset.label.startsWith('Phase 3') ? 'Phase 3 (propellant)' : ctx.dataset.label;
+                return `  ${lbl}: ${v>=0?'+':''}${v.toFixed(devPrec)} ${devLabel}`;
               }
             }
           }
@@ -1223,8 +1252,8 @@ function calculate() {
             ctx.moveTo(left,yp); ctx.lineTo(right,yp); ctx.stroke(); ctx.restore();
           }
           hline(0, cMuted, false);
-          hline(toDevDisp(vital_cm), cRed, true);
-          hline(toDevDisp(-vital_cm), cRed, true);
+          hline(toDevDisp(vital_cm), cVital, true);
+          hline(toDevDisp(-vital_cm), cVital, true);
           // zero line vertical
           if (zero_m<=210) {
             const {scales:{x}} = chart;

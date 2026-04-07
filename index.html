@@ -138,6 +138,22 @@ canvas{display:block}
 .sens-label{color:var(--muted)}
 .sens-val{color:var(--text);text-align:right}
 
+/* ── Vital Zone Summary ── */
+.vzs-head{display:grid;grid-template-columns:90px 1fr 1fr;border-bottom:1px solid var(--border)}
+.vzs-head-cell{padding:6px 14px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--surface2)}
+.vzs-row{display:grid;grid-template-columns:90px 1fr 1fr;border-bottom:1px solid var(--border2);align-items:stretch}
+.vzs-row:last-child{border-bottom:none}
+.vzs-cell{padding:10px 14px;font-family:var(--mono);font-size:11px}
+.vzs-label-cell{font-size:10px;background:var(--surface2);display:flex;align-items:center;border-right:1px solid var(--border2);padding:10px 12px;font-family:var(--mono);font-weight:600}
+.vzs-val{font-size:15px;font-weight:600;line-height:1.2}
+.vzs-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.vzs-sub2{font-size:10px;color:var(--muted);margin-top:1px}
+@media(max-width:600px){
+  .vzs-head,.vzs-row{grid-template-columns:64px 1fr 1fr}
+  .vzs-cell,.vzs-label-cell{padding:8px 8px;font-size:10px}
+  .vzs-val{font-size:13px}
+}
+
 /* ── Placeholder ── */
 .placeholder{display:flex;align-items:center;justify-content:center;height:180px;color:var(--muted);font-family:var(--mono);font-size:12px;border:1px dashed var(--border);border-radius:3px}
 
@@ -188,9 +204,9 @@ canvas{display:block}
 .g7-apply-btn{margin-left:auto;background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:10px;font-weight:600;border:none;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
 .g7-apply-btn:hover{opacity:.85}
 .tip-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:none;border:1px solid var(--muted);color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:600;cursor:help;position:relative;vertical-align:middle;margin-left:5px;flex-shrink:0;line-height:1}
-.tip-btn:hover{border-color:var(--accent);color:var(--accent)}
-.tip-box{display:none;position:absolute;left:20px;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left}
-.tip-btn:hover .tip-box{display:block}
+.tip-btn.tip-active{border-color:var(--accent);color:var(--accent)}
+.tip-box{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;left:20px;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left;pointer-events:none}
+.tip-box.tip-visible{visibility:visible;opacity:1}
 .tip-box code{background:var(--border2);padding:1px 4px;border-radius:2px;font-size:10px}
 .field label{display:flex;align-items:center}
 </style>
@@ -219,7 +235,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 6, 2026 (v1.3 — Gehtsoft G1/G7 drag tables, Siacci/Ingalls normalization) &nbsp;·&nbsp;
+      Last updated: April 7, 2026 (v1.3 — Gehtsoft G1/G7 drag tables, Siacci/Ingalls normalization) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -459,6 +475,14 @@ canvas{display:block}
           <div class="card"><div class="card-label" id="c-vnull-label">v₀ → v@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
           <div class="card"><div class="card-label">Energy E₁₀₀</div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
         </div>
+      </div>
+    </div>
+
+    <!-- Vital Zone Summary -->
+    <div class="panel" id="vzs-panel" style="display:none">
+      <div class="panel-head"><span>Vital Zone Summary <span style="font-size:9px;color:var(--muted)" id="vzs-subtitle"></span></span></div>
+      <div class="panel-body" style="padding:0">
+        <div id="vzs-wrap"></div>
       </div>
     </div>
 
@@ -867,7 +891,7 @@ function getCd(mach, dragModel) {
 }
 
 // RK4 integration — returns array of {x, y, vx, vy, t}
-function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5, dt=0.001) {
+function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5, dt=0.001, xMax=310) {
   let x=0, y=-sight_h, vx=v0*Math.cos(theta), vy=v0*Math.sin(theta), t=0;
   const out = [{x,y,vx,vy,t}];
 
@@ -883,7 +907,7 @@ function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5
     return {dx:vx, dy:vy, dvx:-a_drag*(vx/v), dvy:-g - a_drag*(vy/v)};
   }
 
-  while (t < tMax && x < 260) {
+  while (t < tMax && x < xMax) {
     const d1 = deriv(x,y,vx,vy);
     const d2 = deriv(x+dt/2*d1.dx, y+dt/2*d1.dy, vx+dt/2*d1.dvx, vy+dt/2*d1.dvy);
     const d3 = deriv(x+dt/2*d2.dx, y+dt/2*d2.dy, vx+dt/2*d2.dvx, vy+dt/2*d2.dvy);
@@ -1103,19 +1127,20 @@ function calculate() {
 
     // Extend integration if needed
     const tMax = maxrange_m/v0 + 2;
+    const xMax = maxrange_m + 20;  // 20 m margin for interpolation at boundary
     const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.')) || 10;
     const v0spread = v0Unit === 'fps' ? v0spread_raw * 0.3048 : v0spread_raw; // → m/s
 
     // Update legend
     document.getElementById('v0band-label').textContent = v0spread_raw;
     document.getElementById('v0band-unit').textContent  = v0Unit === 'fps' ? 'fps' : 'm/s';
-    const trajRef   = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
-    const trajShoot = integrate(theta, v0_true, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax);
+    const trajRef   = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
+    const trajShoot = integrate(theta, v0_true, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
     const trajPhase3 = hasPhase3
-      ? integrate(theta, v0_true + delta_v0_phase3, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax)
+      ? integrate(theta, v0_true + delta_v0_phase3, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax)
       : null;
-    const trajV0hi  = integrate(theta, v0_true+v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
-    const trajV0lo  = integrate(theta, v0_true-v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax);
+    const trajV0hi  = integrate(theta, v0_true+v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
+    const trajV0lo  = integrate(theta, v0_true-v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
 
     // ── Energy and class at 100 m ──
     const v100 = interpV(trajRef, 100);
@@ -1139,6 +1164,76 @@ function calculate() {
 
     // Show/hide Phase 3 legend entry
     document.getElementById('phase3-legend').style.display = hasPhase3 ? 'inline' : 'none';
+
+    // ── Vital Zone Summary ──
+    function vzsStats(traj) {
+      // Apex
+      let apexY_cm = -Infinity, apexX_m = 0;
+      for (const pt of traj) {
+        if (pt.y * 100 > apexY_cm) { apexY_cm = pt.y * 100; apexX_m = pt.x; }
+      }
+      const apexInside = Math.abs(apexY_cm) <= vital_cm;
+      // Falling through −vital_cm after apex
+      let crossDnX_m = NaN, crossDnV = NaN, crossDnE = NaN;
+      let pastApex = false;
+      for (let i = 1; i < traj.length; i++) {
+        if (traj[i].x >= apexX_m) pastApex = true;
+        if (!pastApex) continue;
+        const y0 = traj[i-1].y*100, y1 = traj[i].y*100;
+        if (y0 > -vital_cm && y1 <= -vital_cm) {
+          const frac = (-vital_cm - y0) / (y1 - y0);
+          crossDnX_m = traj[i-1].x + frac*(traj[i].x - traj[i-1].x);
+          const vx = traj[i-1].vx + frac*(traj[i].vx - traj[i-1].vx);
+          const vy = traj[i-1].vy + frac*(traj[i].vy - traj[i-1].vy);
+          crossDnV = Math.sqrt(vx*vx + vy*vy);
+          crossDnE = 0.5 * m_kg * crossDnV * crossDnV;
+          break;
+        }
+      }
+      return { apexY_cm, apexX_m, apexInside, crossDnX_m, crossDnV, crossDnE };
+    }
+
+    function vzsApexHtml(st) {
+      const yDisp = toDevDisp(st.apexY_cm);
+      const col   = st.apexInside ? 'var(--green)' : 'var(--red)';
+      const tick  = st.apexInside ? '✓' : '✗';
+      return `<div class="vzs-val" style="color:${col}">${yDisp>=0?'+':''}${yDisp.toFixed(devPrec)} ${devLabel}</div>
+              <div class="vzs-sub">@ ${toRangeDisp(st.apexX_m).toFixed(0)} ${rangeLabel} &nbsp;<span style="color:${col}">${tick}</span></div>`;
+    }
+    function vzsDnHtml(st) {
+      if (isNaN(st.crossDnX_m) || st.crossDnX_m > maxrange_m)
+        return `<div class="vzs-val" style="color:var(--muted)">—</div><div class="vzs-sub">within range</div>`;
+      return `<div class="vzs-val" style="color:var(--orange)">${toRangeDisp(st.crossDnX_m).toFixed(0)} ${rangeLabel}</div>
+              <div class="vzs-sub">exits vital zone</div>
+              <div class="vzs-sub2">${toVelDisp(st.crossDnV).toFixed(0)} ${velLabel} &nbsp;·&nbsp; ${toEDisp(st.crossDnE).toFixed(0)} ${eLabel}</div>`;
+    }
+
+    const stRef   = vzsStats(trajRef);
+    const stShoot = vzsStats(trajShoot);
+    const stP3    = hasPhase3 ? vzsStats(trajPhase3) : null;
+
+    document.getElementById('vzs-panel').style.display = 'block';
+    document.getElementById('vzs-subtitle').textContent =
+      `± ${toDevDisp(vital_cm).toFixed(devPrec)} ${devLabel} vital zone`;
+
+    const vzsRowDefs = [
+      { label:'Zero atm.', color:'var(--muted)', st: stRef   },
+      { label:'Hunt atm.', color:'var(--blue)',  st: stShoot },
+      ...(stP3 ? [{ label:'Phase 3', color:'var(--red)', st: stP3 }] : []),
+    ];
+    let vzsHtml = `<div class="vzs-head">
+      <div class="vzs-head-cell"></div>
+      <div class="vzs-head-cell">Apex</div>
+      <div class="vzs-head-cell">↓ lower vital</div>
+    </div>`;
+    vzsRowDefs.forEach(r => {
+      vzsHtml += `<div class="vzs-row">
+        <div class="vzs-label-cell" style="color:${r.color}">${r.label}</div>
+        <div class="vzs-cell">${vzsApexHtml(r.st)}</div>
+        <div class="vzs-cell">${vzsDnHtml(r.st)}</div>
+      </div>`;
+    });
+    document.getElementById('vzs-wrap').innerHTML = vzsHtml;
 
     // ── Build table data ──
     const maxX = Math.max(...trajRef.map(p=>p.x));
@@ -1273,7 +1368,7 @@ function calculate() {
       plugins:[{
         id:'vitalLines',
         afterDraw(chart){
-          const {ctx,chartArea:{left,right},scales:{y}} = chart;
+          const {ctx,chartArea:{left,right,top,bottom},scales:{x,y}} = chart;
           function hline(val, color, dash) {
             const yp=y.getPixelForValue(val);
             ctx.save(); ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1;
@@ -1283,14 +1378,32 @@ function calculate() {
           hline(0, cMuted, false);
           hline(toDevDisp(vital_cm), cVital, true);
           hline(toDevDisp(-vital_cm), cVital, true);
-          // zero line vertical
-          if (zero_m<=210) {
-            const {scales:{x}} = chart;
-            const xp=x.getPixelForValue(zero_m);
-            ctx.save(); ctx.beginPath(); ctx.strokeStyle=cAccent; ctx.globalAlpha=0.3; ctx.lineWidth=1; ctx.setLineDash([4,4]);
-            ctx.moveTo(xp,chart.chartArea.top); ctx.lineTo(xp,chart.chartArea.bottom);
-            ctx.stroke(); ctx.restore();
+          // zero-range vertical
+          const zxp = x.getPixelForValue(parseFloat(toRangeDisp(zero_m).toFixed(1)));
+          if (zxp >= left && zxp <= right) {
+            ctx.save(); ctx.beginPath(); ctx.strokeStyle=cAccent; ctx.globalAlpha=0.3;
+            ctx.lineWidth=1; ctx.setLineDash([4,4]);
+            ctx.moveTo(zxp,top); ctx.lineTo(zxp,bottom); ctx.stroke(); ctx.restore();
           }
+          // apex markers
+          function drawApex(st) {
+            const axpx = x.getPixelForValue(parseFloat(toRangeDisp(st.apexX_m).toFixed(2)));
+            const aypx = y.getPixelForValue(toDevDisp(st.apexY_cm));
+            if (axpx < left || axpx > right || aypx < top || aypx > bottom) return;
+            const aColor = st.apexInside ? cGreen : cRed;
+            ctx.save();
+            ctx.beginPath(); ctx.strokeStyle=aColor; ctx.lineWidth=1;
+            ctx.globalAlpha=0.35; ctx.setLineDash([3,3]);
+            ctx.moveTo(axpx,aypx); ctx.lineTo(axpx,bottom); ctx.stroke();
+            ctx.globalAlpha=1; ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(axpx,aypx-8); ctx.lineTo(axpx-5,aypx); ctx.lineTo(axpx+5,aypx);
+            ctx.closePath(); ctx.fillStyle=aColor; ctx.fill();
+            ctx.restore();
+          }
+          drawApex(stRef);
+          drawApex(stShoot);
+          if (stP3) drawApex(stP3);
         }
       }]
     });
@@ -1393,8 +1506,36 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAbout()
 window.addEventListener('load', () => {
   restorePrefs();
   initInputs();
+  initTooltips();
   setTimeout(calculate, 150);
 });
+
+function initTooltips() {
+  let openTimer = null, activeBtn = null;
+
+  function showTip(btn) {
+    if (activeBtn && activeBtn !== btn) hideTip(activeBtn);
+    activeBtn = btn;
+    btn.classList.add('tip-active');
+    btn.querySelector('.tip-box').classList.add('tip-visible');
+  }
+  function hideTip(btn) {
+    if (!btn) return;
+    btn.classList.remove('tip-active');
+    btn.querySelector('.tip-box')?.classList.remove('tip-visible');
+    if (activeBtn === btn) activeBtn = null;
+  }
+
+  document.querySelectorAll('.tip-btn').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      openTimer = setTimeout(() => showTip(btn), 400);
+    });
+    btn.addEventListener('mouseleave', () => {
+      clearTimeout(openTimer);
+      hideTip(btn);
+    });
+  });
+}
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);

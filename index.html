@@ -235,7 +235,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 7, 2026 (v1.3 — Gehtsoft G1/G7 drag tables, Siacci/Ingalls normalization) &nbsp;·&nbsp;
+      Last updated: April 7, 2026 (v1.4 — Relative humidity in atmosphere model) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -372,6 +372,14 @@ canvas{display:block}
         </div>
       </div>
 
+      <div class="field">
+        <label>Rel. Humidity <button class="tip-btn">?<div class="tip-box">Relative humidity when zeroing.<br>Moist air is slightly less dense than dry air (water vapour M=18 g/mol vs dry air M=29 g/mol), reducing drag marginally.<br><br>Effect at ≤200 m: &lt;0.5 mm even at 100% RH. Pedagogically useful — shows correct direction of effect.<br><br>Validated: 15°C / 1013 hPa / 50% RH → ρ = 1.2211 kg/m³ (matches QuickTarget).</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="rh_zero_val" value="50">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
       <div class="section-title">Shooting Atmosphere (Phase 2)</div>
       <div class="field-inline">
         <div class="field">
@@ -387,6 +395,13 @@ canvas{display:block}
             <input type="text" inputmode="decimal" id="press_shoot_val" value="1013">
             <span class="unit" id="press_shoot_unit_lbl">hPa</span>
           </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Rel. Humidity <button class="tip-btn">?<div class="tip-box">Relative humidity on the day of the hunt.<br>Moist air is slightly less dense than dry air — reduces drag very marginally.<br><br>A wet winter day (90% RH) vs dry summer day (30% RH) typically shifts impact &lt;1 mm at 200 m. Included for completeness and physical correctness.</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="rh_shoot_val" value="50">
+          <span class="unit">%</span>
         </div>
       </div>
 
@@ -554,8 +569,9 @@ canvas{display:block}
             <span style="padding-left:16px">a_drag = (π/8) · ρ · v² · C<sub>d</sub>(M) / BC<sub>SI</sub></span><br>
             <span style="padding-left:16px">π/8 = 0.3927 &nbsp;(Siacci/Ingalls normalization, matches Gehtsoft G1 table)</span><br>
             <span style="padding-left:16px">BC<sub>SI</sub> = BC<sub>G1</sub> × 703.07 &nbsp;[kg/m²]</span><br>
-            <span style="padding-left:16px">ρ = 1.225 · (P/1013.25) · (288.15/T) &nbsp;[kg/m³]</span><br>
-            <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) &nbsp;[m/s]</span><br>
+            <span style="padding-left:16px">ρ = (P_d · M_d + e · M_w) / (R · T) &nbsp;[kg/m³] &nbsp;(humid air, M_d=28.964, M_w=18.016 g/mol)</span><br>
+            <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) · √(1 + 0.16·e/P) &nbsp;[m/s] &nbsp;(humidity correction)</span><br>
+            <span style="padding-left:16px">e = RH/100 · e_s, &nbsp;e_s = 6.1078 · 10^(7.5·T_C/(237.3+T_C)) &nbsp;[hPa] (Magnus formula)</span><br>
             <span style="padding-left:16px">M = v / v<sub>s</sub> &nbsp;(Mach number)</span><br>
             <br>
             <span style="color:var(--muted)">G1/G7 drag function C<sub>d</sub>(M):</span> Gehtsoft G1 tabulation (79 Mach points, 0–5), π/8 normalization (Siacci/Ingalls convention).<br>
@@ -569,8 +585,8 @@ canvas{display:block}
         <div style="padding:14px 16px;border-bottom:1px solid var(--border2)">
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Three-Phase Model</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
-            <span style="color:var(--accent)">Phase 1 — Zero:</span> bisection solves for θ under zero-day atmosphere (T<sub>zero</sub>, P<sub>zero</sub>). θ is fixed thereafter — it represents the rifle's mechanical setting.<br>
-            <span style="color:var(--accent)">Phase 2 — Hunt:</span> same θ, new atmosphere (T<sub>hunt</sub>, P<sub>hunt</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
+            <span style="color:var(--accent)">Phase 1 — Zero:</span> bisection solves for θ under zero-day atmosphere (T<sub>zero</sub>, P<sub>zero</sub>, RH<sub>zero</sub>). θ is fixed thereafter — it represents the rifle's mechanical setting.<br>
+            <span style="color:var(--accent)">Phase 2 — Hunt:</span> same θ, new atmosphere (T<sub>hunt</sub>, P<sub>hunt</sub>, RH<sub>hunt</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
             <span style="color:var(--accent)">Phase 3 — Propellant temperature</span> <span style="color:var(--orange);font-size:9px;border:1px solid var(--orange);padding:1px 4px;border-radius:2px">EXPERIMENTAL</span><span style="color:var(--accent)">:</span> same θ and hunt atmosphere, but v₀ is shifted by the propellant temperature effect: <b>Δv₀ = k · (T<sub>shoot</sub> − T<sub>zero</sub>)</b>, where k is the user-measured sensitivity [m/s/°C] and propellant temperature is assumed equal to shooting temperature. This is the dominant real-world weather effect — a −30°C temperature swing with a sensitive powder (k = 0.5 m/s/°C) shifts v₀ by 15 m/s. Disabled when k = 0.
           </div>
         </div>
@@ -578,7 +594,7 @@ canvas{display:block}
         <!-- Validation -->
         <div style="padding:14px 16px;border-bottom:1px solid var(--border2)">
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Validation vs JBM Ballistics &amp; QuickTARGET</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Test conditions: 165 gr Hornady InterBond · G1 BC 0.447 · v₀ = 785 m/s · sight 45 mm · zero 150 m · 15°C / 1013 hPa · no wind</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Test conditions: 165 gr Hornady InterBond · G1 BC 0.447 · v₀ = 785 m/s · sight 45 mm · zero 150 m · 15°C / 1013 hPa / 0% RH · no wind</div>
           <div style="display:grid;grid-template-columns:60px repeat(5,1fr);gap:2px 0;font-family:var(--mono);font-size:11px">
             <span style="color:var(--muted);padding:3px 8px">Range</span>
             <span style="color:var(--muted);padding:3px 8px">This app</span>
@@ -623,7 +639,7 @@ canvas{display:block}
             <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
           </div>
           <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px">
-            Validated against JBM Ballistics and Norma factory data. Trajectory error ≤1 mm and velocity error ≤0.1 m/s across all ranges. Drag model uses Gehtsoft G1 tabulation with π/8 (Siacci/Ingalls) normalization — no empirical correction factors.
+            Validated against JBM Ballistics and Norma factory data. Trajectory error ≤1 mm and velocity error ≤0.1 m/s across all ranges. Drag model uses Gehtsoft G1 tabulation with π/8 (Siacci/Ingalls) normalization — no empirical correction factors. Humidity model: Magnus formula + partial-pressure density, validated at 15°C / 1013 hPa / 50% RH → ρ = 1.2211 kg/m³ (QuickTarget).
           </div>
         </div>
 
@@ -633,9 +649,10 @@ canvas{display:block}
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
             <span style="color:var(--green)">▸ Trajectory, velocity, and energy validated to &lt;1% vs JBM</span> — Gehtsoft G1 drag tabulation with π/8 (Siacci/Ingalls) normalization. No empirical correction factors.<br>
             <span style="color:var(--green)">▸ Reliable to ≤300 m</span> — trajectory error &lt;2 mm, velocity error &lt;0.2 m/s across the full range.<br>
+            <span style="color:var(--green)">▸ Relative humidity modelled</span> — Magnus formula + partial-pressure density. Effect &lt;0.5 mm at ≤200 m; included for physical correctness.<br>
             <span style="color:var(--muted)">▸ G1 and G7 drag models supported</span> — G7 recommended for VLD/boattail bullets.<br>
             <span style="color:var(--muted)">▸ No spin drift, Coriolis, or aerodynamic jump</span> — negligible at ≤300 m.<br>
-            <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) not yet implemented</span> — this is the dominant real-world weather effect.
+            <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) is experimental</span> — user-measured v₀ sensitivity [m/s/°C]. Disabled when k = 0.
           </div>
         </div>
 
@@ -768,7 +785,7 @@ function getSI(field, valId, unitId) {
 function persistInputs() {
   const prefs = loadPrefs();
   const ids = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
-               'temp_zero_val','press_zero_val','temp_shoot_val','press_shoot_val',
+               'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
                'v0_sensitivity',
                'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
                'v0_unit','m_unit','sight_unit','zero_unit','temp_unit','press_unit','wind_unit','vital_unit','chrono_unit'];
@@ -812,7 +829,7 @@ function restorePrefs() {
 
   // Input values
   const valIds = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
-                  'temp_zero_val','press_zero_val','temp_shoot_val','press_shoot_val',
+                  'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
                   'v0_sensitivity',
                   'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm'];
   valIds.forEach(id => {
@@ -970,11 +987,16 @@ function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g) {
 }
 
 // Atmosphere helpers
-function calcAtmo(temp_C, press_hPa) {
-  const T=temp_C+273.15;
-  const rho=1.225*(press_hPa/1013.25)*(288.15/T);
-  const vs=331.3*Math.sqrt(T/273.15);
-  return {rho, vs, T};
+function calcAtmo(temp_C, press_hPa, rh_pct) {
+  rh_pct = rh_pct || 0;
+  const T = temp_C + 273.15;
+  const e_s = 6.1078 * Math.pow(10, (7.5 * temp_C) / (237.3 + temp_C));
+  const e   = (rh_pct / 100) * e_s;
+  const P_d = (press_hPa - e) * 100;
+  const e_Pa = e * 100;
+  const rho = (P_d * 0.028964 + e_Pa * 0.018016) / (8.31446 * T);
+  const vs = 331.3 * Math.sqrt(T / 273.15) * Math.sqrt(1 + 0.16 * (e / press_hPa));
+  return { rho, vs, T };
 }
 
 // Swedish hunt class at 100 m
@@ -1044,6 +1066,8 @@ function calculate() {
     const press_shoot_raw = parseFloat(document.getElementById('press_shoot_val').value.replace(',','.'));
     const temp_shoot_C    = CONV.temp[tempUnit](temp_shoot_raw);
     const press_shoot_hPa = CONV.press[pressUnit](press_shoot_raw);
+    const rh_zero_pct     = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.'))  || 0;
+    const rh_shoot_pct    = parseFloat(document.getElementById('rh_shoot_val').value.replace(',','.')) || 0;
 
     // Phase 3 — propellant temperature effect on v₀
     // Propellant temp assumed = shooting temp (Phase 2)
@@ -1065,8 +1089,8 @@ function calculate() {
 
     setStatus('Solving zero angle (bisection)…');
 
-    const atmoZ = calcAtmo(temp_zero_C, press_zero_hPa);
-    const atmoS = calcAtmo(temp_shoot_C, press_shoot_hPa);
+    const atmoZ = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
+    const atmoS = calcAtmo(temp_shoot_C, press_shoot_hPa, rh_shoot_pct);
 
     // ── Chronograph distance correction ──
     // User measured v0 at chrono, not at muzzle.
@@ -1438,8 +1462,8 @@ function calculate() {
     });
 
     // ── Sensitivity analysis ──
-    function calcDropFixed(v0p, tempC, pressHPa, thetaFix, rangeM) {
-      const atm=calcAtmo(tempC, pressHPa);
+    function calcDropFixed(v0p, tempC, pressHPa, rhPct, thetaFix, rangeM) {
+      const atm=calcAtmo(tempC, pressHPa, rhPct);
       const traj=integrate(thetaFix, v0p, sight_h, atm.rho, atm.vs, BC_final, dragModel, g);
       return interpY(traj, rangeM)*100;
     }
@@ -1447,13 +1471,13 @@ function calculate() {
     const R_disp = toRangeDisp(R).toFixed(0);
     document.getElementById('sens-panel-title').textContent =
       `Sensitivity Analysis at ${R_disp} ${rangeLabel} (fixed zero angle)`;
-    const yBas    = calcDropFixed(v0,    temp_zero_C, press_zero_hPa, theta, R);
-    const yV0hi   = calcDropFixed(v0+v0spread, temp_zero_C, press_zero_hPa, theta, R);
-    const yV0lo   = calcDropFixed(v0-v0spread, temp_zero_C, press_zero_hPa, theta, R);
-    const yPp20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa+20, theta, R);
-    const yPm20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa-20, theta, R);
-    const yThi    = calcDropFixed(v0,    temp_zero_C+15, press_zero_hPa, theta, R);
-    const yTlo    = calcDropFixed(v0,    temp_zero_C-15, press_zero_hPa, theta, R);
+    const yBas    = calcDropFixed(v0,    temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
+    const yV0hi   = calcDropFixed(v0+v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
+    const yV0lo   = calcDropFixed(v0-v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
+    const yPp20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa+20, rh_zero_pct, theta, R);
+    const yPm20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa-20, rh_zero_pct, theta, R);
+    const yThi    = calcDropFixed(v0,    temp_zero_C+15, press_zero_hPa, rh_zero_pct, theta, R);
+    const yTlo    = calcDropFixed(v0,    temp_zero_C-15, press_zero_hPa, rh_zero_pct, theta, R);
 
     function diffStr(d_cm) {
       const d = toDevDisp(d_cm);  // cm → mm (or in)

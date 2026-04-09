@@ -235,7 +235,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 9, 2026 (v1.6 — Swedish hunt class explanation added; G1→G7 factor unified to 1.95) &nbsp;·&nbsp;
+      Last updated: April 9, 2026 (v1.7 — G1→G7 factor unified to 1.95 for all pointed BT types based on radar-measured data; hunt/shoot terminology; vital zone legend fix) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -263,7 +263,7 @@ canvas{display:block}
 
       <div class="section-title">Rifle &amp; Bullet</div>
       <div class="field">
-        <label>Muzzle Velocity <button class="tip-btn">?<div class="tip-box">Bullet speed at the muzzle.<br>Used as <i>v₀</i> in all trajectory calculations via RK4 integration.<br><br>Typical hunting loads: 700–1050 m/s (2300–3450 fps).</div></button></label>
+        <label>Muzzle Velocity <button class="tip-btn">?<div class="tip-box">Bullet speed at the muzzle.<br>Used as <i>v₀</i> in all trajectory calculations via RK4 integration.<br><br>Typical loads: 700–1050 m/s (2300–3450 fps).</div></button></label>
         <div class="field-row">
           <input type="text" inputmode="decimal" id="v0_val" value="2575">
           <select id="v0_unit" class="unit-sel" onchange="onUnitChange('v0')">
@@ -313,12 +313,12 @@ canvas{display:block}
         </div>
         <div class="g7-body" id="g7-body" style="display:none">
           <div class="field" style="margin-top:8px">
-            <label>Bullet type <button class="tip-btn">?<div class="tip-box">Conversion factor from G1 to G7 BC:<br><br>· Polymer-tip BT: ÷ 1.52<br>· VLD / Hybrid BT: ÷ 1.43<br>· Soft-point BT: ÷ 1.60<br>· Flat-base: not applicable (G1 recommended)<br>· Round-nose: not applicable (G1 recommended)<br><br>Source: Litz, Bryan. <i>Applied Ballistics for Long Range Shooting.</i></div></button></label>
+            <label>Bullet type <button class="tip-btn">?<div class="tip-box">Conversion factor from G1 to G7 BC:<br><br>· All pointed boat-tail types: ÷ 1.95<br>· Flat-base: not applicable (G1 recommended)<br>· Round-nose: not applicable (G1 recommended)<br><br>The Litz (2009) factors (1.43–1.60) were derived from early chronograph data. Analysis of modern Doppler/radar data from Berger, Nosler, Lapua and Hornady shows a consistent ratio of ~1.95 across all pointed BT constructions regardless of type.</div></button></label>
             <select id="g7_bullet_type" onchange="estimateG7()">
               <option value="">— select type —</option>
-              <option value="1.52">Polymer-tip BT (÷ 1.52)</option>
-              <option value="1.43">VLD / Hybrid BT (÷ 1.43)</option>
-              <option value="1.60">Soft-point BT (÷ 1.60)</option>
+              <option value="1.95">Pointed boat-tail (all types)</option>
+              <option value="" disabled>Flat base — G7 not applicable</option>
+              <option value="" disabled>Round nose — G7 not applicable</option>
             </select>
           </div>
           <div class="g7-result" id="g7-result" style="display:none">
@@ -338,7 +338,7 @@ canvas{display:block}
         </div>
       </div>
       <div class="field">
-        <label>Zero Range <button class="tip-btn">?<div class="tip-box">The distance at which the bullet path crosses the line of sight (POI = POA).<br><br>150 m (164 yd) zero is recommended for Swedish hunting — keeps the bullet within ±80 mm (±3.1 in) out to 200 m (219 yd) without hold-over.</div></button></label>
+        <label>Zero Range <button class="tip-btn">?<div class="tip-box">The distance at which the bullet path crosses the line of sight (POI = POA).<br><br>150 m (164 yd) zero is recommended in Sweden for hunting — keeps the bullet within ±80 mm (±3.1 in) out to 200 m (219 yd) without hold-over.</div></button></label>
         <div class="field-row">
           <input type="text" inputmode="decimal" id="zero_val" value="150">
           <select id="zero_unit" class="unit-sel" onchange="onUnitChange('zero')">
@@ -361,7 +361,7 @@ canvas{display:block}
           </div>
         </div>
         <div class="field">
-          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure when zeroing.<br>Determines air density: ρ = 1.225 × (P/1013.25) × (288.15/T)<br><br>Effect at ≤200 m (219 yd): &lt;0.1 mm per ±20 hPa (±0.59 inHg). Negligible for hunting.</div></button></label>
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure when zeroing.<br>Determines air density: ρ = 1.225 × (P/1013.25) × (288.15/T)<br><br>Effect at ≤200 m (219 yd): &lt;0.1 mm per ±20 hPa (±0.59 inHg). Negligible at this range.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="decimal" id="press_zero_val" value="1013">
             <select id="press_unit" class="unit-sel" onchange="onUnitChange('press')">
@@ -383,14 +383,14 @@ canvas{display:block}
       <div class="section-title">Shooting Atmosphere (Phase 2)</div>
       <div class="field-inline">
         <div class="field">
-          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature on the day of the hunt.<br>The model computes a second trajectory with this atmosphere using the fixed zero angle — showing the pure external ballistic effect.</div></button></label>
+          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature on the day of hunting/shooting.<br>The model computes a second trajectory with this atmosphere using the fixed zero angle — showing the pure external ballistic effect.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="decimal" id="temp_shoot_val" value="-5">
             <span class="unit" id="temp_shoot_unit_lbl">°C</span>
           </div>
         </div>
         <div class="field">
-          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure on the day of the hunt.<br>Combined with temperature to compute shooting-day air density.<br>Typical range in Sweden: 980–1030 hPa (28.9–30.4 inHg).</div></button></label>
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure on the day of hunting/shooting.<br>Combined with temperature to compute shooting-day air density.<br>Typical range in Sweden: 980–1030 hPa (28.9–30.4 inHg).</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="decimal" id="press_shoot_val" value="1013">
             <span class="unit" id="press_shoot_unit_lbl">hPa</span>
@@ -398,7 +398,7 @@ canvas{display:block}
         </div>
       </div>
       <div class="field">
-        <label>Rel. Humidity <button class="tip-btn">?<div class="tip-box">Relative humidity on the day of the hunt.<br>Moist air is slightly less dense than dry air — reduces drag very marginally.<br><br>A wet winter day (90% RH) vs dry summer day (30% RH) typically shifts impact &lt;1 mm at 200 m. Included for completeness and physical correctness.</div></button></label>
+        <label>Rel. Humidity <button class="tip-btn">?<div class="tip-box">Relative humidity on the day of hunting/shooting.<br>Moist air is slightly less dense than dry air — reduces drag very marginally.<br><br>A wet winter day (90% RH) vs dry summer day (30% RH) typically shifts impact &lt;1 mm at 200 m. Included for completeness and physical correctness.</div></button></label>
         <div class="field-row">
           <input type="text" inputmode="decimal" id="rh_shoot_val" value="50">
           <span class="unit">%</span>
@@ -513,8 +513,8 @@ canvas{display:block}
         <span>Trajectory <button class="tip-btn" style="text-transform:none;letter-spacing:0;vertical-align:middle">?<div class="tip-box" style="left:20px;top:-4px">
           <b>Chart curves:</b><br><br>
           <span style="display:inline-block;width:10px;height:3px;background:#aaa;vertical-align:middle;margin-right:6px"></span><b>Grey solid</b> — zero-day trajectory (Phase 1 atmosphere). This is the reference line the rifle is zeroed to.<br><br>
-          <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — hunt-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
-          <span style="display:inline-block;width:10px;height:3px;background:var(--red);border-top:2px dashed var(--red);vertical-align:middle;margin-right:6px"></span><b>Red dashed</b> — Phase 3: hunt-day atmosphere + propellant temperature correction. Shows combined real-world effect including v₀ shift from cold/warm propellant. Only shown when v₀ sensitivity &gt; 0.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — hunting/shooting-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--red);border-top:2px dashed var(--red);vertical-align:middle;margin-right:6px"></span><b>Red dashed</b> — Phase 3: hunting/shooting-day atmosphere + propellant temperature correction. Shows combined real-world effect including v₀ shift from cold/warm propellant. Only shown when v₀ sensitivity &gt; 0.<br><br>
           <span style="display:inline-block;width:10px;height:3px;background:var(--green);border-top:2px dashed var(--green);vertical-align:middle;margin-right:6px"></span><b>Green dashed band</b> — v₀ ± spread envelope. Width shows how much shot-to-shot velocity variation affects the trajectory at each range.<br><br>
           <span style="display:inline-block;width:10px;height:2px;background:var(--vital);opacity:.9;vertical-align:middle;margin-right:6px"></span><b>Purple dashed lines</b> — vital zone radius (±). Bullet must stay within these lines for an ethical shot without hold-over.
         </div></button></span>
@@ -592,7 +592,7 @@ canvas{display:block}
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Three-Phase Model</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
             <span style="color:var(--accent)">Phase 1 — Zero:</span> bisection solves for θ under zero-day atmosphere (T<sub>zero</sub>, P<sub>zero</sub>, RH<sub>zero</sub>). θ is fixed thereafter — it represents the rifle's mechanical setting.<br>
-            <span style="color:var(--accent)">Phase 2 — Hunt:</span> same θ, new atmosphere (T<sub>hunt</sub>, P<sub>hunt</sub>, RH<sub>hunt</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
+            <span style="color:var(--accent)">Phase 2 — Hunting/Shooting:</span> same θ, new atmosphere (T<sub>hunt</sub>, P<sub>hunt</sub>, RH<sub>hunt</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
             <span style="color:var(--accent)">Phase 3 — Propellant temperature</span> <span style="color:var(--orange);font-size:9px;border:1px solid var(--orange);padding:1px 4px;border-radius:2px">EXPERIMENTAL</span><span style="color:var(--accent)">:</span> same θ and hunt atmosphere, but v₀ is shifted by the propellant temperature effect: <b>Δv₀ = k · (T<sub>shoot</sub> − T<sub>zero</sub>)</b>, where k is the user-measured sensitivity [m/s/°C] and propellant temperature is assumed equal to shooting temperature. This is the dominant real-world weather effect — a −30°C temperature swing with a sensitive powder (k = 0.5 m/s/°C) shifts v₀ by 15 m/s. Disabled when k = 0.
           </div>
         </div>
@@ -1164,6 +1164,12 @@ function calculate() {
     // Update legend
     document.getElementById('v0band-label').textContent = v0spread_raw;
     document.getElementById('v0band-unit').textContent  = v0Unit === 'fps' ? 'fps' : 'm/s';
+
+    // Update vital zone legend label
+    const vital_raw = parseFloat(document.getElementById('vital_val').value.replace(',','.')) || 60;
+    const vitalUnitLbl = document.getElementById('vital_unit').value;
+    document.getElementById('vz-label').textContent = vital_raw;
+    document.getElementById('vz-unit').textContent  = vitalUnitLbl;
     const trajRef   = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
     const trajShoot = integrate(theta, v0_true, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
     const trajPhase3 = hasPhase3
@@ -1248,7 +1254,7 @@ function calculate() {
 
     const vzsRowDefs = [
       { label:'Zero atm.', color:'var(--muted)', st: stRef   },
-      { label:'Hunt atm.', color:'var(--blue)',  st: stShoot },
+      { label:'Hunt/Shoot atm.', color:'var(--blue)',  st: stShoot },
       ...(stP3 ? [{ label:'Phase 3', color:'var(--red)', st: stP3 }] : []),
     ];
     let vzsHtml = `<div class="vzs-head">
@@ -1288,7 +1294,7 @@ function calculate() {
 
     // ── Render table ──
     let html='<table class="result-table"><thead><tr>';
-    html+=`<th>Range (${rangeLabel})</th><th>Ref (${devLabel})</th><th>Hunt (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th><th>Class</th>`;
+    html+=`<th>Range (${rangeLabel})</th><th>Ref (${devLabel})</th><th>Hunt/Shoot (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th><th>Class</th>`;
     html+='</tr></thead><tbody>';
     rows.forEach(row => {
       const yClass = y => y>0 ? 'val-pos' : (y<0 ? 'val-neg' : '');

@@ -235,7 +235,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 8, 2026 (v1.5 — G1→G7 factor unified to 1.95 for all pointed BT types, based on radar-measured manufacturer data) &nbsp;·&nbsp;
+      Last updated: April 9, 2026 (v1.6 — Swedish hunt class explanation added; G1→G7 factor unified to 1.95) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -294,7 +294,7 @@ canvas{display:block}
       </div>
       <div class="field-inline">
         <div class="field">
-          <label>BC <button class="tip-btn">?<div class="tip-box">Ballistic Coefficient — measures how well the bullet resists air drag.<br>Higher BC = less drag = flatter trajectory and less wind drift.<br><br>Typical G1 BC ranges:<br>· Flat-base (FB): 0.20–0.35<br>· Round-nose (RN): 0.15–0.25<br>· Boat-tail SP (BT): 0.35–0.55<br>· HPBT / VLD: 0.45–0.65<br>· Polymer-tip BT: 0.40–0.60<br><br>G7 BC is typically ~51% of the G1 value for pointed boat-tail bullets (factor ≈ 1.95), based on radar-measured data from major manufacturers.</div></button></label>
+          <label>BC <button class="tip-btn">?<div class="tip-box">Ballistic Coefficient — measures how well the bullet resists air drag.<br>Higher BC = less drag = flatter trajectory and less wind drift.<br><br>Typical G1 BC ranges:<br>· Flat-base (FB): 0.20–0.35<br>· Round-nose (RN): 0.15–0.25<br>· Boat-tail SP (BT): 0.35–0.55<br>· HPBT / VLD: 0.45–0.65<br>· Polymer-tip BT: 0.40–0.60<br><br>G7 BC is typically 55–65% of the G1 value for the same bullet.</div></button></label>
           <input type="text" inputmode="decimal" id="bc_input" value="0.447">
         </div>
         <div class="field">
@@ -313,10 +313,12 @@ canvas{display:block}
         </div>
         <div class="g7-body" id="g7-body" style="display:none">
           <div class="field" style="margin-top:8px">
-            <label>Bullet type <button class="tip-btn">?<div class="tip-box">Conversion factor from G1 to G7 BC:<br><br>· All pointed boat-tail bullets: ÷ 1.95<br>&nbsp;&nbsp;(polymer-tip BT, VLD/Hybrid, soft-point BT, HPBT/OTM)<br>· Flat-base: not applicable (G1 recommended)<br>· Round-nose: not applicable (G1 recommended)<br><br>Factor 1.95 based on radar-measured data from Berger, Nosler, Lapua and Hornady. Earlier Litz (2009) factors (1.43–1.60) are outdated.</div></button></label>
+            <label>Bullet type <button class="tip-btn">?<div class="tip-box">Conversion factor from G1 to G7 BC:<br><br>· Polymer-tip BT: ÷ 1.52<br>· VLD / Hybrid BT: ÷ 1.43<br>· Soft-point BT: ÷ 1.60<br>· Flat-base: not applicable (G1 recommended)<br>· Round-nose: not applicable (G1 recommended)<br><br>Source: Litz, Bryan. <i>Applied Ballistics for Long Range Shooting.</i></div></button></label>
             <select id="g7_bullet_type" onchange="estimateG7()">
               <option value="">— select type —</option>
-              <option value="1.95">Pointed boat-tail (all types) (÷ 1.95)</option>
+              <option value="1.52">Polymer-tip BT (÷ 1.52)</option>
+              <option value="1.43">VLD / Hybrid BT (÷ 1.43)</option>
+              <option value="1.60">Soft-point BT (÷ 1.60)</option>
             </select>
           </div>
           <div class="g7-result" id="g7-result" style="display:none">
@@ -486,7 +488,13 @@ canvas{display:block}
         <div class="cards" id="summary-cards">
           <div class="card"><div class="card-label">Zero Angle</div><div class="card-val" id="c-theta">—</div><div class="card-sub">mrad</div></div>
           <div class="card"><div class="card-label" id="c-vnull-label">v₀ → v@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
-          <div class="card"><div class="card-label">Energy E₁₀₀</div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
+          <div class="card"><div class="card-label">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box" style="left:auto;right:0;transform:none"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
+<span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
+<span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
+<span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g bullet &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">Roe deer, beaver, lynx</span></span>
+<span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g bullet &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">Hare, fox, small game</span></span>
+<span style="color:var(--red);font-weight:600">K4</span><span>Other — air rifles, rimfire</span>
+</span></div></button></div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
         </div>
       </div>
     </div>

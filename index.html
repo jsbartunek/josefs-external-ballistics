@@ -1078,7 +1078,7 @@ function calculate() {
     // Phase 3 — propellant temperature effect on v₀
     // Propellant temp assumed = shooting temp (Phase 2)
     const v0sens_raw      = parseFloat(document.getElementById('v0_sensitivity').value.replace(',','.')) || 0;
-    const v0sens_ms_C     = tempUnit === 'F' ? v0sens_raw * (5/9) / 0.3048 : v0sens_raw;
+    const v0sens_ms_C     = tempUnit === 'F' ? v0sens_raw * 0.3048 * (9/5) : v0sens_raw;
     const delta_v0_phase3 = v0sens_ms_C * (temp_shoot_C - temp_zero_C);
     const hasPhase3       = Math.abs(v0sens_ms_C) > 0.001;
 
@@ -1106,12 +1106,13 @@ function calculate() {
     let v0_true = v0;
     if (chrono_m > 0.005) {
       // Forward Euler: find speed lost over chrono distance, add it back
+      const DRAG_CHRONO = Math.PI / 8;  // Siacci/Ingalls, consistent with main integrator
       let vv = v0, x = 0;
       const dt = 0.00005;
       while (x < chrono_m) {
         const mach = vv / atmoZ.vs;
         const Cd   = getCd(mach, dragModel);
-        const a    = 0.5 * atmoZ.rho * vv * vv * Cd / BC_final;
+        const a    = DRAG_CHRONO * atmoZ.rho * vv * vv * Cd / BC_final;
         vv -= a * dt;
         x  += vv * dt;
       }

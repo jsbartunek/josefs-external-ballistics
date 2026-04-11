@@ -1086,6 +1086,15 @@ function calculate() {
     const v0sens_ms_C     = tempUnit === 'F' ? v0sens_raw * 0.3048 * (9/5) : v0sens_raw;
     const delta_v0_phase3 = v0sens_ms_C * (temp_shoot_C - temp_zero_C);
     const hasPhase3       = Math.abs(v0sens_ms_C) > 0.001;
+    // Enable/disable Phase 3 spread button
+    const spbtn3 = document.getElementById('spbtn3');
+    if (spbtn3) {
+      spbtn3.disabled = !hasPhase3;
+      spbtn3.style.opacity = hasPhase3 ? '1' : '0.35';
+      spbtn3.style.cursor  = hasPhase3 ? 'pointer' : 'not-allowed';
+    }
+    // If Phase 3 is selected but not active, fall back to Phase 2
+    if (!hasPhase3 && window._spreadPhase === 3) setSpreadPhase(2);
 
     const wind_ms   = getSI('wind',  'wind_val',  'wind_unit');  // m/s
     const alpha_deg = parseFloat(document.getElementById('alpha_deg').value.replace(',','.'));
@@ -1604,6 +1613,24 @@ function applyTheme(theme) {
 
 // v0 spread phase toggle
 window._spreadPhase = 2;
+// Enable/disable Phase 3 button live as sensitivity field changes
+document.addEventListener('DOMContentLoaded', function() {
+  var sensEl = document.getElementById('v0_sensitivity');
+  if (sensEl) {
+    sensEl.addEventListener('input', function() {
+      var val = parseFloat(this.value.replace(',','.')) || 0;
+      var active = Math.abs(val) > 0.001;
+      var btn = document.getElementById('spbtn3');
+      if (btn) {
+        btn.disabled = !active;
+        btn.style.opacity = active ? '1' : '0.35';
+        btn.style.cursor  = active ? 'pointer' : 'not-allowed';
+      }
+      if (!active && window._spreadPhase === 3) setSpreadPhase(2);
+    });
+  }
+});
+
 function setSpreadPhase(n) {
   window._spreadPhase = n;
   [1,2,3].forEach(function(i) {

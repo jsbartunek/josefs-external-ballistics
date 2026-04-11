@@ -219,7 +219,7 @@ canvas{display:block}
     <button onclick="closeAbout()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;font-family:var(--mono)">✕</button>
     <div style="font-size:15px;font-weight:600;color:var(--accent);margin-bottom:16px;letter-spacing:.04em">EXTERNAL BALLISTICS CALCULATOR</div>
 
-    <p style="margin-bottom:12px">Developed by a Swedish hunter and handloader, this tool is designed for practical hunting and handloading scenarios, with a focus on real-world implications rather than purely theoretical values.</p>
+    <p style="margin-bottom:12px">Developed by a Czech-Swedish hunter and handloader, this tool is designed for practical hunting and handloading scenarios, with a focus on real-world implications rather than purely theoretical values.</p>
 
     <p style="margin-bottom:12px">A central objective is clarity and understanding. The three-phase model separates the rifle's mechanical zero, the contribution of atmospheric conditions, and propellant temperature — making their individual contributions explicit. The aim is to support intuition and informed judgment, not merely to produce numerical output.</p>
 
@@ -234,7 +234,7 @@ canvas{display:block}
     </div>
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
-      Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
+      © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
       Last updated: April 9, 2026 (v1.7 — G1→G7 factor unified to 1.95 for all pointed BT types based on radar-measured data; hunt/shoot terminology; vital zone legend fix) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
@@ -448,10 +448,15 @@ canvas{display:block}
         </div>
       </div>
       <div class="field">
-        <label>v₀ spread ± (chronograph) <button class="tip-btn">?<div class="tip-box">Shot-to-shot muzzle velocity variation measured with a chronograph.<br>The green dashed band shows the trajectory envelope for v₀ ± this value.<br><br>Good handloads: 3–5 m/s (10–15 fps)<br>Factory ammo: 7–15 m/s (25–50 fps)</div></button></label>
+        <label>v₀ spread ± (chronograph) <button class="tip-btn">?<div class="tip-box">Shot-to-shot muzzle velocity variation measured with a chronograph.<br>The green dashed band shows the trajectory envelope for v₀ ± this value, applied to the selected phase.<br><br>Good handloads: 3–5 m/s (10–15 fps)<br>Factory ammo: 7–15 m/s (25–50 fps)</div></button></label>
         <div class="field-row">
           <input type="text" inputmode="decimal" id="v0spread_val" value="10">
           <span class="unit" id="v0spread_unit_lbl">m/s</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button class="spread-phase-btn" id="spbtn1" onclick="setSpreadPhase(1)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 1</button>
+          <button class="spread-phase-btn" id="spbtn2" onclick="setSpreadPhase(2)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:all 0.15s;">PHASE 2</button>
+          <button class="spread-phase-btn" id="spbtn3" onclick="setSpreadPhase(3)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 3</button>
         </div>
       </div>
       <div class="field-inline">
@@ -515,7 +520,7 @@ canvas{display:block}
           <span style="display:inline-block;width:10px;height:3px;background:#aaa;vertical-align:middle;margin-right:6px"></span><b>Grey solid</b> — zero-day trajectory (Phase 1 atmosphere). This is the reference line the rifle is zeroed to.<br><br>
           <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — hunting/shooting-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
           <span style="display:inline-block;width:10px;height:3px;background:var(--red);border-top:2px dashed var(--red);vertical-align:middle;margin-right:6px"></span><b>Red dashed</b> — Phase 3: hunting/shooting-day atmosphere + propellant temperature correction. Shows combined real-world effect including v₀ shift from cold/warm propellant. Only shown when v₀ sensitivity &gt; 0.<br><br>
-          <span style="display:inline-block;width:10px;height:3px;background:var(--green);border-top:2px dashed var(--green);vertical-align:middle;margin-right:6px"></span><b>Green dashed band</b> — v₀ ± spread envelope. Width shows how much shot-to-shot velocity variation affects the trajectory at each range.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--green);border-top:2px dashed var(--green);vertical-align:middle;margin-right:6px"></span><b>Green dashed band</b> — v₀ ± spread envelope applied to the selected phase (Phase 1, 2 or 3). Width shows how much shot-to-shot velocity variation affects the trajectory at each range.<br><br>
           <span style="display:inline-block;width:10px;height:2px;background:var(--vital);opacity:.9;vertical-align:middle;margin-right:6px"></span><b>Purple dashed lines</b> — vital zone radius (±). Bullet must stay within these lines for an ethical shot without hold-over.
         </div></button></span>
       </div>
@@ -1176,8 +1181,12 @@ function calculate() {
     const trajPhase3 = hasPhase3
       ? integrate(theta, v0_true + delta_v0_phase3, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax)
       : null;
-    const trajV0hi  = integrate(theta, v0_true+v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
-    const trajV0lo  = integrate(theta, v0_true-v0spread, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
+    // v0spread phase selection
+    const spreadPhase = window._spreadPhase || 2;
+    const spreadAtmo  = spreadPhase === 1 ? atmoZ : atmoS;
+    const spreadV0base = (spreadPhase === 3 && hasPhase3) ? v0_true + delta_v0_phase3 : v0_true;
+    const trajV0hi  = integrate(theta, spreadV0base+v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
+    const trajV0lo  = integrate(theta, spreadV0base-v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
 
     // ── Energy and class at 100 m ──
     const v100 = interpV(trajRef, 100);
@@ -1358,13 +1367,18 @@ function calculate() {
     chartTraj = new Chart(document.getElementById('chartTraj'), {
       type: 'line',
       data: {
-        datasets: [
-          {label:'Zero atmosphere',      data:trajData,   borderColor:cMuted,  borderWidth:2,   pointRadius:0, tension:0.3},
-          {label:'Shooting atmosphere',  data:shootData,  borderColor:cBlue,   borderWidth:2,   borderDash:[6,4], pointRadius:0, tension:0.3},
-          ...(hasPhase3 ? [{label:'Phase 3 (propellant temp)', data:phase3Data, borderColor:cRed, borderWidth:2, borderDash:[6,4], pointRadius:0, tension:0.3}] : []),
-          {label:`v₀ +${v0spread_raw} ${v0Unit === 'fps' ? 'fps' : 'm/s'}`,  data:v0hiData,  borderColor:cGreen,  borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3},
-          {label:`v₀ −${v0spread_raw} ${v0Unit === 'fps' ? 'fps' : 'm/s'}`,  data:v0loData,  borderColor:cGreen,  borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3},
-        ]
+        datasets: (() => {
+          const dsRef   = {label:'Zero atmosphere',     data:trajData,   borderColor:cMuted, borderWidth:2,   pointRadius:0, tension:0.3};
+          const dsShoot = {label:'Shooting atmosphere', data:shootData,  borderColor:cBlue,  borderWidth:2,   borderDash:[6,4], pointRadius:0, tension:0.3};
+          const dsP3    = hasPhase3 ? {label:'Phase 3 (propellant temp)', data:phase3Data, borderColor:cRed, borderWidth:2, borderDash:[6,4], pointRadius:0, tension:0.3} : null;
+          const spreadLabel = v0Unit === 'fps' ? 'fps' : 'm/s';
+          const dsHi    = {label:`v₀ +${v0spread_raw} ${spreadLabel}`, data:v0hiData, borderColor:cGreen, borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3};
+          const dsLo    = {label:`v₀ −${v0spread_raw} ${spreadLabel}`, data:v0loData, borderColor:cGreen, borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3};
+          const sp = window._spreadPhase || 2;
+          if (sp === 1) return [dsHi, dsRef, dsLo, dsShoot, ...(dsP3 ? [dsP3] : [])];
+          if (sp === 3 && dsP3) return [dsRef, dsShoot, dsHi, dsP3, dsLo];
+          return [dsRef, dsHi, dsShoot, dsLo, ...(dsP3 ? [dsP3] : [])];
+        })()
       },
       options: {
         responsive:true, maintainAspectRatio:false,
@@ -1586,6 +1600,24 @@ function applyTheme(theme) {
     track.classList.remove('on');
     label.textContent = 'Dark mode';
   }
+}
+
+// v0 spread phase toggle
+window._spreadPhase = 2;
+function setSpreadPhase(n) {
+  window._spreadPhase = n;
+  [1,2,3].forEach(function(i) {
+    var btn = document.getElementById('spbtn'+i);
+    if (i === n) {
+      btn.style.background = 'var(--accent)';
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.color = '#fff';
+    } else {
+      btn.style.background = 'none';
+      btn.style.borderColor = 'var(--border)';
+      btn.style.color = 'var(--muted)';
+    }
+  });
 }
 
 function toggleTheme() {

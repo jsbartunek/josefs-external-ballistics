@@ -1139,9 +1139,14 @@ function calculate() {
     // ── Display units ──
     const rangeUnit = document.getElementById('zero_unit').value;   // 'm' or 'yd'
     const vitalUnit = document.getElementById('vital_unit').value;  // 'cm' or 'in'
+    const windUnit  = document.getElementById('wind_unit').value;   // 'ms', 'mph', 'kts'
     const rangeLabel = rangeUnit;
     const devLabel   = vitalUnit === 'in' ? 'in' : 'mm';
     const windLabel  = vitalUnit === 'in' ? 'in' : 'mm';
+    // Wind speed display for chart legend
+    const windSpeedDisp = windUnit === 'mph' ? (wind_ms / 0.44704).toFixed(1) + ' mph'
+                        : windUnit === 'kts'  ? (wind_ms / 0.514444).toFixed(1) + ' kts'
+                        : wind_ms.toFixed(1) + ' m/s';
 
     // Conversion helpers for display (internal = cm)
     const toRangeDisp = r => rangeUnit === 'yd' ? r / 0.9144 : r;
@@ -1491,7 +1496,7 @@ function calculate() {
       data:{
         labels:rArr,
         datasets:[{
-          label:`Wind drift (${wind_ms.toFixed(1)} m/s)`,
+          label:`Wind drift (${windSpeedDisp})`,
           data:zVindArr,
           borderColor:cOrange, borderWidth:2, pointRadius:4,
           pointBackgroundColor:cOrange, tension:0.3, fill:false
@@ -1540,7 +1545,7 @@ function calculate() {
     const yBas_mm = toDevDisp(yBas);
     document.getElementById('sens-wrap').innerHTML=`
     <div class="sens-grid">
-      <div class="sens-head">Parameter</div><div class="sens-head">Value</div><div class="sens-head">Δ@200 m</div>
+      <div class="sens-head">Parameter</div><div class="sens-head">Value</div><div class="sens-head">Δ@${R_disp} ${rangeLabel}</div>
       ${showSpread ? `<div class="sens-cell sens-label">v₀ +${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0+v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0hi-yBas)}</div>` : ''}
       ${showSpread ? `<div class="sens-cell sens-label">v₀ −${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0-v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0lo-yBas)}</div>` : ''}
       <div class="sens-cell sens-label">Pressure +20 hPa</div><div class="sens-cell">${(press_zero_hPa+20).toFixed(0)} hPa</div><div class="sens-cell sens-val">${diffStr(yPp20-yBas)}</div>

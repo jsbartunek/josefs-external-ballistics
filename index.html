@@ -531,7 +531,7 @@ canvas{display:block}
         <span><span class="phase-dot dot-ref"></span>Zero atmosphere</span>
         <span><span class="phase-dot dot-shoot"></span>Shooting atmosphere</span>
         <span id="phase3-legend" style="display:none"><span class="phase-dot" style="background:var(--red)"></span>Phase 3 (propellant)</span>
-        <span><span class="phase-dot" style="background:var(--green)"></span>v₀ ±<span id="v0band-label">10</span> <span id="v0band-unit">m/s</span> band</span>
+        <span id="v0band-legend"><span class="phase-dot" style="background:var(--green)"></span>v₀ ±<span id="v0band-label">10</span> <span id="v0band-unit">m/s</span> band</span>
         <span style="color:var(--muted)">— — Vital zone ±<span id="vz-label">60</span> <span id="vz-unit">mm</span></span>
       </div>
     </div>
@@ -1173,12 +1173,25 @@ function calculate() {
     // Extend integration if needed
     const tMax = maxrange_m/v0 + 2;
     const xMax = maxrange_m + 20;  // 20 m margin for interpolation at boundary
-    const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.')) || 10;
-    const v0spread = v0Unit === 'fps' ? v0spread_raw * 0.3048 : v0spread_raw; // → m/s
+    const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
+    const v0spread_eff = isNaN(v0spread_raw) ? 10 : v0spread_raw;
+    const showSpread = v0spread_eff > 0;
+    const v0spread = v0Unit === 'fps' ? v0spread_eff * 0.3048 : v0spread_eff; // → m/s
 
-    // Update legend
-    document.getElementById('v0band-label').textContent = v0spread_raw;
+    // Update legend visibility
+    const v0bandLegend = document.getElementById('v0band-legend');
+    if (v0bandLegend) v0bandLegend.style.display = showSpread ? '' : 'none';
+    document.getElementById('v0band-label').textContent = v0spread_eff;
     document.getElementById('v0band-unit').textContent  = v0Unit === 'fps' ? 'fps' : 'm/s';
+
+    // Disable/enable phase buttons
+    ['spbtn1','spbtn2','spbtn3'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.disabled = !showSpread;
+      btn.style.opacity = showSpread ? '1' : '0.35';
+      btn.style.cursor  = showSpread ? 'pointer' : 'not-allowed';
+    });
 
     // Update vital zone legend label
     const vital_raw = parseFloat(document.getElementById('vital_val').value.replace(',','.')) || 60;
@@ -1381,9 +1394,10 @@ function calculate() {
           const dsShoot = {label:'Shooting atmosphere', data:shootData,  borderColor:cBlue,  borderWidth:2,   borderDash:[6,4], pointRadius:0, tension:0.3};
           const dsP3    = hasPhase3 ? {label:'Phase 3 (propellant temp)', data:phase3Data, borderColor:cRed, borderWidth:2, borderDash:[6,4], pointRadius:0, tension:0.3} : null;
           const spreadLabel = v0Unit === 'fps' ? 'fps' : 'm/s';
-          const dsHi    = {label:`v₀ +${v0spread_raw} ${spreadLabel}`, data:v0hiData, borderColor:cGreen, borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3};
-          const dsLo    = {label:`v₀ −${v0spread_raw} ${spreadLabel}`, data:v0loData, borderColor:cGreen, borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3};
+          const dsHi    = showSpread ? {label:`v₀ +${v0spread_eff} ${spreadLabel}`, data:v0hiData, borderColor:cGreen, borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3} : null;
+          const dsLo    = showSpread ? {label:`v₀ −${v0spread_eff} ${spreadLabel}`, data:v0loData, borderColor:cGreen, borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3} : null;
           const sp = window._spreadPhase || 2;
+          if (!showSpread) return [dsRef, dsShoot, ...(dsP3 ? [dsP3] : [])];
           if (sp === 1) return [dsHi, dsRef, dsLo, dsShoot, ...(dsP3 ? [dsP3] : [])];
           if (sp === 3 && dsP3) return [dsRef, dsShoot, dsHi, dsP3, dsLo];
           return [dsRef, dsHi, dsShoot, dsLo, ...(dsP3 ? [dsP3] : [])];
@@ -1508,8 +1522,8 @@ function calculate() {
     document.getElementById('sens-panel-title').textContent =
       `Sensitivity Analysis at ${R_disp} ${rangeLabel} (fixed zero angle)`;
     const yBas    = calcDropFixed(v0,    temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
-    const yV0hi   = calcDropFixed(v0+v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
-    const yV0lo   = calcDropFixed(v0-v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
+    const yV0hi   = showSpread ? calcDropFixed(v0+v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
+    const yV0lo   = showSpread ? calcDropFixed(v0-v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
     const yPp20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa+20, rh_zero_pct, theta, R);
     const yPm20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa-20, rh_zero_pct, theta, R);
     const yThi    = calcDropFixed(v0,    temp_zero_C+15, press_zero_hPa, rh_zero_pct, theta, R);
@@ -1527,8 +1541,8 @@ function calculate() {
     document.getElementById('sens-wrap').innerHTML=`
     <div class="sens-grid">
       <div class="sens-head">Parameter</div><div class="sens-head">Value</div><div class="sens-head">Δ@200 m</div>
-      <div class="sens-cell sens-label">v₀ +${v0spread_raw} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0+v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0hi-yBas)}</div>
-      <div class="sens-cell sens-label">v₀ −${v0spread_raw} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0-v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0lo-yBas)}</div>
+      ${showSpread ? `<div class="sens-cell sens-label">v₀ +${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0+v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0hi-yBas)}</div>` : ''}
+      ${showSpread ? `<div class="sens-cell sens-label">v₀ −${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0-v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0lo-yBas)}</div>` : ''}
       <div class="sens-cell sens-label">Pressure +20 hPa</div><div class="sens-cell">${(press_zero_hPa+20).toFixed(0)} hPa</div><div class="sens-cell sens-val">${diffStr(yPp20-yBas)}</div>
       <div class="sens-cell sens-label">Pressure −20 hPa</div><div class="sens-cell">${(press_zero_hPa-20).toFixed(0)} hPa</div><div class="sens-cell sens-val">${diffStr(yPm20-yBas)}</div>
       <div class="sens-cell sens-label">Temp +15°C</div><div class="sens-cell">${(temp_zero_C+15).toFixed(0)}°C</div><div class="sens-cell sens-val">${diffStr(yThi-yBas)}</div>
@@ -1645,6 +1659,27 @@ document.addEventListener('DOMContentLoaded', function() {
       if (isNaN(v) || v < 0) this.value = 0;
     });
   });
+
+  // Real-time spread button disable/enable
+  function updateSpreadButtons() {
+    var val = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
+    var enabled = !isNaN(val) && val > 0;
+    ['spbtn1','spbtn2','spbtn3'].forEach(function(id) {
+      var btn = document.getElementById(id);
+      if (!btn) return;
+      btn.disabled = !enabled;
+      btn.style.opacity = enabled ? '1' : '0.35';
+      btn.style.cursor  = enabled ? 'pointer' : 'not-allowed';
+    });
+    var legend = document.getElementById('v0band-legend');
+    if (legend) legend.style.display = enabled ? '' : 'none';
+  }
+  var spreadEl = document.getElementById('v0spread_val');
+  if (spreadEl) {
+    spreadEl.addEventListener('input', updateSpreadButtons);
+    spreadEl.addEventListener('change', updateSpreadButtons);
+    updateSpreadButtons(); // run on load
+  }
 
   // RH: clamp 0-100
   ['rh_zero_val','rh_shoot_val'].forEach(function(id) {

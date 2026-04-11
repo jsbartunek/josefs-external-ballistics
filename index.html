@@ -214,8 +214,8 @@ canvas{display:block}
 <body>
 
 <!-- About modal -->
-<div id="about-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeAbout()">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;max-width:520px;width:100%;padding:28px 32px;position:relative;font-family:var(--mono);font-size:12px;line-height:1.9;color:var(--text);margin:auto;max-height:90vh;overflow-y:auto">
+<div id="about-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px;overflow-y:auto" onclick="if(event.target===this)closeAbout()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;max-width:520px;width:100%;padding:28px 32px;position:relative;font-family:var(--mono);font-size:12px;line-height:1.9;color:var(--text);margin:auto">
     <button onclick="closeAbout()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;font-family:var(--mono)">✕</button>
     <div style="font-size:15px;font-weight:600;color:var(--accent);margin-bottom:16px;letter-spacing:.04em">EXTERNAL BALLISTICS CALCULATOR</div>
 
@@ -353,7 +353,7 @@ canvas{display:block}
         <div class="field">
           <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature when zeroing the rifle.<br>Affects air density and sound speed (Mach number), which influences drag.<br><br>Effect on external ballistics at ≤200 m (219 yd): &lt;0.2 mm (&lt;0.01 in). Main effect is on powder burn rate (internal ballistics).</div></button></label>
           <div class="field-row">
-            <input type="text" inputmode="decimal" id="temp_zero_val" value="15">
+            <input type="text" inputmode="text" id="temp_zero_val" value="15">
             <select id="temp_unit" class="unit-sel" onchange="onUnitChange('temp')">
               <option value="C">°C</option>
               <option value="F">°F</option>
@@ -385,7 +385,7 @@ canvas{display:block}
         <div class="field">
           <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature on the day of hunting/shooting.<br>The model computes a second trajectory with this atmosphere using the fixed zero angle — showing the pure external ballistic effect.</div></button></label>
           <div class="field-row">
-            <input type="text" inputmode="decimal" id="temp_shoot_val" value="-5">
+            <input type="text" inputmode="text" id="temp_shoot_val" value="-5">
             <span class="unit" id="temp_shoot_unit_lbl">°C</span>
           </div>
         </div>
@@ -419,7 +419,7 @@ canvas{display:block}
         <div class="field">
           <label>Crosswind <button class="tip-btn">?<div class="tip-box">Wind speed perpendicular to the line of fire (positive = left to right).<br>Wind drift is calculated using the lag-time method:<br><code>z = w × (t_flight − x/v₀)</code><br><br>Wind dominates all other uncertainties at 200 m.</div></button></label>
           <div class="field-row">
-            <input type="text" inputmode="decimal" id="wind_val" value="5.0">
+            <input type="text" inputmode="text" id="wind_val" value="5.0">
             <select id="wind_unit" class="unit-sel" onchange="onUnitChange('wind')">
               <option value="ms">m/s</option>
               <option value="mph">mph</option>
@@ -430,7 +430,7 @@ canvas{display:block}
         <div class="field">
           <label>Shooting Angle <button class="tip-btn">?<div class="tip-box">Angle of the shot relative to horizontal.<br>Positive = uphill, negative = downhill.<br><br>Reduces effective gravity: <code>g_eff = 9.81 × cos(α)</code><br>Both uphill and downhill shots hit higher than level shots.</div></button></label>
           <div class="field-row">
-            <input type="text" inputmode="decimal" id="alpha_deg" value="0">
+            <input type="text" inputmode="text" id="alpha_deg" value="0">
             <span class="unit">°</span>
           </div>
         </div>

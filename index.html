@@ -182,7 +182,7 @@ canvas{display:block}
   .cards{grid-template-columns:1fr 1fr}
   .chart-wrap{height:180px}
   .result-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
-  .tip-box{width:240px}
+  .tip-box{width:min(260px,80vw)}
   .sens-grid{font-size:10px}
   .sens-cell{padding:6px 7px}
   /* Prevent iOS auto-zoom on focus */
@@ -1601,15 +1601,28 @@ function initTooltips() {
     activeBtn = btn;
     btn.classList.add('tip-active');
     const box = btn.querySelector('.tip-box');
+    // Reset any previous inline positioning
     box.style.left = '';
     box.style.right = '';
+    // Make visible so we can measure
     box.classList.add('tip-visible');
-    const rect = box.getBoundingClientRect();
-    if (rect.right > window.innerWidth - 8) {
+    // Viewport collision check
+    const r = box.getBoundingClientRect();
+    const vw = window.innerWidth;
+    if (r.right > vw - 8) {
+      // Overflows right → anchor to right edge of button
       box.style.left = 'auto';
       box.style.right = '0';
-    } else if (rect.left < 8) {
-      box.style.left = '20px';
+    }
+    if (r.left < 8) {
+      // Overflows left → anchor to left edge of button
+      box.style.left = '0';
+      box.style.right = 'auto';
+    }
+    // Re-check after flip: if still overflows (very narrow screen), clamp
+    const r2 = box.getBoundingClientRect();
+    if (r2.left < 4) {
+      box.style.left = (-btn.getBoundingClientRect().left + 4) + 'px';
       box.style.right = 'auto';
     }
   }

@@ -182,7 +182,7 @@ canvas{display:block}
   .cards{grid-template-columns:1fr 1fr}
   .chart-wrap{height:180px}
   .result-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
-  .tip-box{left:auto;right:0;transform:none;width:240px}
+  .tip-box:not(.tip-box-right){left:auto;right:0;transform:none;width:240px}
   .sens-grid{font-size:10px}
   .sens-cell{padding:6px 7px}
   /* Prevent iOS auto-zoom on focus */
@@ -205,7 +205,7 @@ canvas{display:block}
 .g7-apply-btn:hover{opacity:.85}
 .tip-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:none;border:1px solid var(--muted);color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:600;cursor:help;position:relative;vertical-align:middle;margin-left:5px;flex-shrink:0;line-height:1}
 .tip-btn.tip-active{border-color:var(--accent);color:var(--accent)}
-.tip-box{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left;pointer-events:none}
+.tip-box{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;left:20px;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left;pointer-events:none}
 .tip-box.tip-visible{visibility:visible;opacity:1}
 .tip-box code{background:var(--border2);padding:1px 4px;border-radius:2px;font-size:10px}
 .field label{display:flex;align-items:center}
@@ -491,7 +491,7 @@ canvas{display:block}
       <div class="panel-head"><span>Summary at Zero Range</span></div>
       <div class="panel-body" style="padding-bottom:12px">
         <div class="cards" id="summary-cards">
-          <div class="card"><div class="card-label">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
+          <div class="card"><div class="card-label">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box tip-box-right"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
 <span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
 <span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g bullet &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">Roe deer, beaver, lynx</span></span>
@@ -515,7 +515,7 @@ canvas{display:block}
     <!-- Chart: trajectory -->
     <div class="panel">
       <div class="panel-head">
-        <span>Trajectory <button class="tip-btn" style="text-transform:none;letter-spacing:0;vertical-align:middle">?<div class="tip-box">
+        <span>Trajectory <button class="tip-btn" style="text-transform:none;letter-spacing:0;vertical-align:middle">?<div class="tip-box" style="left:20px;top:-4px">
           <b>Chart curves:</b><br><br>
           <span style="display:inline-block;width:10px;height:3px;background:#aaa;vertical-align:middle;margin-right:6px"></span><b>Grey solid</b> — zero-day trajectory (Phase 1 atmosphere). This is the reference line the rifle is zeroed to.<br><br>
           <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — hunting/shooting-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
@@ -1598,36 +1598,33 @@ window.addEventListener('load', () => {
 
 function initTooltips() {
   let openTimer = null, activeBtn = null;
-  const TIP_W = 280; // matches min(280px,80vw) — safe upper bound
-
-  function positionTip(btn, box) {
-    // Use the button's viewport position to decide left vs right
-    const btnRect = btn.getBoundingClientRect();
-    const spaceRight = window.innerWidth - btnRect.right;
-    if (spaceRight >= TIP_W + 8) {
-      // Enough room to the right of the button
-      box.style.left  = '20px';
-      box.style.right = 'auto';
-    } else {
-      // Not enough room — anchor to right edge of button instead
-      box.style.left  = 'auto';
-      box.style.right = (btn.offsetWidth - 4) + 'px';
-    }
-  }
 
   function showTip(btn) {
     if (activeBtn && activeBtn !== btn) hideTip(activeBtn);
     activeBtn = btn;
     btn.classList.add('tip-active');
     const box = btn.querySelector('.tip-box');
-    positionTip(btn, box);
+    // Reset any previous inline overrides before measuring
+    box.style.left = '';
+    box.style.right = '';
+    box.style.transform = '';
     box.classList.add('tip-visible');
+    // Shift if the box bleeds outside the viewport
+    const rect = box.getBoundingClientRect();
+    if (rect.right > window.innerWidth - 8) {
+      box.style.left = 'auto';
+      box.style.right = '0';
+      box.style.transform = 'none';
+    } else if (rect.left < 8) {
+      box.style.left = '0';
+      box.style.transform = 'none';
+    }
   }
   function hideTip(btn) {
     if (!btn) return;
     btn.classList.remove('tip-active');
     const box = btn.querySelector('.tip-box');
-    if (box) box.classList.remove('tip-visible');
+    if (box) { box.classList.remove('tip-visible'); box.style.left=''; box.style.right=''; box.style.transform=''; }
     if (activeBtn === btn) activeBtn = null;
   }
 

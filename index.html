@@ -438,7 +438,7 @@ canvas{display:block}
 
       <div class="section-title">Display</div>
       <div class="field">
-        <label>Vital Zone (radius) <button class="tip-btn">?<div class="tip-box">Radius of the target's vital zone (heart/lung area).<br>Shown as red dashed lines in the trajectory chart.<br><br>Typical values:<br>Roe deer: 60–70 mm (2.4–2.8 in)<br>Red deer: 100–120 mm (3.9–4.7 in)<br>Moose: 150–180 mm (5.9–7.1 in)</div></button></label>
+        <label>Vital Zone (radius) <button class="tip-btn">?<div class="tip-box">Radius of the target's vital zone (heart/lung area).<br>Shown as purple dashed lines in the trajectory chart.<br><br>Typical values:<br>Roe deer: 60–70 mm (2.4–2.8 in)<br>Red deer: 100–120 mm (3.9–4.7 in)<br>Moose: 150–180 mm (5.9–7.1 in)</div></button></label>
         <div class="field-row">
           <input type="text" inputmode="decimal" id="vital_val" value="60">
           <select id="vital_unit" class="unit-sel" onchange="onUnitChange('vital')">
@@ -491,15 +491,15 @@ canvas{display:block}
       <div class="panel-head"><span>Summary at Zero Range</span></div>
       <div class="panel-body" style="padding-bottom:12px">
         <div class="cards" id="summary-cards">
-          <div class="card"><div class="card-label">Zero Angle</div><div class="card-val" id="c-theta">—</div><div class="card-sub">mrad</div></div>
-          <div class="card"><div class="card-label" id="c-vnull-label">v₀ → v@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
-          <div class="card"><div class="card-label">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box" style="left:auto;right:0;transform:none"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
+          <div class="card"><div class="card-label">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box" style="left:20px;right:auto;transform:none"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
 <span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
 <span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g bullet &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">Roe deer, beaver, lynx</span></span>
 <span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g bullet &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">Hare, fox, small game</span></span>
 <span style="color:var(--red);font-weight:600">K4</span><span>Other — air rifles, rimfire</span>
 </span></div></button></div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
+          <div class="card"><div class="card-label" id="c-vnull-label">v₀ → v@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
+          <div class="card"><div class="card-label" id="c-wind-zero-label">Wind Drift @ zero</div><div class="card-val" id="c-wind-zero">—</div><div class="card-sub" id="c-wind-zero-unit">mm</div></div>
         </div>
       </div>
     </div>
@@ -1226,7 +1226,7 @@ function calculate() {
     // Update cards
     document.getElementById('c-vnull-label').textContent = chrono_m > 0.005
       ? `v₀ corrected → v@zero` : `v₀ → v@zero`;
-    document.getElementById('c-theta').textContent = (theta*1000).toFixed(3);
+
     document.getElementById('c-vnull').textContent = toVelDisp(vAtZero).toFixed(0);
     document.getElementById('c-vnull-unit').textContent = velLabel;
     document.getElementById('c-e100').textContent  = toEDisp(E100).toFixed(0);
@@ -1328,6 +1328,13 @@ function calculate() {
       const k      = isZeroRow ? '' : (Math.abs(r - 100) < 0.5 ? huntClass(m_kg,E) : '');
       return {r, yRef, yShoot, diff, v, E, zVind, k, isZeroRow};
     }).filter(Boolean);
+
+    // Update wind drift @ zero card
+    const zeroRow = rows.find(r => r.isZeroRow) || (rows.length ? rows.reduce((best, r) => Math.abs(r.r-zero_m) < Math.abs(best.r-zero_m) ? r : best, rows[0]) : null);
+    if (zeroRow) {
+      document.getElementById('c-wind-zero').textContent = (zeroRow.zVind >= 0 ? '+' : '') + zeroRow.zVind.toFixed(devPrec);
+      document.getElementById('c-wind-zero-unit').textContent = windLabel;
+    }
 
     // ── Render table ──
     let html='<table class="result-table"><thead><tr>';
@@ -1596,12 +1603,28 @@ function initTooltips() {
     if (activeBtn && activeBtn !== btn) hideTip(activeBtn);
     activeBtn = btn;
     btn.classList.add('tip-active');
-    btn.querySelector('.tip-box').classList.add('tip-visible');
+    const box = btn.querySelector('.tip-box');
+    // Reset any previous inline overrides before measuring
+    box.style.left = '';
+    box.style.right = '';
+    box.style.transform = '';
+    box.classList.add('tip-visible');
+    // Shift if the box bleeds outside the viewport
+    const rect = box.getBoundingClientRect();
+    if (rect.right > window.innerWidth - 8) {
+      box.style.left = 'auto';
+      box.style.right = '0';
+      box.style.transform = 'none';
+    } else if (rect.left < 8) {
+      box.style.left = '0';
+      box.style.transform = 'none';
+    }
   }
   function hideTip(btn) {
     if (!btn) return;
     btn.classList.remove('tip-active');
-    btn.querySelector('.tip-box')?.classList.remove('tip-visible');
+    const box = btn.querySelector('.tip-box');
+    if (box) { box.classList.remove('tip-visible'); box.style.left=''; box.style.right=''; box.style.transform=''; }
     if (activeBtn === btn) activeBtn = null;
   }
 
@@ -1613,7 +1636,13 @@ function initTooltips() {
       clearTimeout(openTimer);
       hideTip(btn);
     });
+    // Touch / tap for mobile
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (activeBtn === btn) { hideTip(btn); } else { showTip(btn); }
+    });
   });
+  document.addEventListener('click', () => { if (activeBtn) hideTip(activeBtn); });
 }
 
 function applyTheme(theme) {

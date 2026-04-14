@@ -182,7 +182,7 @@ canvas{display:block}
   .cards{grid-template-columns:1fr 1fr}
   .chart-wrap{height:180px}
   .result-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
-  .tip-box{left:auto;right:0;transform:none;width:240px}
+  .tip-box:not(.tip-no-flip){left:auto;right:0;transform:none;width:240px}
   .sens-grid{font-size:10px}
   .sens-cell{padding:6px 7px}
   /* Prevent iOS auto-zoom on focus */
@@ -491,13 +491,13 @@ canvas{display:block}
       <div class="panel-head"><span>Summary at Zero Range</span></div>
       <div class="panel-body" style="padding-bottom:12px">
         <div class="cards" id="summary-cards">
-          <div class="card"><div class="card-label" style="position:relative">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?</button><div class="tip-box" style="top:18px;right:0;left:auto;transform:none"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
+          <div class="card"><div class="card-label">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box tip-no-flip"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
 <span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
 <span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g bullet &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">Roe deer, beaver, lynx</span></span>
 <span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g bullet &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">Hare, fox, small game</span></span>
 <span style="color:var(--red);font-weight:600">K4</span><span>Other — air rifles, rimfire</span>
-</span></div></div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
+</span></div></button></div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
           <div class="card"><div class="card-label" id="c-vnull-label">v₀ → v@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
           <div class="card"><div class="card-label" id="c-wind-zero-label">Wind Drift @ zero</div><div class="card-val" id="c-wind-zero">—</div><div class="card-sub" id="c-wind-zero-unit">mm</div></div>
         </div>

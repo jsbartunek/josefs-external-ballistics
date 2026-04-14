@@ -53,7 +53,7 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
 
 /* ── Header ── */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .header-title{display:flex;flex-direction:column;gap:2px}
 header h1{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);letter-spacing:.05em;white-space:nowrap}
 header p{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -241,21 +241,20 @@ canvas{display:block}
   </div>
 </div>
 
-<header>
-  <div class="header-title">
-    <h1 id="main-title">JOSEF'S EXTERNAL BALLISTICS</h1>
-    <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2+3 · G1/G7 · RK4</p>
-  </div>
-  <button onclick="openAbout()" class="header-btn">About</button>
-  <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" class="header-link">Stability ↗</a>
-  <div class="header-spacer"></div>
-  <div class="theme-toggle" onclick="toggleTheme()">
-    <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
-    <span class="theme-label" id="theme-label">Light mode</span>
-  </div>
-</header>
-
 <main>
+  <header style="grid-column:1/-1">
+    <div class="header-title">
+      <h1 id="main-title">JOSEF'S EXTERNAL BALLISTICS</h1>
+      <p>Trajectory · Wind Drift · Energy · Hunt Classes &nbsp;·&nbsp; Phase 1+2+3 · G1/G7 · RK4</p>
+    </div>
+    <button onclick="openAbout()" class="header-btn">About</button>
+    <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" class="header-link">Stability ↗</a>
+    <div class="header-spacer"></div>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
+      <span class="theme-label" id="theme-label">Light mode</span>
+    </div>
+  </header>
   <!-- ══════════════ LEFT: INPUTS ══════════════ -->
   <div class="panel">
     <div class="panel-head"><span>Input Parameters</span></div>

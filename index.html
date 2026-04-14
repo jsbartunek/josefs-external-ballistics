@@ -182,7 +182,8 @@ canvas{display:block}
   .cards{grid-template-columns:1fr 1fr}
   .chart-wrap{height:180px}
   .result-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
-  .tip-box:not(.tip-no-flip){left:auto;right:0;transform:none;width:240px}
+  .tip-box{left:auto;right:0;transform:none;width:240px}
+  .tip-btn .tip-no-flip{left:20px;right:auto}
   .sens-grid{font-size:10px}
   .sens-cell{padding:6px 7px}
   /* Prevent iOS auto-zoom on focus */
@@ -1599,19 +1600,32 @@ window.addEventListener('load', () => {
 function initTooltips() {
   let openTimer = null, activeBtn = null;
 
-  function getBox(btn) {
-    return btn.querySelector('.tip-box') || btn.nextElementSibling;
-  }
   function showTip(btn) {
     if (activeBtn && activeBtn !== btn) hideTip(activeBtn);
     activeBtn = btn;
     btn.classList.add('tip-active');
-    getBox(btn)?.classList.add('tip-visible');
+    const box = btn.querySelector('.tip-box');
+    // Reset any previous inline overrides before measuring
+    box.style.left = '';
+    box.style.right = '';
+    box.style.transform = '';
+    box.classList.add('tip-visible');
+    // Shift if the box bleeds outside the viewport
+    const rect = box.getBoundingClientRect();
+    if (rect.right > window.innerWidth - 8) {
+      box.style.left = 'auto';
+      box.style.right = '0';
+      box.style.transform = 'none';
+    } else if (rect.left < 8) {
+      box.style.left = '0';
+      box.style.transform = 'none';
+    }
   }
   function hideTip(btn) {
     if (!btn) return;
     btn.classList.remove('tip-active');
-    getBox(btn)?.classList.remove('tip-visible');
+    const box = btn.querySelector('.tip-box');
+    if (box) { box.classList.remove('tip-visible'); box.style.left=''; box.style.right=''; box.style.transform=''; }
     if (activeBtn === btn) activeBtn = null;
   }
 
@@ -1623,6 +1637,7 @@ function initTooltips() {
       clearTimeout(openTimer);
       hideTip(btn);
     });
+    // Touch / tap for mobile
     btn.addEventListener('click', e => {
       e.stopPropagation();
       if (activeBtn === btn) { hideTip(btn); } else { showTip(btn); }

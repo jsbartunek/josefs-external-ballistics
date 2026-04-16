@@ -958,12 +958,17 @@ function initInputs() {
   document.querySelectorAll('select').forEach(el => {
     el.addEventListener('change', persistInputs);
   });
-  // zfp live estimation
+  // zfp live estimation (debounced — waits until user stops typing)
+  var _zfpTimer = null;
+  function debouncedEstimateZfp() {
+    clearTimeout(_zfpTimer);
+    _zfpTimer = setTimeout(estimateZfp, 400);
+  }
   ['zfp_offset_val','zfp_dist_val'].forEach(function(id) {
     var el = document.getElementById(id);
     if (!el) return;
     fixComma(el);
-    el.addEventListener('input', estimateZfp);
+    el.addEventListener('input', debouncedEstimateZfp);
   });
 }
 
@@ -1516,7 +1521,7 @@ function calculate() {
     const v0Unit    = document.getElementById('v0_unit').value;
 
     const alpha   = alpha_deg * Math.PI / 180;
-    const g       = 9.81 * Math.cos(alpha);
+    const g       = 9.80665 * Math.cos(alpha);
     // BC: same conversion as MATLAB (BC_final = BC_input * 703.07)
     const BC_final = BC_input * 703.07;
     const dragModel = bc_type;
@@ -1969,7 +1974,7 @@ function calculate() {
       <div class="sens-cell sens-label">Temp +15°C</div><div class="sens-cell">${(temp_zero_C+15).toFixed(0)}°C</div><div class="sens-cell sens-val">${diffStr(yThi-yBas)}</div>
       <div class="sens-cell sens-label">Temp −15°C</div><div class="sens-cell">${(temp_zero_C-15).toFixed(0)}°C</div><div class="sens-cell sens-val">${diffStr(yTlo-yBas)}</div>
     </div>
-    <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Base: ${yBas_mm.toFixed(devPrec)} ${devLabel} at 200 m &nbsp;·&nbsp; Zero angle fixed</p>`;
+    <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Base: ${yBas_mm.toFixed(devPrec)} ${devLabel} at ${R_disp} ${rangeLabel} &nbsp;·&nbsp; Zero angle fixed</p>`;
 
     const row200 = rows.reduce((best, r) => Math.abs(r.r-200) < Math.abs(best.r-200) ? r : best, rows[rows.length-1]);
     const zeroRow = rows.find(r => r.isZeroRow) || rows.reduce((best, r) => Math.abs(r.r - zero_m) < Math.abs(best.r - zero_m) ? r : best, rows[0]);

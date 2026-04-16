@@ -23,7 +23,9 @@ A free, browser-based external ballistics calculator for hunters and handloaders
 - **Vital zone analysis** — apex height and position, drop-to-vital-zone crossing distance, and whether the bullet stays within the vital zone throughout the trajectory
 - **v₀ spread band** — trajectory envelope for ±chronograph spread, selectable per phase
 - **Sensitivity analysis** — quantifies how much v₀, temperature, pressure, and wind each affect impact at the selected range
-- **Swedish hunt classes** — K1/K2/K3/K4 evaluated at 100 m per Naturvårdsverket regulations
+- **Swedish hunt classes** — K1/K2/K3/K4 evaluated at 100 m per Naturvårdsverket regulations; displayed alongside E@zero in the summary panel
+- **Zero-from-offset estimator** — enter a measured bullet impact at any distance to back-calculate the zero range; classifies the result as rising, peak, or falling trajectory
+- **Optimize zero range for vital zone** — bisection search finds the zero range that maximizes MPBR for a given vital zone radius; one click applies the result
 - **Trajectory and wind drift charts** — reference, shooting-day, and Phase 3 trajectories overlaid with vital zone lines
 - **Ballistic table** — configurable range and step, all results in chosen units
 - **SI and imperial units** — switch freely between m/s and fps, mm and in, hPa and inHg, m and yd

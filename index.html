@@ -203,6 +203,19 @@ canvas{display:block}
 .g7-result{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;padding:6px 8px;background:var(--surface2);border-radius:2px}
 .g7-apply-btn{margin-left:auto;background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:10px;font-weight:600;border:none;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
 .g7-apply-btn:hover{opacity:.85}
+/* ── Zero-from-offset estimator (mirrors g7-estimator) ── */
+.zfp-estimator{margin-top:6px;margin-bottom:0;border:1px solid var(--border2);border-radius:2px;overflow:visible}
+.zfp-toggle{padding:6px 10px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;user-select:none;letter-spacing:.05em}
+.zfp-toggle:hover{color:var(--accent)}
+.zfp-body{padding:0 10px 10px}
+.zfp-result{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;padding:6px 8px;background:var(--surface2);border-radius:2px}
+.zfp-apply-btn{margin-left:auto;background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:10px;font-weight:600;border:none;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
+.zfp-apply-btn:hover{opacity:.85}
+.zfp-err{color:var(--red);font-family:var(--mono);font-size:10px;margin-top:6px;display:none}
+.zfp-scenario-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:7px 10px;border-top:1px solid var(--border2)}
+.zfp-scenario-label{font-family:var(--mono);font-size:11px;display:flex;align-items:center}
+.zfp-scenario-val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
+.zfp-scenario-val.zfp-na{color:var(--muted);font-weight:400;font-size:10px}
 .tip-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:none;border:1px solid var(--muted);color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:600;cursor:help;position:relative;vertical-align:middle;margin-left:5px;flex-shrink:0;line-height:1}
 .tip-btn.tip-active{border-color:var(--accent);color:var(--accent)}
 .tip-box{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;left:20px;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left;pointer-events:none}
@@ -235,7 +248,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 9, 2026 (v1.7 — G1→G7 factor unified to 1.95 for all pointed BT types based on radar-measured data; hunt/shoot terminology; vital zone legend fix) &nbsp;·&nbsp;
+      Last updated: April 16, 2026 (v2.0 — Optimize zero range for vital zone: bisection search finds the zero range that maximizes MPBR for a given vital zone radius) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -344,6 +357,60 @@ canvas{display:block}
             <option value="m">m</option>
             <option value="yd">yd</option>
           </select>
+        </div>
+      </div>
+
+      <!-- Zero-from-offset estimator -->
+      <div class="zfp-estimator" id="zfp-estimator">
+        <div class="zfp-toggle" onclick="toggleZfp()">
+          <span id="zfp-toggle-label">▶ Estimate zero range</span>
+        </div>
+        <div class="zfp-body" id="zfp-body" style="display:none">
+          <div class="field-inline" style="margin-top:8px">
+            <div class="field">
+              <label>Offset <button class="tip-btn">?<div class="tip-box">Measured bullet impact relative to line of sight at the reference distance.<br><br>Positive = bullet hits <b>above</b> the sight line (typical mid-range high shot).<br>Negative = bullet hits <b>below</b> the sight line.<br><br>Example: if the bullet hits 3 cm high at 100 m, enter +30 mm (or +1.18 in).</div></button></label>
+              <div class="field-row">
+                <input type="text" inputmode="decimal" id="zfp_offset_val" value="">
+                <span class="unit" id="zfp_offset_unit_lbl">mm</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>At distance <button class="tip-btn">?<div class="tip-box">The range at which you measured (or know) the bullet's vertical offset.<br><br>Common values: 80 m, 100 m, 150 m.<br>Any distance is accepted — use whatever suits your range or known data.</div></button></label>
+              <div class="field-row">
+                <input type="text" inputmode="decimal" id="zfp_dist_val" value="">
+                <span class="unit" id="zfp_dist_unit_lbl">m</span>
+              </div>
+            </div>
+          </div>
+          <div class="zfp-err" id="zfp-err"></div>
+          <div id="zfp-scenarios" style="display:none;margin-top:8px;border:1px solid var(--border2);border-radius:2px;font-family:var(--mono);font-size:11px">
+            <div style="background:var(--surface2);padding:5px 10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Estimated zero range</div>
+            <div class="zfp-scenario-row" id="zfp-row-rising">
+              <div class="zfp-scenario-label"><span style="color:var(--muted)">↗ Rising</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet is still <b>climbing</b> at the given distance. The offset is measured on the <b>ascending</b> part of the trajectory.<br><br>Zero range will be <b>beyond</b> the measurement distance. Common when shooting at a short range — e.g. 50 m — before the peak.</div></button></div>
+              <div class="zfp-scenario-val" id="zfp-val-rising">—</div>
+              <button class="zfp-apply-btn" id="zfp-apply-rising" onclick="applyZfpScenario('rising')" style="display:none">Apply →</button>
+            </div>
+            <div class="zfp-scenario-row" id="zfp-row-peak">
+              <div class="zfp-scenario-label"><span style="color:var(--muted)">▲ Peak</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The given distance is assumed to be the <b>highest point</b> of the bullet path — where the trajectory is momentarily flat.<br><br>This is the most useful scenario when sighting in at a range close to the mid-range peak. The app finds the zero range whose trajectory peaks at exactly this offset and approximately this distance.<br><br>If the result says <i>not possible</i>, the offset is too large to be a peak at that distance for the current ballistics.</div></button></div>
+              <div class="zfp-scenario-val" id="zfp-val-peak">—</div>
+              <button class="zfp-apply-btn" id="zfp-apply-peak" onclick="applyZfpScenario('peak')" style="display:none">Apply →</button>
+            </div>
+            <div class="zfp-scenario-row" id="zfp-row-falling">
+              <div class="zfp-scenario-label"><span style="color:var(--muted)">↘ Falling</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet has already passed its peak and is <b>descending</b> at the given distance.<br><br>Zero range will be <b>beyond</b> the measurement distance. Common when shooting at a longer range — e.g. 100 m — past the peak but before the zero crossing.</div></button></div>
+              <div class="zfp-scenario-val" id="zfp-val-falling">—</div>
+              <button class="zfp-apply-btn" id="zfp-apply-falling" onclick="applyZfpScenario('falling')" style="display:none">Apply →</button>
+            </div>
+          </div>
+          <!-- Optimize zero for vital zone -->
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border2)">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:11px;color:var(--muted);white-space:nowrap">Optimize zero range for vital zone</span>
+              <button class="zfp-apply-btn" onclick="optimizeZeroForVital()" style="display:inline-block">Optimize →</button>
+              <span id="ovz-result" style="font-family:var(--mono);font-size:11px;color:var(--fg)"></span>
+              <button class="zfp-apply-btn" id="ovz-apply-btn" onclick="applyOptimalZero()" style="display:none">Apply →</button>
+            </div>
+            <div id="ovz-err" style="font-size:10px;color:var(--red);margin-top:3px;display:none"></div>
+          </div>
         </div>
       </div>
 
@@ -490,13 +557,19 @@ canvas{display:block}
       <div class="panel-head"><span>Summary at Zero Range</span></div>
       <div class="panel-body" style="padding-bottom:12px">
         <div class="cards" id="summary-cards">
-          <div class="card"><div class="card-label">Energy E₁₀₀ <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
+          <div class="card"><div class="card-label">Energy</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline">
+  <span style="font-size:10px;color:var(--muted)">E₁₀₀ <span id="c-klass-label" style="font-size:12px"></span> <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
 <span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
 <span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g bullet &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">Roe deer, beaver, lynx</span></span>
 <span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g bullet &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">Hare, fox, small game</span></span>
 <span style="color:var(--red);font-weight:600">K4</span><span>Other — air rifles, rimfire</span>
-</span></div></button></div><div class="card-val" id="c-e100">—</div><div class="card-sub"><span id="c-e100-unit">J</span> &nbsp;<span id="c-klass" style="font-size:12px">—</span></div></div>
+</span></div></button></span>
+  <span style="text-align:right"><span class="card-val" id="c-e100" style="display:inline">—</span> <span id="c-e100-unit" style="font-size:11px;color:var(--muted)">J</span> </span>
+  <span style="font-size:10px;color:var(--muted)">E@zero</span>
+  <span style="text-align:right"><span class="card-val" id="c-ezero" style="display:inline">—</span> <span id="c-ezero-unit" style="font-size:11px;color:var(--muted)">J</span></span>
+</div></div>
           <div class="card"><div class="card-label" id="c-vnull-label">V₀ → V@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
           <div class="card"><div class="card-label">Wind Drift @ Zero</div><div class="card-val" id="c-wind-zero">—</div><div class="card-sub" id="c-wind-zero-unit">mm</div></div>
         </div>
@@ -771,6 +844,25 @@ function onUnitChange(field) {
         el.value = parseFloat(CONV_FROM.zero[newUnit](si).toFixed(1));
       }
     });
+    // Sync zfp unit labels
+    const zfpOffsetUnit = newUnit === 'm' ? 'mm' : 'in';
+    document.getElementById('zfp_offset_unit_lbl').textContent = zfpOffsetUnit;
+    document.getElementById('zfp_dist_unit_lbl').textContent   = newUnit;
+    // Convert zfp dist value if populated
+    const zfpDistEl = document.getElementById('zfp_dist_val');
+    const zfpDV = parseFloat(zfpDistEl.value.replace(',','.'));
+    if (!isNaN(zfpDV)) {
+      const si = CONV.zero[oldRangeUnit](zfpDV);
+      zfpDistEl.value = parseFloat(CONV_FROM.zero[newUnit](si).toFixed(1));
+    }
+    // Convert zfp offset value if populated
+    const zfpOffEl = document.getElementById('zfp_offset_val');
+    const zfpOV = parseFloat(zfpOffEl.value.replace(',','.'));
+    if (!isNaN(zfpOV)) {
+      const oldOffUnit = oldRangeUnit === 'm' ? 'mm' : 'in';
+      const si_off = oldOffUnit === 'mm' ? zfpOV / 1000 : zfpOV * 0.0254;
+      zfpOffEl.value = parseFloat((zfpOffsetUnit === 'mm' ? si_off * 1000 : si_off / 0.0254).toFixed(2));
+    }
   }
 
   prefs['unit_' + field] = newUnit;
@@ -836,6 +928,9 @@ function restorePrefs() {
   document.getElementById('maxrange_unit_lbl').textContent    = rangeUnit;
   document.getElementById('step_unit_lbl').textContent        = rangeUnit;
   document.getElementById('v0spread_unit_lbl').textContent    = v0Unit_r === 'fps' ? 'fps' : 'm/s';
+  // zfp unit labels
+  document.getElementById('zfp_offset_unit_lbl').textContent = rangeUnit === 'm' ? 'mm' : 'in';
+  document.getElementById('zfp_dist_unit_lbl').textContent   = rangeUnit;
 
   // Input values
   const valIds = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
@@ -862,6 +957,13 @@ function initInputs() {
   });
   document.querySelectorAll('select').forEach(el => {
     el.addEventListener('change', persistInputs);
+  });
+  // zfp live estimation
+  ['zfp_offset_val','zfp_dist_val'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    fixComma(el);
+    el.addEventListener('input', estimateZfp);
   });
 }
 
@@ -984,11 +1086,12 @@ function interpV(traj, xTarget) {
 }
 
 // Bisection: find theta so y(zero_m)=0
-function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g) {
+function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g, xMax) {
+  xMax = xMax || (zero_m + 20);
   let lo=-0.05, hi=0.05;
   for (let iter=0; iter<60; iter++) {
     const mid=(lo+hi)/2;
-    const traj=integrate(mid,v0,sight_h,rho,vs,BC_final,dragModel,g);
+    const traj=integrate(mid,v0,sight_h,rho,vs,BC_final,dragModel,g,2.5,0.001,xMax);
     const y=interpY(traj,zero_m);
     if (y>0) hi=mid; else lo=mid;
     if ((hi-lo)<1e-10) break;
@@ -1056,6 +1159,318 @@ function applyG7() {
   persistInputs();
   calculate();
 }
+
+// ── Zero-from-offset estimator ──
+function toggleZfp() {
+  const body = document.getElementById('zfp-body');
+  const label = document.getElementById('zfp-toggle-label');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  label.textContent = (open ? '▼' : '▶') + ' Estimate zero range';
+  if (open) updateZfpUnitLabels();
+}
+
+function updateZfpUnitLabels() {
+  const rangeUnit = document.getElementById('zero_unit').value; // 'm' or 'yd'
+  const offsetUnit = rangeUnit === 'm' ? 'mm' : 'in';
+  document.getElementById('zfp_offset_unit_lbl').textContent = offsetUnit;
+  document.getElementById('zfp_dist_unit_lbl').textContent = rangeUnit;
+}
+
+function estimateZfp() {
+  const rangeUnit  = document.getElementById('zero_unit').value;
+  const offsetUnit = rangeUnit === 'm' ? 'mm' : 'in';
+
+  const offsetRaw = parseFloat(document.getElementById('zfp_offset_val').value.replace(',','.'));
+  const distRaw   = parseFloat(document.getElementById('zfp_dist_val').value.replace(',','.'));
+
+  const errEl       = document.getElementById('zfp-err');
+  const scenariosEl = document.getElementById('zfp-scenarios');
+
+  errEl.style.display       = 'none';
+  scenariosEl.style.display = 'none';
+
+  if (isNaN(offsetRaw) || isNaN(distRaw) || distRaw <= 0) return;
+
+  // Convert to SI
+  const offset_m = offsetUnit === 'mm' ? offsetRaw / 1000 : offsetRaw * 0.0254;
+  const dist_m   = CONV.zero[rangeUnit](distRaw);
+
+  // Read ballistic parameters
+  const v0      = getSI('v0',    'v0_val',    'v0_unit');
+  const sight_h = getSI('sight', 'sight_val', 'sight_unit');
+  const BC_input= parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+  const bc_type = document.getElementById('bc_type').value;
+  const BC_final = BC_input * 703.07;
+  const dragModel = bc_type;
+  const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
+  const press_zero_hPa = getSI('press', 'press_zero_val','press_unit');
+  const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
+  const alpha_deg      = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
+  const g_eff = 9.80665 * Math.cos(alpha_deg * Math.PI / 180);
+
+  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) return;
+
+  const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
+
+  // Trajectory for a given zero candidate.
+  function trajForZero(z) {
+    const xNeeded = Math.max(z, dist_m) + 30;
+    const theta = findTheta(v0, sight_h, z, rho, vs, BC_final, dragModel, g_eff, xNeeded);
+    return integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g_eff, 4.0, 0.001, xNeeded);
+  }
+
+  // Characterize trajectory at dist_m: interpolated y and vy, plus peak (y,x)
+  function characterize(z) {
+    const tr = trajForZero(z);
+    const y  = interpY(tr, dist_m);
+    // Interpolated vy at dist_m
+    let vy = NaN;
+    for (let i = 1; i < tr.length; i++) {
+      if (tr[i].x >= dist_m) {
+        const f = (dist_m - tr[i-1].x) / (tr[i].x - tr[i-1].x);
+        vy = tr[i-1].vy + f * (tr[i].vy - tr[i-1].vy);
+        break;
+      }
+    }
+    let peakY = -Infinity, peakX = 0;
+    for (let i = 0; i < tr.length; i++) {
+      if (tr[i].y > peakY) { peakY = tr[i].y; peakX = tr[i].x; }
+    }
+    return { y, vy, peakY, peakX };
+  }
+
+  // Bisect for Z where yAtDist(Z) = offset_m, within given Z bracket.
+  function bisectY(zLo, zHi) {
+    let a = zLo, b = zHi;
+    let fa = characterize(a).y - offset_m;
+    if (isNaN(fa)) return NaN;
+    for (let i = 0; i < 40; i++) {
+      const mid = (a + b) / 2;
+      const fm  = characterize(mid).y - offset_m;
+      if (isNaN(fm)) return NaN;
+      if (fa * fm <= 0) { b = mid; } else { a = mid; fa = fm; }
+      if ((b - a) < 0.05) break;
+    }
+    return (a + b) / 2;
+  }
+
+  // Sweep Z from dist_m + small margin up to Z_MAX. We only care about
+  // zeros BEYOND the measurement distance — the shooter has already
+  // passed the first sight-line crossing when they measured the offset.
+  const Z_MIN = dist_m + 2.0;  // Z must be beyond measurement point
+  const Z_MAX = Math.max(600, dist_m * 4);
+  const N = 160;
+  const scanZ = [], scanY = [], scanVy = [], scanPY = [], scanPX = [];
+  for (let i = 0; i <= N; i++) {
+    const z = Z_MIN + (Z_MAX - Z_MIN) * i / N;
+    const c = characterize(z);
+    scanZ.push(z);
+    scanY.push(isNaN(c.y) ? null : c.y);
+    scanVy.push(isNaN(c.vy) ? 0 : c.vy);
+    scanPY.push(c.peakY);
+    scanPX.push(c.peakX);
+  }
+
+  // Collect all sign-crossings of (y - offset_m) with their category.
+  // Category is determined by vy at dist_m (physical definition):
+  //   vy > 0 → bullet still climbing → Rising
+  //   vy < 0 → bullet past peak      → Falling
+  //   |vy| small AND peakX ≈ dist_m  → Peak
+  const crossings = { rising: [], peak: [], falling: [] };
+
+  function categorize(z, vy, peakX) {
+    // "Peak" = bullet is essentially at the apex at dist_m.
+    // Use two criteria: either peakX is close to dist_m, OR vy is small
+    // (the apex is the physical definition: vy=0). Both are numerically
+    // noisy near the apex, so accept if EITHER is true.
+    const peakXnear = Math.abs(peakX - dist_m) <= dist_m * 0.05;
+    const vyNear    = Math.abs(vy) < 0.08;
+    if (peakXnear || vyNear) return 'peak';
+    if (vy > 0) return 'rising';
+    return 'falling';
+  }
+
+  for (let i = 0; i < N; i++) {
+    if (scanY[i] === null || scanY[i+1] === null) continue;
+    if ((scanY[i] - offset_m) * (scanY[i+1] - offset_m) > 0) continue;
+    const z = bisectY(scanZ[i], scanZ[i+1]);
+    if (isNaN(z) || z <= 0) continue;
+    // Reclassify at the exact bisected Z for accuracy
+    const c = characterize(z);
+    const cat = categorize(z, c.vy, c.peakX);
+    crossings[cat].push(z);
+  }
+
+  // Pick preferred solution per category:
+  //   - If multiple rising solutions, take the longest Z
+  //   - If multiple falling solutions, take the shortest Z (first past peak)
+  //   - If multiple peak solutions, take the one with peakX closest to dist_m
+  let zeroRising  = NaN, zeroPeak = NaN, zeroFalling = NaN;
+  if (crossings.rising.length  > 0) zeroRising  = Math.max(...crossings.rising);
+  if (crossings.falling.length > 0) zeroFalling = Math.min(...crossings.falling);
+  if (crossings.peak.length > 0) {
+    let best = crossings.peak[0];
+    let bestErr = Math.abs(characterize(best).peakX - dist_m);
+    for (let k = 1; k < crossings.peak.length; k++) {
+      const err = Math.abs(characterize(crossings.peak[k]).peakX - dist_m);
+      if (err < bestErr) { best = crossings.peak[k]; bestErr = err; }
+    }
+    zeroPeak = best;
+  }
+
+  // --- Render results ---
+  window._zfpResults = { rising: zeroRising, peak: zeroPeak, falling: zeroFalling };
+
+  function renderRow(scenario, zeroSI) {
+    const valEl   = document.getElementById('zfp-val-' + scenario);
+    const applyEl = document.getElementById('zfp-apply-' + scenario);
+    if (isNaN(zeroSI) || zeroSI <= 0) {
+      valEl.textContent = 'Not possible';
+      valEl.className = 'zfp-scenario-val zfp-na';
+      applyEl.style.display = 'none';
+    } else {
+      const disp = parseFloat(CONV_FROM.zero[rangeUnit](zeroSI).toFixed(1));
+      valEl.textContent = disp + '\u00a0' + rangeUnit;
+      valEl.className = 'zfp-scenario-val';
+      applyEl.style.display = '';
+    }
+  }
+
+  renderRow('rising',  zeroRising);
+  renderRow('peak',    zeroPeak);
+  renderRow('falling', zeroFalling);
+  scenariosEl.style.display = 'block';
+}
+
+function applyZfpScenario(scenario) {
+  const rangeUnit = document.getElementById('zero_unit').value;
+  const zeroSI = window._zfpResults && window._zfpResults[scenario];
+  if (!zeroSI || isNaN(zeroSI)) return;
+  const disp = parseFloat(CONV_FROM.zero[rangeUnit](zeroSI).toFixed(1));
+  document.getElementById('zero_val').value = disp;
+  // collapse
+  document.getElementById('zfp-body').style.display = 'none';
+  document.getElementById('zfp-toggle-label').textContent = '\u25b6 Estimate zero range';
+  document.getElementById('zfp-scenarios').style.display = 'none';
+  document.getElementById('zfp_offset_val').value = '';
+  document.getElementById('zfp_dist_val').value = '';
+  persistInputs();
+  calculate();
+}
+
+function optimizeZeroForVital() {
+  const resultEl = document.getElementById('ovz-result');
+  const errEl    = document.getElementById('ovz-err');
+  const applyBtn = document.getElementById('ovz-apply-btn');
+  resultEl.textContent = '';
+  errEl.style.display  = 'none';
+  applyBtn.style.display = 'none';
+
+  // Read vital zone radius directly (mm or in -> metres)
+  const vital_raw  = parseFloat(document.getElementById('vital_val').value.replace(',','.'));
+  const vital_unit = document.getElementById('vital_unit').value;
+  if (isNaN(vital_raw) || vital_raw <= 0) {
+    errEl.textContent = 'Enter a valid vital zone radius.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const vital_m = vital_unit === 'in' ? vital_raw * 0.0254 : vital_raw / 1000;
+
+  // Read ballistic parameters (same as estimateZfp)
+  const v0      = getSI('v0',    'v0_val',    'v0_unit');
+  const sight_h = getSI('sight', 'sight_val', 'sight_unit');
+  const BC_input= parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+  const bc_type = document.getElementById('bc_type').value;
+  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) {
+    errEl.textContent = 'Fill in v₀, BC and sight height first.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const BC_final  = BC_input * 703.07;
+  const dragModel = bc_type;
+  const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
+  const press_zero_hPa = getSI('press', 'press_zero_val','press_unit');
+  const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
+  const alpha_deg      = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
+  const g_eff = 9.80665 * Math.cos(alpha_deg * Math.PI / 180);
+  const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
+
+  // peakY above sight line for a given zero candidate (monotonically increasing with Z)
+  // y=0 is the sight line; we want the max y that is above it (y > 0).
+  // xNeeded must cover well past the peak, which occurs at roughly 0.4–0.5 * zero.
+  function peakYforZ(z) {
+    const xNeeded = z + 50;
+    const theta = findTheta(v0, sight_h, z, rho, vs, BC_final, dragModel, g_eff, xNeeded);
+    const tr = integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g_eff, 4.0, 0.001, xNeeded);
+    let maxY = 0;  // only count y above the sight line
+    for (let i = 0; i < tr.length; i++) {
+      if (tr[i].y > maxY) maxY = tr[i].y;
+    }
+    return maxY;
+  }
+
+  // peakY is monotonically increasing with Z only in the "normal" hunting zero range.
+  // For very short zeros (< ~50 m) the steep angle produces a huge arc — non-monotone.
+  // Scan from zScan upward to find the first Z where peakY >= vital_m.
+  // This gives us a proper bracket [lo, hi] guaranteed to straddle vital_m.
+  const Z_SCAN_START = 50, Z_SCAN_END = 600, Z_SCAN_STEP = 5;
+  let zLo = NaN, zHi = NaN;
+  let prevPeak = peakYforZ(Z_SCAN_START);
+  for (let z = Z_SCAN_START + Z_SCAN_STEP; z <= Z_SCAN_END; z += Z_SCAN_STEP) {
+    const pk = peakYforZ(z);
+    if (prevPeak <= vital_m && pk >= vital_m) {
+      zLo = z - Z_SCAN_STEP;
+      zHi = z;
+      break;
+    }
+    prevPeak = pk;
+  }
+
+  if (isNaN(zLo)) {
+    if (peakYforZ(Z_SCAN_END) < vital_m) {
+      errEl.textContent = 'Vital zone too large — no zero in 50–600 m range reaches this peak.';
+    } else {
+      errEl.textContent = 'Vital zone too small — optimal zero is below 50 m (not practical for hunting).';
+    }
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Bisect: find Z where peakY(Z) = vital_m
+  let lo = zLo, hi = zHi;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (peakYforZ(mid) > vital_m) hi = mid;
+    else lo = mid;
+    if ((hi - lo) < 0.05) break;
+  }
+  const optimalZ_m = (lo + hi) / 2;
+
+  // Store and display
+  window._ovzResult = optimalZ_m;
+  const rangeUnit = document.getElementById('zero_unit').value;
+  const disp = parseFloat(CONV_FROM.zero[rangeUnit](optimalZ_m).toFixed(1));
+  resultEl.textContent = 'Zero = ' + disp + '\u00a0' + rangeUnit;
+  applyBtn.style.display = 'inline-block';
+}
+
+function applyOptimalZero() {
+  const z_m = window._ovzResult;
+  if (!z_m || isNaN(z_m)) return;
+  const rangeUnit = document.getElementById('zero_unit').value;
+  const disp = parseFloat(CONV_FROM.zero[rangeUnit](z_m).toFixed(1));
+  document.getElementById('zero_val').value = disp;
+  // collapse panel
+  document.getElementById('zfp-body').style.display = 'none';
+  document.getElementById('zfp-toggle-label').textContent = '\u25b6 Estimate zero range';
+  document.getElementById('zfp-scenarios').style.display = 'none';
+  document.getElementById('zfp_offset_val').value = '';
+  document.getElementById('zfp_dist_val').value = '';
+  persistInputs();
+  calculate();
+}
+
 
 function calculate() {
   try {
@@ -1229,7 +1644,10 @@ function calculate() {
     document.getElementById('c-vnull-unit').textContent = velLabel;
     document.getElementById('c-e100').textContent  = toEDisp(E100).toFixed(0);
     document.getElementById('c-e100-unit').textContent  = eLabel;
-    const klassBadge = document.getElementById('c-klass');
+    const eZero = 0.5 * m_kg * vAtZero * vAtZero;
+    document.getElementById('c-ezero').textContent = toEDisp(eZero).toFixed(0);
+    document.getElementById('c-ezero-unit').textContent = eLabel;
+    const klassBadge = document.getElementById('c-klass-label');
     klassBadge.textContent = klass;
     klassBadge.className = 'klass-badge ' + klass.toLowerCase();
 

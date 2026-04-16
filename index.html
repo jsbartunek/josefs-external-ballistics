@@ -559,6 +559,8 @@ canvas{display:block}
         <div class="cards" id="summary-cards">
           <div class="card"><div class="card-label">Energy</div>
 <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline">
+  <span style="font-size:10px;color:var(--muted)">E@zero</span>
+  <span style="text-align:right"><span class="card-val" id="c-ezero" style="display:inline">—</span> <span id="c-ezero-unit" style="font-size:11px;color:var(--muted)">J</span></span>
   <span style="font-size:10px;color:var(--muted)">E₁₀₀ <span id="c-klass-label" style="font-size:12px"></span> <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
 <span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
@@ -566,12 +568,10 @@ canvas{display:block}
 <span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g bullet &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">Hare, fox, small game</span></span>
 <span style="color:var(--red);font-weight:600">K4</span><span>Other — air rifles, rimfire</span>
 </span></div></button></span>
-  <span style="text-align:right"><span class="card-val" id="c-e100" style="display:inline">—</span> <span id="c-e100-unit" style="font-size:11px;color:var(--muted)">J</span> </span>
-  <span style="font-size:10px;color:var(--muted)">E@zero</span>
-  <span style="text-align:right"><span class="card-val" id="c-ezero" style="display:inline">—</span> <span id="c-ezero-unit" style="font-size:11px;color:var(--muted)">J</span></span>
+  <span style="text-align:right"><span class="card-val" id="c-e100" style="display:inline">—</span> <span id="c-e100-unit" style="font-size:11px;color:var(--muted)">J</span></span>
 </div></div>
-          <div class="card"><div class="card-label" id="c-vnull-label">V₀ → V@zero</div><div class="card-val" id="c-vnull">—</div><div class="card-sub" id="c-vnull-unit">m/s</div></div>
-          <div class="card"><div class="card-label">Wind Drift @ Zero</div><div class="card-val" id="c-wind-zero">—</div><div class="card-sub" id="c-wind-zero-unit">mm</div></div>
+          <div class="card"><div class="card-label" id="c-vnull-label">V₀ → V@zero</div><div style="text-align:right"><span class="card-val" id="c-vnull">—</span> <span class="card-sub" id="c-vnull-unit" style="display:inline">m/s</span></div></div>
+          <div class="card"><div class="card-label">Wind Drift @ Zero</div><div style="text-align:right"><span class="card-val" id="c-wind-zero">—</span> <span class="card-sub" id="c-wind-zero-unit" style="display:inline">mm</span></div></div>
         </div>
       </div>
     </div>

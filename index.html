@@ -375,7 +375,7 @@ canvas{display:block}
               </div>
             </div>
             <div class="field">
-              <label>At distance <button class="tip-btn">?<div class="tip-box">The range at which you measured (or know) the bullet's vertical offset.<br><br>Common values: 80 m, 100 m, 150 m.<br>Any distance is accepted — use whatever suits your range or known data.</div></button></label>
+              <label>At distance <button class="tip-btn">?<div class="tip-box">The range at which you measured (or know) the bullet's vertical offset.<br><br>Common values: 80 m, 100 m, 150 m (or 100 yd, 200 yd).<br>Any distance is accepted — use whatever suits your range or known data.</div></button></label>
               <div class="field-row">
                 <input type="text" inputmode="decimal" id="zfp_dist_val" value="">
                 <span class="unit" id="zfp_dist_unit_lbl">m</span>
@@ -554,14 +554,14 @@ canvas{display:block}
 
     <!-- Summary cards -->
     <div class="panel">
-      <div class="panel-head"><span>Summary at Zero Range</span></div>
+      <div class="panel-head"><span id="summary-panel-head">Summary at Zero &amp; 100m</span></div>
       <div class="panel-body" style="padding-bottom:12px">
         <div class="cards" id="summary-cards">
           <div class="card"><div class="card-label">Energy</div>
 <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline">
   <span style="font-size:10px;color:var(--muted)">E@zero</span>
   <span style="text-align:right"><span class="card-val" id="c-ezero" style="display:inline">—</span> <span id="c-ezero-unit" style="font-size:11px;color:var(--muted)">J</span></span>
-  <span style="font-size:10px;color:var(--muted)">E₁₀₀ <span id="c-klass-label" style="font-size:12px"></span> <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
+  <span style="font-size:10px;color:var(--muted)"><span id="c-e100-label">E₁₀₀</span> <span id="c-klass-label" style="font-size:12px"></span> <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
 <span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
 <span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g bullet &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">Roe deer, beaver, lynx</span></span>
@@ -570,8 +570,20 @@ canvas{display:block}
 </span></div></button></span>
   <span style="text-align:right"><span class="card-val" id="c-e100" style="display:inline">—</span> <span id="c-e100-unit" style="font-size:11px;color:var(--muted)">J</span></span>
 </div></div>
-          <div class="card"><div class="card-label" id="c-vnull-label">V₀ → V@zero</div><div style="text-align:right"><span class="card-val" id="c-vnull">—</span> <span class="card-sub" id="c-vnull-unit" style="display:inline">m/s</span></div></div>
-          <div class="card"><div class="card-label">Wind Drift @ Zero</div><div style="text-align:right"><span class="card-val" id="c-wind-zero">—</span> <span class="card-sub" id="c-wind-zero-unit" style="display:inline">mm</span></div></div>
+          <div class="card"><div class="card-label" id="c-vnull-label">Velocity</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline">
+  <span style="font-size:10px;color:var(--muted)">V@zero</span>
+  <span style="text-align:right"><span class="card-val" id="c-vnull">—</span> <span class="card-sub" id="c-vnull-unit" style="display:inline;font-size:11px;color:var(--muted)">m/s</span></span>
+  <span style="font-size:10px;color:var(--muted)" id="c-v100-label">V@100m</span>
+  <span style="text-align:right"><span class="card-val" id="c-v100">—</span> <span class="card-sub" id="c-v100-unit" style="display:inline;font-size:11px;color:var(--muted)">m/s</span></span>
+</div></div>
+          <div class="card"><div class="card-label">Wind Drift</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline">
+  <span style="font-size:10px;color:var(--muted)">@zero</span>
+  <span style="text-align:right"><span class="card-val" id="c-wind-zero">—</span> <span class="card-sub" id="c-wind-zero-unit" style="display:inline;font-size:11px;color:var(--muted)">mm</span></span>
+  <span style="font-size:10px;color:var(--muted)" id="c-wind100-label">@100m</span>
+  <span style="text-align:right"><span class="card-val" id="c-wind-100">—</span> <span class="card-sub" id="c-wind-100-unit" style="display:inline;font-size:11px;color:var(--muted)">mm</span></span>
+</div></div>
         </div>
       </div>
     </div>
@@ -1642,16 +1654,31 @@ function calculate() {
     // v at zero_m
     const vAtZero = interpV(trajRef, zero_m);
 
+    // ── Determine 100m vs 100yd label ──
+    const use100yd = (rangeUnit === 'yd');
+    const ref100m  = use100yd ? 91.44 : 100;   // 100 yd in metres
+    const label100 = use100yd ? '100yd' : '100m';
+
+    // Update summary panel heading
+    document.getElementById('summary-panel-head').textContent =
+      `Summary at Zero Range & ${label100}`;
+
     // Update cards
-    document.getElementById('c-vnull-label').textContent = chrono_m > 0.005
-      ? `v₀ corrected → v@zero` : `v₀ → v@zero`;
     document.getElementById('c-vnull').textContent = toVelDisp(vAtZero).toFixed(0);
     document.getElementById('c-vnull-unit').textContent = velLabel;
+
+    // V@100m
+    const v100disp = interpV(trajRef, ref100m);
+    document.getElementById('c-v100-label').textContent = `V@${label100}`;
+    document.getElementById('c-v100').textContent = toVelDisp(v100disp).toFixed(0);
+    document.getElementById('c-v100-unit').textContent = velLabel;
+
     document.getElementById('c-e100').textContent  = toEDisp(E100).toFixed(0);
     document.getElementById('c-e100-unit').textContent  = eLabel;
     const eZero = 0.5 * m_kg * vAtZero * vAtZero;
     document.getElementById('c-ezero').textContent = toEDisp(eZero).toFixed(0);
     document.getElementById('c-ezero-unit').textContent = eLabel;
+
     const klassBadge = document.getElementById('c-klass-label');
     klassBadge.textContent = klass;
     klassBadge.className = 'klass-badge ' + klass.toLowerCase();
@@ -1982,7 +2009,16 @@ function calculate() {
     const windZeroUnitEl = document.getElementById('c-wind-zero-unit');
     if (windZeroEl) { windZeroEl.textContent = (zeroRow.zVind >= 0 ? '+' : '') + zeroRow.zVind.toFixed(devPrec); }
     if (windZeroUnitEl) { windZeroUnitEl.textContent = devLabel; }
-    setStatus(`OK — θ=${(theta*1000).toFixed(3)} mrad · E₁₀₀=${toEDisp(E100).toFixed(0)} ${eLabel} · ${klass} · wind drift@${toRangeDisp(row200.r).toFixed(0)}${rangeLabel}: ${row200.zVind.toFixed(devPrec)} ${windLabel}`, 'ok');
+
+    // Wind drift @ 100m (or 100yd)
+    const row100wind = rows.reduce((best, r) => Math.abs(r.r - ref100m) < Math.abs(best.r - ref100m) ? r : best, rows[0]);
+    const wind100El = document.getElementById('c-wind-100');
+    const wind100UnitEl = document.getElementById('c-wind-100-unit');
+    const wind100LabelEl = document.getElementById('c-wind100-label');
+    if (wind100LabelEl) wind100LabelEl.textContent = `@${label100}`;
+    if (wind100El) { wind100El.textContent = (row100wind.zVind >= 0 ? '+' : '') + row100wind.zVind.toFixed(devPrec); }
+    if (wind100UnitEl) { wind100UnitEl.textContent = devLabel; }
+    setStatus(`OK — θ=${(theta*1000).toFixed(3)} mrad · wind drift@${toRangeDisp(row200.r).toFixed(0)}${rangeLabel}: ${row200.zVind.toFixed(devPrec)} ${windLabel}`, 'ok');
 
   } catch(e) {
     setStatus('Error: ' + e.message, 'warn');

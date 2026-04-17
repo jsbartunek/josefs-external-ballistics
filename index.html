@@ -255,8 +255,16 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 17, 2026 (v2.3 — Improved visual hierarchy: section titles and panel headings now use a dedicated --heading colour (slightly darker in light mode, slightly lighter in dark mode) to distinguish them from field labels and secondary text, making the input panel's logical groupings easier to scan at a glance; also removed stray &ldquo;kts&rdquo; option from crosswind unit selector (fps is not used for wind in any hunting ballistics context) and added km/h as it is the common wind unit in Slovakia and much of continental Europe — final crosswind options are m/s, km/h, mph; added safeguard against stale unit preferences stored in localStorage so removing a unit option in a future version doesn't crash existing users) &nbsp;·&nbsp;
-      Previous: v2.2 — Input panel reorganised: Vital Zone moved next to Zero Range since it drives the zero-range optimiser; Chronograph distance and v₀ spread grouped into a collapsible &ldquo;Chronograph details&rdquo; panel under Muzzle Velocity; VZS row labels unified as Zero atm. (P1) / Hunt atm. (P2) / +Propellant (P3); redundant Class column removed from the trajectory table. &nbsp;·&nbsp;
+      <span style="margin-top:4px;display:inline-block">v2.3 · April 17, 2026 — refined input panel layout, visual hierarchy, and crosswind units.</span>
+      <details style="display:inline-block;margin-left:6px;cursor:pointer">
+        <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
+        <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v2.3</b> (Apr 17, 2026) — Darker, dedicated colour for section titles and panel headings so the logical groupings read as distinct at a glance. Crosswind unit list revised: removed kts (not used for wind in hunting ballistics), added km/h for Central European use; final options are m/s, km/h, mph. Added a safeguard for stale unit preferences in localStorage.<br>
+          <b>v2.2</b> (Apr 17, 2026) — Input panel reorganised: Vital Zone moved next to Zero Range since it drives the zero-range optimiser; Chronograph distance and v₀ spread grouped into a collapsible &ldquo;Chronograph details&rdquo; panel under Muzzle Velocity; VZS row labels unified as Zero atm. (P1) / Hunt atm. (P2) / +Propellant (P3); redundant Class column removed from the trajectory table.<br>
+          <b>v2.1</b> — Unified UI for zero-range estimators: both sections now use an explicit Calculate button, consistent result rows with dimmed &ldquo;&mdash;&rdquo; for empty scenarios, stale-clearing on input change; tooltip texts revised for clarity and Optimal tooltip added.
+        </div>
+      </details>
+      &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>

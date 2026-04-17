@@ -365,7 +365,26 @@ canvas{display:block}
           <span id="zfp-toggle-label">▶ Estimate zero range</span>
         </div>
         <div class="zfp-body" id="zfp-body" style="display:none">
-          <div class="field-inline" style="margin-top:8px">
+          <!-- Optimize zero for vital zone -->
+          <div style="margin-top:8px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Optimize zero range for vital zone</div>
+            <div style="display:flex;justify-content:flex-end;margin-top:6px">
+              <button class="zfp-apply-btn" onclick="optimizeZeroForVital()">Calculate →</button>
+            </div>
+            <div id="ovz-scenarios" style="margin-top:8px;border:1px solid var(--border2);border-radius:2px;font-family:var(--mono);font-size:11px">
+              <div style="background:var(--surface2);padding:5px 10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Optimal zero range</div>
+              <div class="zfp-scenario-row" id="ovz-row">
+                <div class="zfp-scenario-label"><span style="color:var(--muted)">◎ Optimal</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The zero range that keeps the bullet path within the vital zone radius for as long as possible — maximizing the point-blank range where no holdover is needed.<br><br>Found by matching the trajectory's peak height above the line of sight to the vital zone radius.</div></button></div>
+                <div class="zfp-scenario-val" id="ovz-val" style="opacity:.4">—</div>
+                <button class="zfp-apply-btn" id="ovz-apply-btn" onclick="applyOptimalZero()" style="display:none">Apply →</button>
+              </div>
+            </div>
+            <div id="ovz-err" style="font-size:10px;color:var(--red);margin-top:3px;display:none"></div>
+          </div>
+          <!-- Estimate from measured offset -->
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border2)">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Estimate from measured offset</div>
+            <div class="field-inline" style="margin-top:8px">
             <div class="field">
               <label>Offset <button class="tip-btn">?<div class="tip-box">Measured bullet impact relative to line of sight at the reference distance.<br><br>Positive = bullet hits <b>above</b> the sight line (typical mid-range high shot).<br>Negative = bullet hits <b>below</b> the sight line.<br><br>Example: if the bullet hits 3 cm high at 100 m, enter +30 mm (or +1.18 in).</div></button></label>
               <div class="field-row">
@@ -403,21 +422,6 @@ canvas{display:block}
               <button class="zfp-apply-btn" id="zfp-apply-falling" onclick="applyZfpScenario('falling')" style="display:none">Apply →</button>
             </div>
           </div>
-          <!-- Optimize zero for vital zone -->
-          <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border2)">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Optimize zero range for vital zone</div>
-            <div style="display:flex;justify-content:flex-end;margin-top:6px">
-              <button class="zfp-apply-btn" onclick="optimizeZeroForVital()">Calculate →</button>
-            </div>
-            <div id="ovz-scenarios" style="margin-top:8px;border:1px solid var(--border2);border-radius:2px;font-family:var(--mono);font-size:11px">
-              <div style="background:var(--surface2);padding:5px 10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Optimal zero range</div>
-              <div class="zfp-scenario-row" id="ovz-row">
-                <div class="zfp-scenario-label"><span style="color:var(--muted)">◎ Optimal</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The zero range that keeps the bullet path within the vital zone radius for as long as possible — maximizing the point-blank range where no holdover is needed.<br><br>Found by matching the trajectory's peak height above the line of sight to the vital zone radius.</div></button></div>
-                <div class="zfp-scenario-val" id="ovz-val" style="opacity:.4">—</div>
-                <button class="zfp-apply-btn" id="ovz-apply-btn" onclick="applyOptimalZero()" style="display:none">Apply →</button>
-              </div>
-            </div>
-            <div id="ovz-err" style="font-size:10px;color:var(--red);margin-top:3px;display:none"></div>
           </div>
         </div>
       </div>
@@ -1406,7 +1410,6 @@ function applyZfpScenario(scenario) {
   // collapse
   document.getElementById('zfp-body').style.display = 'none';
   document.getElementById('zfp-toggle-label').textContent = '\u25b6 Estimate zero range';
-  document.getElementById('zfp-scenarios').style.display = 'none';
   document.getElementById('zfp_offset_val').value = '';
   document.getElementById('zfp_dist_val').value = '';
   persistInputs();
@@ -1525,7 +1528,6 @@ function applyOptimalZero() {
   // collapse panel
   document.getElementById('zfp-body').style.display = 'none';
   document.getElementById('zfp-toggle-label').textContent = '\u25b6 Estimate zero range';
-  document.getElementById('zfp-scenarios').style.display = 'none';
   document.getElementById('zfp_offset_val').value = '';
   document.getElementById('zfp_dist_val').value = '';
   persistInputs();

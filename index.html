@@ -255,7 +255,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 17, 2026 (v2.3 — Improved visual hierarchy: section titles and panel headings now use a dedicated --heading colour (slightly darker in light mode, slightly lighter in dark mode) to distinguish them from field labels and secondary text, making the input panel's logical groupings easier to scan at a glance) &nbsp;·&nbsp;
+      Last updated: April 17, 2026 (v2.3 — Improved visual hierarchy: section titles and panel headings now use a dedicated --heading colour (slightly darker in light mode, slightly lighter in dark mode) to distinguish them from field labels and secondary text, making the input panel's logical groupings easier to scan at a glance; also removed stray &ldquo;kts&rdquo; option from crosswind unit selector (fps is not used for wind in any hunting ballistics context) and added km/h as it is the common wind unit in Slovakia and much of continental Europe — final crosswind options are m/s, km/h, mph; added safeguard against stale unit preferences stored in localStorage so removing a unit option in a future version doesn't crash existing users) &nbsp;·&nbsp;
       Previous: v2.2 — Input panel reorganised: Vital Zone moved next to Zero Range since it drives the zero-range optimiser; Chronograph distance and v₀ spread grouped into a collapsible &ldquo;Chronograph details&rdquo; panel under Muzzle Velocity; VZS row labels unified as Zero atm. (P1) / Hunt atm. (P2) / +Propellant (P3); redundant Class column removed from the trajectory table. &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
@@ -540,8 +540,8 @@ canvas{display:block}
             <input type="text" inputmode="text" id="wind_val" value="5.0">
             <select id="wind_unit" class="unit-sel" onchange="onUnitChange('wind')">
               <option value="ms">m/s</option>
+              <option value="kmh">km/h</option>
               <option value="mph">mph</option>
-              <option value="kts">kts</option>
             </select>
           </div>
         </div>
@@ -804,7 +804,7 @@ const CONV = {
   zero:  { m:   v=>v,             yd:  v=>v*0.9144    },
   temp:  { C:   v=>v,             F:   v=>(v-32)*5/9  },
   press: { hPa: v=>v,             inHg:v=>v*33.8639   },
-  wind:  { ms:  v=>v,             mph: v=>v*0.44704,  kts:v=>v*0.514444 },
+  wind:  { ms:  v=>v,             kmh: v=>v/3.6,       mph: v=>v*0.44704   },
   vital: { mm:  v=>v/10,           in:  v=>v*2.54      },
   chrono:{ mm:  v=>v/1000,         in:  v=>v*0.0254    },
 };
@@ -817,7 +817,7 @@ const CONV_FROM = {
   zero:  { m:   v=>v,             yd:  v=>v/0.9144    },
   temp:  { C:   v=>v,             F:   v=>v*9/5+32    },
   press: { hPa: v=>v,             inHg:v=>v/33.8639   },
-  wind:  { ms:  v=>v,             mph: v=>v/0.44704,  kts:v=>v/0.514444 },
+  wind:  { ms:  v=>v,             kmh: v=>v*3.6,       mph: v=>v/0.44704   },
   vital: { mm:  v=>v*10,           in:  v=>v/2.54      },
   chrono:{ mm:  v=>v*1000,         in:  v=>v/0.0254    },
 };
@@ -846,7 +846,13 @@ function onUnitChange(field) {
   const prefs = loadPrefs();
   const selEl = document.getElementById(field + '_unit');
   const newUnit = selEl.value;
-  const oldUnit = prefs['unit_' + field] || selEl.options[0].value;
+  let oldUnit = prefs['unit_' + field] || selEl.options[0].value;
+  // Guard: if the stored oldUnit no longer exists in the CONV table (e.g. a unit option
+  // was removed in a later version), fall back to the first available option so we don't
+  // crash with "CONV[field][oldUnit] is not a function".
+  if (!CONV[field] || typeof CONV[field][oldUnit] !== 'function') {
+    oldUnit = selEl.options[0].value;
+  }
 
   // Fields that have multiple inputs sharing one unit selector
   const multiFields = {
@@ -955,7 +961,18 @@ function restorePrefs() {
     const k = 'unit_' + f;
     if (prefs[k]) {
       const el = document.getElementById(f + '_unit');
-      if (el) el.value = prefs[k];
+      if (el) {
+        // Only apply the stored unit if it still exists as an option.
+        // Protects against stale prefs referring to removed unit choices.
+        const validValues = Array.from(el.options).map(o => o.value);
+        if (validValues.includes(prefs[k])) {
+          el.value = prefs[k];
+        } else {
+          // Stale pref: wipe it and let default stand.
+          delete prefs[k];
+          savePrefs(prefs);
+        }
+      }
     }
   });
 
@@ -1642,13 +1659,13 @@ function calculate() {
     // ── Display units ──
     const rangeUnit = document.getElementById('zero_unit').value;   // 'm' or 'yd'
     const vitalUnit = document.getElementById('vital_unit').value;  // 'cm' or 'in'
-    const windUnit  = document.getElementById('wind_unit').value;   // 'ms', 'mph', 'kts'
+    const windUnit  = document.getElementById('wind_unit').value;   // 'ms', 'kmh' or 'mph'
     const rangeLabel = rangeUnit;
     const devLabel   = vitalUnit === 'in' ? 'in' : 'mm';
     const windLabel  = vitalUnit === 'in' ? 'in' : 'mm';
     // Wind speed display for chart legend
     const windSpeedDisp = windUnit === 'mph' ? (wind_ms / 0.44704).toFixed(1) + ' mph'
-                        : windUnit === 'kts'  ? (wind_ms / 0.514444).toFixed(1) + ' kts'
+                        : windUnit === 'kmh' ? (wind_ms * 3.6).toFixed(1) + ' km/h'
                         : wind_ms.toFixed(1) + ' m/s';
 
     // Conversion helpers for display (internal = cm)

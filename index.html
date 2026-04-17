@@ -255,10 +255,11 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      <span style="margin-top:4px;display:inline-block">v2.3 · April 17, 2026 — refined input panel layout, visual hierarchy, and crosswind units.</span>
+      <span style="margin-top:4px;display:inline-block">v2.4 · April 17, 2026 — unit-system review: added m for chronograph distance, mbar for pressure, and fixed v₀ sensitivity conversion.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v2.4</b> (Apr 17, 2026) — Unit-system review: added <b>m</b> as an option for Chronograph distance (&ldquo;3 m&rdquo; reads more naturally than &ldquo;3000 mm&rdquo; for optical chrono setups); added <b>mbar</b> as a synonym for hPa in pressure fields (numerically identical, matches older meteorological habit); fixed bug where v₀ sensitivity value was not converted when temperature unit was switched between °C and °F (conversion factor: 1 m/s/°C = 1.8227 fps/°F).<br>
           <b>v2.3</b> (Apr 17, 2026) — Darker, dedicated colour for section titles and panel headings so the logical groupings read as distinct at a glance. Crosswind unit list revised: removed kts (not used for wind in hunting ballistics), added km/h for Central European use; final options are m/s, km/h, mph. Added a safeguard for stale unit preferences in localStorage.<br>
           <b>v2.2</b> (Apr 17, 2026) — Input panel reorganised: Vital Zone moved next to Zero Range since it drives the zero-range optimiser; Chronograph distance and v₀ spread grouped into a collapsible &ldquo;Chronograph details&rdquo; panel under Muzzle Velocity; VZS row labels unified as Zero atm. (P1) / Hunt atm. (P2) / +Propellant (P3); redundant Class column removed from the trajectory table.<br>
           <b>v2.1</b> — Unified UI for zero-range estimators: both sections now use an explicit Calculate button, consistent result rows with dimmed &ldquo;&mdash;&rdquo; for empty scenarios, stale-clearing on input change; tooltip texts revised for clarity and Optimal tooltip added.
@@ -308,11 +309,12 @@ canvas{display:block}
         </div>
         <div class="chrono-body" id="chrono-body" style="display:none">
           <div class="field" style="margin-top:8px">
-            <label>Chronograph distance <button class="tip-btn">?<div class="tip-box">Distance from muzzle to chronograph.<br>The model integrates drag over this distance and uses the resulting speed as true v₀.<br><br>0 mm = muzzle (MagnetoSpeed, LabRadar close)<br>~3000 mm (118 in) = typical optical chronograph<br>~5000 mm (197 in) = further away setups<br><br>Leave at 0 if using manufacturer data or unsure.</div></button></label>
+            <label>Chronograph distance <button class="tip-btn">?<div class="tip-box">Distance from muzzle to chronograph.<br>The model integrates drag over this distance and uses the resulting speed as true v₀.<br><br>0 = muzzle (MagnetoSpeed, LabRadar close)<br>~3 m (3000 mm, 118 in) = typical optical chronograph<br>~5 m (5000 mm, 197 in) = further away setups<br><br>Leave at 0 if using manufacturer data or unsure.</div></button></label>
             <div class="field-row">
               <input type="text" inputmode="decimal" id="chrono_cm" value="0">
               <select id="chrono_unit" class="unit-sel" onchange="onUnitChange('chrono')">
                 <option value="mm">mm</option>
+                <option value="m">m</option>
                 <option value="in">in</option>
               </select>
             </div>
@@ -492,6 +494,7 @@ canvas{display:block}
             <input type="text" inputmode="decimal" id="press_zero_val" value="1013">
             <select id="press_unit" class="unit-sel" onchange="onUnitChange('press')">
               <option value="hPa">hPa</option>
+              <option value="mbar">mbar</option>
               <option value="inHg">inHg</option>
             </select>
           </div>
@@ -811,10 +814,10 @@ const CONV = {
   sight: { mm:  v=>v/1000,        in:  v=>v*0.0254    },
   zero:  { m:   v=>v,             yd:  v=>v*0.9144    },
   temp:  { C:   v=>v,             F:   v=>(v-32)*5/9  },
-  press: { hPa: v=>v,             inHg:v=>v*33.8639   },
+  press: { hPa: v=>v,             mbar:v=>v,           inHg:v=>v*33.8639   },
   wind:  { ms:  v=>v,             kmh: v=>v/3.6,       mph: v=>v*0.44704   },
   vital: { mm:  v=>v/10,           in:  v=>v*2.54      },
-  chrono:{ mm:  v=>v/1000,         in:  v=>v*0.0254    },
+  chrono:{ mm:  v=>v/1000,         m:   v=>v,           in:  v=>v*0.0254    },
 };
 
 // Display conversions (SI → display unit)
@@ -824,10 +827,10 @@ const CONV_FROM = {
   sight: { mm:  v=>v*1000,        in:  v=>v/0.0254    },
   zero:  { m:   v=>v,             yd:  v=>v/0.9144    },
   temp:  { C:   v=>v,             F:   v=>v*9/5+32    },
-  press: { hPa: v=>v,             inHg:v=>v/33.8639   },
+  press: { hPa: v=>v,             mbar:v=>v,           inHg:v=>v/33.8639   },
   wind:  { ms:  v=>v,             kmh: v=>v*3.6,       mph: v=>v/0.44704   },
   vital: { mm:  v=>v*10,           in:  v=>v/2.54      },
-  chrono:{ mm:  v=>v*1000,         in:  v=>v/0.0254    },
+  chrono:{ mm:  v=>v*1000,         m:   v=>v,           in:  v=>v/0.0254    },
 };
 
 // ── localStorage keys ──
@@ -884,6 +887,22 @@ function onUnitChange(field) {
   // Sync unit labels
   if (field === 'temp')  document.getElementById('temp_shoot_unit_lbl').textContent  = newUnit === 'C' ? '°C' : '°F';
   if (field === 'temp')  document.getElementById('v0sens_unit_lbl').textContent      = newUnit === 'C' ? 'm/s/°C' : 'fps/°F';
+  // Convert v0 sensitivity value when temp unit changes.
+  // 1 m/s/°C = 3.2808 fps/(m/s) × (5/9) °C/°F = 1.8227 fps/°F
+  if (field === 'temp') {
+    const sensEl = document.getElementById('v0_sensitivity');
+    const sensV = parseFloat(sensEl.value.replace(',','.'));
+    if (!isNaN(sensV) && sensV !== 0) {
+      // oldUnit → newUnit
+      if (oldUnit === 'C' && newUnit === 'F') {
+        // m/s/°C → fps/°F
+        sensEl.value = parseFloat((sensV * 1.8227).toFixed(4));
+      } else if (oldUnit === 'F' && newUnit === 'C') {
+        // fps/°F → m/s/°C
+        sensEl.value = parseFloat((sensV / 1.8227).toFixed(4));
+      }
+    }
+  }
   if (field === 'press') document.getElementById('press_shoot_unit_lbl').textContent = newUnit;
   if (field === 'v0')    document.getElementById('v0spread_unit_lbl').textContent    = newUnit === 'fps' ? 'fps' : 'm/s';
   // Sync max range and step labels when range unit changes

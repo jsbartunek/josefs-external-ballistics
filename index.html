@@ -215,7 +215,6 @@ canvas{display:block}
 .zfp-scenario-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:7px 10px;border-top:1px solid var(--border2)}
 .zfp-scenario-label{font-family:var(--mono);font-size:11px;display:flex;align-items:center}
 .zfp-scenario-val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
-.zfp-scenario-val.zfp-na{color:var(--muted);font-weight:400;font-size:10px}
 .tip-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:none;border:1px solid var(--muted);color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:600;cursor:help;position:relative;vertical-align:middle;margin-left:5px;flex-shrink:0;line-height:1}
 .tip-btn.tip-active{border-color:var(--accent);color:var(--accent)}
 .tip-box{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;left:20px;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left;pointer-events:none}
@@ -248,7 +247,7 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 16, 2026 (v2.0 — Optimize zero range for vital zone: bisection search finds the zero range that maximizes MPBR for a given vital zone radius) &nbsp;·&nbsp;
+      Last updated: April 17, 2026 (v2.1 — Unified UI for zero-range estimators: both sections now use an explicit Calculate button, consistent result rows with dimmed &ldquo;&mdash;&rdquo; for empty scenarios, stale-clearing on input change; tooltip texts revised for clarity and Optimal tooltip added) &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -383,31 +382,40 @@ canvas{display:block}
             </div>
           </div>
           <div class="zfp-err" id="zfp-err"></div>
-          <div id="zfp-scenarios" style="display:none;margin-top:8px;border:1px solid var(--border2);border-radius:2px;font-family:var(--mono);font-size:11px">
+          <div style="display:flex;justify-content:flex-end;margin-top:6px">
+            <button class="zfp-apply-btn" onclick="estimateZfp()">Calculate →</button>
+          </div>
+          <div id="zfp-scenarios" style="margin-top:8px;border:1px solid var(--border2);border-radius:2px;font-family:var(--mono);font-size:11px">
             <div style="background:var(--surface2);padding:5px 10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Estimated zero range</div>
             <div class="zfp-scenario-row" id="zfp-row-rising">
-              <div class="zfp-scenario-label"><span style="color:var(--muted)">↗ Rising</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet is still <b>climbing</b> at the given distance. The offset is measured on the <b>ascending</b> part of the trajectory.<br><br>Zero range will be <b>beyond</b> the measurement distance. Common when shooting at a short range — e.g. 50 m — before the peak.</div></button></div>
+              <div class="zfp-scenario-label"><span style="color:var(--muted)">↗ Rising</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet is still <b>climbing</b> at the measurement distance — you measured the offset before the trajectory reached its peak.<br><br>The zero range itself is the normal (downward) sight-line crossing further out. Typical when measuring much closer than the expected zero.</div></button></div>
               <div class="zfp-scenario-val" id="zfp-val-rising">—</div>
               <button class="zfp-apply-btn" id="zfp-apply-rising" onclick="applyZfpScenario('rising')" style="display:none">Apply →</button>
             </div>
             <div class="zfp-scenario-row" id="zfp-row-peak">
-              <div class="zfp-scenario-label"><span style="color:var(--muted)">▲ Peak</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The given distance is assumed to be the <b>highest point</b> of the bullet path — where the trajectory is momentarily flat.<br><br>This is the most useful scenario when sighting in at a range close to the mid-range peak. The app finds the zero range whose trajectory peaks at exactly this offset and approximately this distance.<br><br>If the result says <i>not possible</i>, the offset is too large to be a peak at that distance for the current ballistics.</div></button></div>
+              <div class="zfp-scenario-label"><span style="color:var(--muted)">▲ Peak</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The measurement distance coincides with the <b>highest point</b> of the bullet path — the trajectory is momentarily flat there.<br><br>Typical when the offset is small and close to the natural mid-range maximum of the current setup.</div></button></div>
               <div class="zfp-scenario-val" id="zfp-val-peak">—</div>
               <button class="zfp-apply-btn" id="zfp-apply-peak" onclick="applyZfpScenario('peak')" style="display:none">Apply →</button>
             </div>
             <div class="zfp-scenario-row" id="zfp-row-falling">
-              <div class="zfp-scenario-label"><span style="color:var(--muted)">↘ Falling</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet has already passed its peak and is <b>descending</b> at the given distance.<br><br>Zero range will be <b>beyond</b> the measurement distance. Common when shooting at a longer range — e.g. 100 m — past the peak but before the zero crossing.</div></button></div>
+              <div class="zfp-scenario-label"><span style="color:var(--muted)">↘ Falling</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet has passed its peak and is <b>descending</b> at the measurement distance, but has not yet reached the zero.<br><br>The zero range is the (downward) sight-line crossing just beyond the measurement point.</div></button></div>
               <div class="zfp-scenario-val" id="zfp-val-falling">—</div>
               <button class="zfp-apply-btn" id="zfp-apply-falling" onclick="applyZfpScenario('falling')" style="display:none">Apply →</button>
             </div>
           </div>
           <!-- Optimize zero for vital zone -->
           <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border2)">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <span style="font-size:11px;color:var(--muted);white-space:nowrap">Optimize zero range for vital zone</span>
-              <button class="zfp-apply-btn" onclick="optimizeZeroForVital()" style="display:inline-block">Optimize →</button>
-              <span id="ovz-result" style="font-family:var(--mono);font-size:11px;color:var(--fg)"></span>
-              <button class="zfp-apply-btn" id="ovz-apply-btn" onclick="applyOptimalZero()" style="display:none">Apply →</button>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Optimize zero range for vital zone</div>
+            <div style="display:flex;justify-content:flex-end;margin-top:6px">
+              <button class="zfp-apply-btn" onclick="optimizeZeroForVital()">Calculate →</button>
+            </div>
+            <div id="ovz-scenarios" style="margin-top:8px;border:1px solid var(--border2);border-radius:2px;font-family:var(--mono);font-size:11px">
+              <div style="background:var(--surface2);padding:5px 10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Optimal zero range</div>
+              <div class="zfp-scenario-row" id="ovz-row">
+                <div class="zfp-scenario-label"><span style="color:var(--muted)">◎ Optimal</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The zero range that keeps the bullet path within the vital zone radius for as long as possible — maximizing the point-blank range where no holdover is needed.<br><br>Found by matching the trajectory's peak height above the line of sight to the vital zone radius.</div></button></div>
+                <div class="zfp-scenario-val" id="ovz-val" style="opacity:.4">—</div>
+                <button class="zfp-apply-btn" id="ovz-apply-btn" onclick="applyOptimalZero()" style="display:none">Apply →</button>
+              </div>
             </div>
             <div id="ovz-err" style="font-size:10px;color:var(--red);margin-top:3px;display:none"></div>
           </div>
@@ -970,18 +978,37 @@ function initInputs() {
   document.querySelectorAll('select').forEach(el => {
     el.addEventListener('change', persistInputs);
   });
-  // zfp live estimation (debounced — waits until user stops typing)
-  var _zfpTimer = null;
-  function debouncedEstimateZfp() {
-    clearTimeout(_zfpTimer);
-    _zfpTimer = setTimeout(estimateZfp, 400);
+  // zfp inputs: clear previous result when user edits offset/distance
+  function clearZfpResults() {
+    ['rising','peak','falling'].forEach(function(s) {
+      var v = document.getElementById('zfp-val-' + s);
+      var a = document.getElementById('zfp-apply-' + s);
+      if (v) { v.textContent = '—'; v.style.opacity = '0.4'; }
+      if (a) a.style.display = 'none';
+    });
+    var err = document.getElementById('zfp-err');
+    if (err) err.textContent = '';
+    window._zfpResults = null;
   }
   ['zfp_offset_val','zfp_dist_val'].forEach(function(id) {
     var el = document.getElementById(id);
     if (!el) return;
     fixComma(el);
-    el.addEventListener('input', debouncedEstimateZfp);
+    el.addEventListener('input', clearZfpResults);
   });
+
+  // Vital-zone: clear previous result when user edits radius
+  function clearOvzResult() {
+    var v = document.getElementById('ovz-val');
+    var a = document.getElementById('ovz-apply-btn');
+    var e = document.getElementById('ovz-err');
+    if (v) { v.textContent = '—'; v.style.opacity = '0.4'; }
+    if (a) a.style.display = 'none';
+    if (e) e.style.display = 'none';
+    window._ovzResult = null;
+  }
+  var vitalEl = document.getElementById('vital_val');
+  if (vitalEl) vitalEl.addEventListener('input', clearOvzResult);
 }
 
 const G1_MACH = [0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,
@@ -1202,12 +1229,21 @@ function estimateZfp() {
   const distRaw   = parseFloat(document.getElementById('zfp_dist_val').value.replace(',','.'));
 
   const errEl       = document.getElementById('zfp-err');
-  const scenariosEl = document.getElementById('zfp-scenarios');
 
-  errEl.style.display       = 'none';
-  scenariosEl.style.display = 'none';
+  errEl.style.display = 'none';
 
-  if (isNaN(offsetRaw) || isNaN(distRaw) || distRaw <= 0) return;
+  // Helper: reset all three rows to dimmed "—" and clear Apply buttons
+  function resetRows() {
+    ['rising','peak','falling'].forEach(function(s) {
+      var v = document.getElementById('zfp-val-' + s);
+      var a = document.getElementById('zfp-apply-' + s);
+      if (v) { v.textContent = '—'; v.style.opacity = '0.4'; v.className = 'zfp-scenario-val'; }
+      if (a) a.style.display = 'none';
+    });
+    window._zfpResults = null;
+  }
+
+  if (isNaN(offsetRaw) || isNaN(distRaw) || distRaw <= 0) { resetRows(); return; }
 
   // Convert to SI
   const offset_m = offsetUnit === 'mm' ? offsetRaw / 1000 : offsetRaw * 0.0254;
@@ -1226,7 +1262,7 @@ function estimateZfp() {
   const alpha_deg      = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
   const g_eff = 9.80665 * Math.cos(alpha_deg * Math.PI / 180);
 
-  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) return;
+  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) { resetRows(); return; }
 
   const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
 
@@ -1343,13 +1379,15 @@ function estimateZfp() {
     const valEl   = document.getElementById('zfp-val-' + scenario);
     const applyEl = document.getElementById('zfp-apply-' + scenario);
     if (isNaN(zeroSI) || zeroSI <= 0) {
-      valEl.textContent = 'Not possible';
-      valEl.className = 'zfp-scenario-val zfp-na';
+      valEl.textContent = '—';
+      valEl.className = 'zfp-scenario-val';
+      valEl.style.opacity = '0.4';
       applyEl.style.display = 'none';
     } else {
       const disp = parseFloat(CONV_FROM.zero[rangeUnit](zeroSI).toFixed(1));
       valEl.textContent = disp + '\u00a0' + rangeUnit;
       valEl.className = 'zfp-scenario-val';
+      valEl.style.opacity = '';
       applyEl.style.display = '';
     }
   }
@@ -1357,7 +1395,6 @@ function estimateZfp() {
   renderRow('rising',  zeroRising);
   renderRow('peak',    zeroPeak);
   renderRow('falling', zeroFalling);
-  scenariosEl.style.display = 'block';
 }
 
 function applyZfpScenario(scenario) {
@@ -1377,12 +1414,18 @@ function applyZfpScenario(scenario) {
 }
 
 function optimizeZeroForVital() {
-  const resultEl = document.getElementById('ovz-result');
+  const valEl    = document.getElementById('ovz-val');
   const errEl    = document.getElementById('ovz-err');
   const applyBtn = document.getElementById('ovz-apply-btn');
-  resultEl.textContent = '';
-  errEl.style.display  = 'none';
-  applyBtn.style.display = 'none';
+
+  function resetOvz() {
+    valEl.textContent = '—';
+    valEl.style.opacity = '0.4';
+    applyBtn.style.display = 'none';
+    window._ovzResult = null;
+  }
+  resetOvz();
+  errEl.style.display = 'none';
 
   // Read vital zone radius directly (mm or in -> metres)
   const vital_raw  = parseFloat(document.getElementById('vital_val').value.replace(',','.'));
@@ -1400,7 +1443,7 @@ function optimizeZeroForVital() {
   const BC_input= parseFloat(document.getElementById('bc_input').value.replace(',','.'));
   const bc_type = document.getElementById('bc_type').value;
   if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) {
-    errEl.textContent = 'Fill in v₀, BC and sight height first.';
+    errEl.textContent = 'Fill in v\u2080, BC and sight height first.';
     errEl.style.display = 'block';
     return;
   }
@@ -1446,9 +1489,9 @@ function optimizeZeroForVital() {
 
   if (isNaN(zLo)) {
     if (peakYforZ(Z_SCAN_END) < vital_m) {
-      errEl.textContent = 'Vital zone too large — no zero in 50–600 m range reaches this peak.';
+      errEl.textContent = 'Vital zone too large \u2014 no zero in 50\u2013600 m range reaches this peak.';
     } else {
-      errEl.textContent = 'Vital zone too small — optimal zero is below 50 m (not practical for hunting).';
+      errEl.textContent = 'Vital zone too small \u2014 optimal zero is below 50 m (not practical for hunting).';
     }
     errEl.style.display = 'block';
     return;
@@ -1468,8 +1511,9 @@ function optimizeZeroForVital() {
   window._ovzResult = optimalZ_m;
   const rangeUnit = document.getElementById('zero_unit').value;
   const disp = parseFloat(CONV_FROM.zero[rangeUnit](optimalZ_m).toFixed(1));
-  resultEl.textContent = 'Zero = ' + disp + '\u00a0' + rangeUnit;
-  applyBtn.style.display = 'inline-block';
+  valEl.textContent = disp + '\u00a0' + rangeUnit;
+  valEl.style.opacity = '';
+  applyBtn.style.display = '';
 }
 
 function applyOptimalZero() {

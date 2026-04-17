@@ -259,6 +259,7 @@ canvas{display:block}
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v2.5</b> (Apr 17, 2026) — Terminology unified across the UI: Phase 2 is now consistently labelled &ldquo;shooting&rdquo; (shooting atmosphere, shooting day, Shoot atm. P2, Shoot column) rather than mixing &ldquo;hunting/shooting&rdquo; and &ldquo;hunt&rdquo;. Trajectory table reference column renamed Ref → <b>Zero</b> to match the Zero atm. (P1) row label. &ldquo;Hunting&rdquo; is retained only where it is the actual subject (intro text, Swedish 150 m zero recommendation) and for the <i>Swedish Hunt Classes</i> (Naturvårdsverket), which is a proper name. Sensitivity analysis table now respects the selected pressure and temperature units — previously labels and values were hard-coded as hPa/°C regardless of user choice (visible when switching to mbar, inHg, or °F).<br>
           <b>v2.4</b> (Apr 17, 2026) — Unit-system review: added <b>m</b> as an option for Chronograph distance (&ldquo;3 m&rdquo; reads more naturally than &ldquo;3000 mm&rdquo; for optical chrono setups); added <b>mbar</b> as a synonym for hPa in pressure fields (numerically identical, matches older meteorological habit); fixed bug where v₀ sensitivity value was not converted when temperature unit was switched between °C and °F (conversion factor: 1 m/s/°C = 1.8227 fps/°F).<br>
           <b>v2.3</b> (Apr 17, 2026) — Darker, dedicated colour for section titles and panel headings so the logical groupings read as distinct at a glance. Crosswind unit list revised: removed kts (not used for wind in hunting ballistics), added km/h for Central European use; final options are m/s, km/h, mph. Added a safeguard for stale unit preferences in localStorage.<br>
           <b>v2.2</b> (Apr 17, 2026) — Input panel reorganised: Vital Zone moved next to Zero Range since it drives the zero-range optimiser; Chronograph distance and v₀ spread grouped into a collapsible &ldquo;Chronograph details&rdquo; panel under Muzzle Velocity; VZS row labels unified as Zero atm. (P1) / Hunt atm. (P2) / +Propellant (P3); redundant Class column removed from the trajectory table.<br>
@@ -512,14 +513,14 @@ canvas{display:block}
       <div class="section-title">Shooting Atmosphere (Phase 2)</div>
       <div class="field-inline">
         <div class="field">
-          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature on the day of hunting/shooting.<br>The model computes a second trajectory with this atmosphere using the fixed zero angle — showing the pure external ballistic effect.</div></button></label>
+          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature on the day of shooting.<br>The model computes a second trajectory with this atmosphere using the fixed zero angle — showing the pure external ballistic effect.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="text" id="temp_shoot_val" value="-5">
             <span class="unit" id="temp_shoot_unit_lbl">°C</span>
           </div>
         </div>
         <div class="field">
-          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure on the day of hunting/shooting.<br>Combined with temperature to compute shooting-day air density.<br>Typical range in Sweden: 980–1030 hPa (28.9–30.4 inHg).</div></button></label>
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure on the day of shooting.<br>Combined with temperature to compute shooting-day air density.<br>Typical range in Sweden: 980–1030 hPa (28.9–30.4 inHg).</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="decimal" id="press_shoot_val" value="1013">
             <span class="unit" id="press_shoot_unit_lbl">hPa</span>
@@ -527,7 +528,7 @@ canvas{display:block}
         </div>
       </div>
       <div class="field">
-        <label>Rel. Humidity <button class="tip-btn">?<div class="tip-box">Relative humidity on the day of hunting/shooting.<br>Moist air is slightly less dense than dry air — reduces drag very marginally.<br><br>A wet winter day (90% RH) vs dry summer day (30% RH) typically shifts impact &lt;1 mm at 200 m. Included for completeness and physical correctness.</div></button></label>
+        <label>Rel. Humidity <button class="tip-btn">?<div class="tip-box">Relative humidity on the day of shooting.<br>Moist air is slightly less dense than dry air — reduces drag very marginally.<br><br>A wet winter day (90% RH) vs dry summer day (30% RH) typically shifts impact &lt;1 mm at 200 m. Included for completeness and physical correctness.</div></button></label>
         <div class="field-row">
           <input type="text" inputmode="decimal" id="rh_shoot_val" value="50">
           <span class="unit">%</span>
@@ -643,8 +644,8 @@ canvas{display:block}
         <span>Trajectory <button class="tip-btn" style="text-transform:none;letter-spacing:0;vertical-align:middle">?<div class="tip-box" style="left:20px;top:-4px">
           <b>Chart curves:</b><br><br>
           <span style="display:inline-block;width:10px;height:3px;background:#aaa;vertical-align:middle;margin-right:6px"></span><b>Grey solid</b> — zero-day trajectory (Phase 1 atmosphere). This is the reference line the rifle is zeroed to.<br><br>
-          <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — hunting/shooting-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
-          <span style="display:inline-block;width:10px;height:3px;background:var(--red);border-top:2px dashed var(--red);vertical-align:middle;margin-right:6px"></span><b>Red dashed</b> — Phase 3: hunting/shooting-day atmosphere + propellant temperature correction. Shows combined real-world effect including v₀ shift from cold/warm propellant. Only shown when v₀ sensitivity &gt; 0.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--blue);border-top:2px dashed var(--blue);vertical-align:middle;margin-right:6px"></span><b>Blue dashed</b> — shooting-day trajectory (Phase 2 atmosphere). Same zero angle, different T/P. Difference from grey = pure external ballistic weather effect.<br><br>
+          <span style="display:inline-block;width:10px;height:3px;background:var(--red);border-top:2px dashed var(--red);vertical-align:middle;margin-right:6px"></span><b>Red dashed</b> — Phase 3: shooting-day atmosphere + propellant temperature correction. Shows combined real-world effect including v₀ shift from cold/warm propellant. Only shown when v₀ sensitivity &gt; 0.<br><br>
           <span style="display:inline-block;width:10px;height:3px;background:var(--green);border-top:2px dashed var(--green);vertical-align:middle;margin-right:6px"></span><b>Green dashed band</b> — v₀ ± spread envelope applied to the selected phase (Phase 1, 2 or 3). Width shows how much shot-to-shot velocity variation affects the trajectory at each range.<br><br>
           <span style="display:inline-block;width:10px;height:2px;background:var(--vital);opacity:.9;vertical-align:middle;margin-right:6px"></span><b>Purple dashed lines</b> — vital zone radius (±). Bullet must stay within these lines for an ethical shot without hold-over.
         </div></button></span>
@@ -722,8 +723,8 @@ canvas{display:block}
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Three-Phase Model</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
             <span style="color:var(--accent)">Phase 1 — Zero:</span> bisection solves for θ under zero-day atmosphere (T<sub>zero</sub>, P<sub>zero</sub>, RH<sub>zero</sub>). θ is fixed thereafter — it represents the rifle's mechanical setting.<br>
-            <span style="color:var(--accent)">Phase 2 — Hunting/Shooting:</span> same θ, new atmosphere (T<sub>hunt</sub>, P<sub>hunt</sub>, RH<sub>hunt</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
-            <span style="color:var(--accent)">Phase 3 — Propellant temperature</span> <span style="color:var(--orange);font-size:9px;border:1px solid var(--orange);padding:1px 4px;border-radius:2px">EXPERIMENTAL</span><span style="color:var(--accent)">:</span> same θ and hunt atmosphere, but v₀ is shifted by the propellant temperature effect: <b>Δv₀ = k · (T<sub>shoot</sub> − T<sub>zero</sub>)</b>, where k is the user-measured sensitivity [m/s/°C] and propellant temperature is assumed equal to shooting temperature. This is the dominant real-world weather effect — a −30°C temperature swing with a sensitive powder (k = 0.5 m/s/°C) shifts v₀ by 15 m/s. Disabled when k = 0.
+            <span style="color:var(--accent)">Phase 2 — Shooting day:</span> same θ, new atmosphere (T<sub>shoot</sub>, P<sub>shoot</sub>, RH<sub>shoot</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
+            <span style="color:var(--accent)">Phase 3 — Propellant temperature</span> <span style="color:var(--orange);font-size:9px;border:1px solid var(--orange);padding:1px 4px;border-radius:2px">EXPERIMENTAL</span><span style="color:var(--accent)">:</span> same θ and shooting atmosphere, but v₀ is shifted by the propellant temperature effect: <b>Δv₀ = k · (T<sub>shoot</sub> − T<sub>zero</sub>)</b>, where k is the user-measured sensitivity [m/s/°C] and propellant temperature is assumed equal to shooting temperature. This is the dominant real-world weather effect — a −30°C temperature swing with a sensitive powder (k = 0.5 m/s/°C) shifts v₀ by 15 m/s. Disabled when k = 0.
           </div>
         </div>
 
@@ -1855,7 +1856,7 @@ function calculate() {
 
     const vzsRowDefs = [
       { label:'Zero atm. (P1)', color:'var(--muted)', st: stRef   },
-      { label:'Hunt atm. (P2)', color:'var(--blue)',  st: stShoot },
+      { label:'Shoot atm. (P2)', color:'var(--blue)',  st: stShoot },
       ...(stP3 ? [{ label:'+Propellant (P3)', color:'var(--red)', st: stP3 }] : []),
     ];
     let vzsHtml = `<div class="vzs-head">
@@ -1895,7 +1896,7 @@ function calculate() {
 
     // ── Render table ──
     let html='<table class="result-table"><thead><tr>';
-    html+=`<th>Range (${rangeLabel})</th><th>Ref (${devLabel})</th><th>Hunt/Shoot (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th>`;
+    html+=`<th>Range (${rangeLabel})</th><th>Zero (${devLabel})</th><th>Shoot (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th>`;
     html+='</tr></thead><tbody>';
     rows.forEach(row => {
       const yClass = y => y>0 ? 'val-pos' : (y<0 ? 'val-neg' : '');
@@ -2106,15 +2107,32 @@ function calculate() {
     }
 
     const yBas_mm = toDevDisp(yBas);
+
+    // Unit-aware sensitivity rows: convert the ±20 hPa and ±15°C perturbations
+    // from the internal SI units back to the user's chosen display units so the
+    // labels, values, and value units are all consistent.
+    const dP_hPa = 20, dT_C = 15;
+    const dP_disp  = CONV_FROM.press[pressUnit](press_zero_hPa + dP_hPa) - CONV_FROM.press[pressUnit](press_zero_hPa);
+    const dT_disp  = CONV_FROM.temp[tempUnit](temp_zero_C + dT_C)        - CONV_FROM.temp[tempUnit](temp_zero_C);
+    const pPlus_disp  = CONV_FROM.press[pressUnit](press_zero_hPa + dP_hPa);
+    const pMinus_disp = CONV_FROM.press[pressUnit](press_zero_hPa - dP_hPa);
+    const tPlus_disp  = CONV_FROM.temp[tempUnit](temp_zero_C + dT_C);
+    const tMinus_disp = CONV_FROM.temp[tempUnit](temp_zero_C - dT_C);
+    const pDispPrec   = pressUnit === 'inHg' ? 2 : 0;
+    const tDispPrec   = 0;
+    const tUnitLbl    = tempUnit === 'C' ? '°C' : '°F';
+    const dPabs_disp  = Math.abs(dP_disp).toFixed(pDispPrec);
+    const dTabs_disp  = Math.abs(dT_disp).toFixed(tDispPrec);
+
     document.getElementById('sens-wrap').innerHTML=`
     <div class="sens-grid">
       <div class="sens-head">Parameter</div><div class="sens-head">Value</div><div class="sens-head">Δ@${R_disp} ${rangeLabel}</div>
       ${showSpread ? `<div class="sens-cell sens-label">v₀ +${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0+v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0hi-yBas)}</div>` : ''}
       ${showSpread ? `<div class="sens-cell sens-label">v₀ −${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0-v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0lo-yBas)}</div>` : ''}
-      <div class="sens-cell sens-label">Pressure +20 hPa</div><div class="sens-cell">${(press_zero_hPa+20).toFixed(0)} hPa</div><div class="sens-cell sens-val">${diffStr(yPp20-yBas)}</div>
-      <div class="sens-cell sens-label">Pressure −20 hPa</div><div class="sens-cell">${(press_zero_hPa-20).toFixed(0)} hPa</div><div class="sens-cell sens-val">${diffStr(yPm20-yBas)}</div>
-      <div class="sens-cell sens-label">Temp +15°C</div><div class="sens-cell">${(temp_zero_C+15).toFixed(0)}°C</div><div class="sens-cell sens-val">${diffStr(yThi-yBas)}</div>
-      <div class="sens-cell sens-label">Temp −15°C</div><div class="sens-cell">${(temp_zero_C-15).toFixed(0)}°C</div><div class="sens-cell sens-val">${diffStr(yTlo-yBas)}</div>
+      <div class="sens-cell sens-label">Pressure +${dPabs_disp} ${pressUnit}</div><div class="sens-cell">${pPlus_disp.toFixed(pDispPrec)} ${pressUnit}</div><div class="sens-cell sens-val">${diffStr(yPp20-yBas)}</div>
+      <div class="sens-cell sens-label">Pressure −${dPabs_disp} ${pressUnit}</div><div class="sens-cell">${pMinus_disp.toFixed(pDispPrec)} ${pressUnit}</div><div class="sens-cell sens-val">${diffStr(yPm20-yBas)}</div>
+      <div class="sens-cell sens-label">Temp +${dTabs_disp}${tUnitLbl}</div><div class="sens-cell">${tPlus_disp.toFixed(tDispPrec)}${tUnitLbl}</div><div class="sens-cell sens-val">${diffStr(yThi-yBas)}</div>
+      <div class="sens-cell sens-label">Temp −${dTabs_disp}${tUnitLbl}</div><div class="sens-cell">${tMinus_disp.toFixed(tDispPrec)}${tUnitLbl}</div><div class="sens-cell sens-val">${diffStr(yTlo-yBas)}</div>
     </div>
     <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Base: ${yBas_mm.toFixed(devPrec)} ${devLabel} at ${R_disp} ${rangeLabel} &nbsp;·&nbsp; Zero angle fixed</p>`;
 

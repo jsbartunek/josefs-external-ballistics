@@ -24,6 +24,7 @@
   --border2:  #e4e0d8;
   --text:     #1a1a1a;
   --muted:    #7a7060;
+  --heading:  #3d3528;
   --accent:   #8a6000;
   --blue:     #1565c0;
   --green:    #2e7d52;
@@ -41,6 +42,7 @@
   --border2:  #1e2229;
   --text:     #c8cdd6;
   --muted:    #5a6172;
+  --heading:  #9aa2b5;
   --accent:   #e8c36a;
   --blue:     #4fc3f7;
   --green:    #4caf7d;
@@ -72,11 +74,11 @@ main{max-width:1120px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-tem
 /* ── Panel ── */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:3px}
 .panel-head{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
-.panel-head span{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.panel-head span{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--heading);letter-spacing:.1em;text-transform:uppercase}
 .panel-body{padding:16px}
 
 /* ── Sections ── */
-.section-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border2)}
+.section-title{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--heading);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border2)}
 .section-title:first-child{margin-top:0}
 
 /* ── Inputs ── */
@@ -208,6 +210,12 @@ canvas{display:block}
 .zfp-toggle{padding:6px 10px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;user-select:none;letter-spacing:.05em}
 .zfp-toggle:hover{color:var(--accent)}
 .zfp-body{padding:0 10px 10px}
+
+/* ── Chronograph details (mirrors g7-estimator) ── */
+.chrono-estimator{margin-top:-4px;margin-bottom:10px;border:1px solid var(--border2);border-radius:2px;overflow:visible}
+.chrono-toggle{padding:6px 10px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;user-select:none;letter-spacing:.05em}
+.chrono-toggle:hover{color:var(--accent)}
+.chrono-body{padding:0 10px 10px}
 .zfp-result{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;padding:6px 8px;background:var(--surface2);border-radius:2px}
 .zfp-apply-btn{margin-left:auto;background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:10px;font-weight:600;border:none;padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
 .zfp-apply-btn:hover{opacity:.85}
@@ -247,7 +255,8 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      Last updated: April 17, 2026 (v2.1 — Unified UI for zero-range estimators: both sections now use an explicit Calculate button, consistent result rows with dimmed &ldquo;&mdash;&rdquo; for empty scenarios, stale-clearing on input change; tooltip texts revised for clarity and Optimal tooltip added) &nbsp;·&nbsp;
+      Last updated: April 17, 2026 (v2.3 — Improved visual hierarchy: section titles and panel headings now use a dedicated --heading colour (slightly darker in light mode, slightly lighter in dark mode) to distinguish them from field labels and secondary text, making the input panel's logical groupings easier to scan at a glance) &nbsp;·&nbsp;
+      Previous: v2.2 — Input panel reorganised: Vital Zone moved next to Zero Range since it drives the zero-range optimiser; Chronograph distance and v₀ spread grouped into a collapsible &ldquo;Chronograph details&rdquo; panel under Muzzle Velocity; VZS row labels unified as Zero atm. (P1) / Hunt atm. (P2) / +Propellant (P3); redundant Class column removed from the trajectory table. &nbsp;·&nbsp;
       <a href="https://github.com/jsbartunek/josefs-external-ballistics/issues" target="_blank" style="color:var(--accent);text-decoration:none">Report a bug or ask a question ↗</a>
     </div>
   </div>
@@ -283,14 +292,35 @@ canvas{display:block}
           </select>
         </div>
       </div>
-      <div class="field">
-        <label>Chronograph distance <button class="tip-btn">?<div class="tip-box">Distance from muzzle to chronograph.<br>The model integrates drag over this distance and uses the resulting speed as true v₀.<br><br>0 mm = muzzle (MagnetoSpeed, LabRadar close)<br>~3000 mm (118 in) = typical optical chronograph<br>~5000 mm (197 in) = further away setups<br><br>Leave at 0 if using manufacturer data or unsure.</div></button></label>
-        <div class="field-row">
-          <input type="text" inputmode="decimal" id="chrono_cm" value="0">
-          <select id="chrono_unit" class="unit-sel" onchange="onUnitChange('chrono')">
-            <option value="mm">mm</option>
-            <option value="in">in</option>
-          </select>
+
+      <!-- Chronograph details (expandable) -->
+      <div class="chrono-estimator" id="chrono-estimator">
+        <div class="chrono-toggle" onclick="toggleChrono()">
+          <span id="chrono-toggle-label">▶ Chronograph details</span>
+        </div>
+        <div class="chrono-body" id="chrono-body" style="display:none">
+          <div class="field" style="margin-top:8px">
+            <label>Chronograph distance <button class="tip-btn">?<div class="tip-box">Distance from muzzle to chronograph.<br>The model integrates drag over this distance and uses the resulting speed as true v₀.<br><br>0 mm = muzzle (MagnetoSpeed, LabRadar close)<br>~3000 mm (118 in) = typical optical chronograph<br>~5000 mm (197 in) = further away setups<br><br>Leave at 0 if using manufacturer data or unsure.</div></button></label>
+            <div class="field-row">
+              <input type="text" inputmode="decimal" id="chrono_cm" value="0">
+              <select id="chrono_unit" class="unit-sel" onchange="onUnitChange('chrono')">
+                <option value="mm">mm</option>
+                <option value="in">in</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>v₀ spread ± <button class="tip-btn">?<div class="tip-box">Shot-to-shot muzzle velocity variation measured with a chronograph.<br>The green dashed band shows the trajectory envelope for v₀ ± this value, applied to the selected phase.<br><br>Good handloads: 3–5 m/s (10–15 fps)<br>Factory ammo: 7–15 m/s (25–50 fps)</div></button></label>
+            <div class="field-row">
+              <input type="text" inputmode="decimal" id="v0spread_val" value="10">
+              <span class="unit" id="v0spread_unit_lbl">m/s</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button class="spread-phase-btn" id="spbtn1" onclick="setSpreadPhase(1)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 1</button>
+              <button class="spread-phase-btn" id="spbtn2" onclick="setSpreadPhase(2)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:all 0.15s;">PHASE 2</button>
+              <button class="spread-phase-btn" id="spbtn3" onclick="setSpreadPhase(3)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 3</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="field">
@@ -343,6 +373,16 @@ canvas{display:block}
         <div class="field-row">
           <input type="text" inputmode="decimal" id="sight_val" value="45">
           <select id="sight_unit" class="unit-sel" onchange="onUnitChange('sight')">
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Vital Zone (radius) <button class="tip-btn">?<div class="tip-box">Radius of the target's vital zone (heart/lung area).<br>Shown as purple dashed lines in the trajectory chart, and used by the zero-range optimizer below.<br><br>Typical values:<br>Roe deer: 60–70 mm (2.4–2.8 in)<br>Red deer: 100–120 mm (3.9–4.7 in)<br>Moose: 150–180 mm (5.9–7.1 in)</div></button></label>
+        <div class="field-row">
+          <input type="text" inputmode="decimal" id="vital_val" value="60">
+          <select id="vital_unit" class="unit-sel" onchange="onUnitChange('vital')">
             <option value="mm">mm</option>
             <option value="in">in</option>
           </select>
@@ -515,28 +555,6 @@ canvas{display:block}
       </div>
 
       <div class="section-title">Display</div>
-      <div class="field">
-        <label>Vital Zone (radius) <button class="tip-btn">?<div class="tip-box">Radius of the target's vital zone (heart/lung area).<br>Shown as purple dashed lines in the trajectory chart.<br><br>Typical values:<br>Roe deer: 60–70 mm (2.4–2.8 in)<br>Red deer: 100–120 mm (3.9–4.7 in)<br>Moose: 150–180 mm (5.9–7.1 in)</div></button></label>
-        <div class="field-row">
-          <input type="text" inputmode="decimal" id="vital_val" value="60">
-          <select id="vital_unit" class="unit-sel" onchange="onUnitChange('vital')">
-            <option value="mm">mm</option>
-            <option value="in">in</option>
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label>v₀ spread ± (chronograph) <button class="tip-btn">?<div class="tip-box">Shot-to-shot muzzle velocity variation measured with a chronograph.<br>The green dashed band shows the trajectory envelope for v₀ ± this value, applied to the selected phase.<br><br>Good handloads: 3–5 m/s (10–15 fps)<br>Factory ammo: 7–15 m/s (25–50 fps)</div></button></label>
-        <div class="field-row">
-          <input type="text" inputmode="decimal" id="v0spread_val" value="10">
-          <span class="unit" id="v0spread_unit_lbl">m/s</span>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:6px;">
-          <button class="spread-phase-btn" id="spbtn1" onclick="setSpreadPhase(1)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 1</button>
-          <button class="spread-phase-btn" id="spbtn2" onclick="setSpreadPhase(2)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:all 0.15s;">PHASE 2</button>
-          <button class="spread-phase-btn" id="spbtn3" onclick="setSpreadPhase(3)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 3</button>
-        </div>
-      </div>
       <div class="field-inline">
         <div class="field">
           <label>Max Range</label>
@@ -1185,6 +1203,14 @@ function toggleG7() {
   label.textContent = (open ? '▼' : '▶') + ' Estimate G7 from G1';
 }
 
+function toggleChrono() {
+  const body = document.getElementById('chrono-body');
+  const label = document.getElementById('chrono-toggle-label');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  label.textContent = (open ? '▼' : '▶') + ' Chronograph details';
+}
+
 function estimateG7() {
   const factor = parseFloat(document.getElementById('g7_bullet_type').value);
   const g1 = parseFloat(document.getElementById('bc_input').value.replace(',','.'));
@@ -1784,9 +1810,9 @@ function calculate() {
       `± ${toDevDisp(vital_cm).toFixed(devPrec)} ${devLabel} vital zone`;
 
     const vzsRowDefs = [
-      { label:'Zero atm.', color:'var(--muted)', st: stRef   },
-      { label:'Hunt/Shoot atm.', color:'var(--blue)',  st: stShoot },
-      ...(stP3 ? [{ label:'Phase 3', color:'var(--red)', st: stP3 }] : []),
+      { label:'Zero atm. (P1)', color:'var(--muted)', st: stRef   },
+      { label:'Hunt atm. (P2)', color:'var(--blue)',  st: stShoot },
+      ...(stP3 ? [{ label:'+Propellant (P3)', color:'var(--red)', st: stP3 }] : []),
     ];
     let vzsHtml = `<div class="vzs-head">
       <div class="vzs-head-cell"></div>
@@ -1825,7 +1851,7 @@ function calculate() {
 
     // ── Render table ──
     let html='<table class="result-table"><thead><tr>';
-    html+=`<th>Range (${rangeLabel})</th><th>Ref (${devLabel})</th><th>Hunt/Shoot (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th><th>Class</th>`;
+    html+=`<th>Range (${rangeLabel})</th><th>Ref (${devLabel})</th><th>Hunt/Shoot (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th>`;
     html+='</tr></thead><tbody>';
     rows.forEach(row => {
       const yClass = y => y>0 ? 'val-pos' : (y<0 ? 'val-neg' : '');
@@ -1838,7 +1864,6 @@ function calculate() {
       html+=`<td>${toVelDisp(row.v).toFixed(0)}</td>`;
       html+=`<td>${toEDisp(row.E).toFixed(ePrec)}</td>`;
       html+=`<td class="${Math.abs(row.zVind)>warnThresh?'val-warn':''}">${row.zVind>=0?'+':''}${row.zVind.toFixed(devPrec)}</td>`;
-      html+=`<td>${row.k ? `<span class="klass-badge ${row.k.toLowerCase()}">${row.k}</span>` : ''}</td>`;
       html+='</tr>';
     });
     html+='</tbody></table>';

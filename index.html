@@ -255,10 +255,11 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      <span style="margin-top:4px;display:inline-block">v2.4 · April 17, 2026 — unit-system review: added m for chronograph distance, mbar for pressure, and fixed v₀ sensitivity conversion.</span>
+      <span style="margin-top:4px;display:inline-block">v2.6 · July 3, 2026 — consistency & robustness: chronograph correction now applied uniformly across the app.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v2.6</b> (Jul 3, 2026) — Consistency & robustness: chronograph muzzle-velocity correction now applied uniformly in the sensitivity analysis, zero-range estimator, and vital-zone optimizer (previously only the main trajectory used the corrected v₀); tooltips now work on touch devices (tap to toggle); input validation guard prevents NaN output on zero/empty inputs; V@100 summary cards show "—" instead of NaN when max range is below 100 m/yd; comma-to-dot input fix now handles multiple commas; removed dead per-row hunt-class code left over from the v2.2 table simplification.<br>
           <b>v2.5</b> (Apr 17, 2026) — Terminology unified across the UI: Phase 2 is now consistently labelled &ldquo;shooting&rdquo; (shooting atmosphere, shooting day, Shoot atm. P2, Shoot column) rather than mixing &ldquo;hunting/shooting&rdquo; and &ldquo;hunt&rdquo;. Trajectory table reference column renamed Ref → <b>Zero</b> to match the Zero atm. (P1) row label. &ldquo;Hunting&rdquo; is retained only where it is the actual subject (intro text, Swedish 150 m zero recommendation) and for the <i>Swedish Hunt Classes</i> (Naturvårdsverket), which is a proper name. Sensitivity analysis table now respects the selected pressure and temperature units — previously labels and values were hard-coded as hPa/°C regardless of user choice (visible when switching to mbar, inHg, or °F).<br>
           <b>v2.4</b> (Apr 17, 2026) — Unit-system review: added <b>m</b> as an option for Chronograph distance (&ldquo;3 m&rdquo; reads more naturally than &ldquo;3000 mm&rdquo; for optical chrono setups); added <b>mbar</b> as a synonym for hPa in pressure fields (numerically identical, matches older meteorological habit); fixed bug where v₀ sensitivity value was not converted when temperature unit was switched between °C and °F (conversion factor: 1 m/s/°C = 1.8227 fps/°F).<br>
           <b>v2.3</b> (Apr 17, 2026) — Darker, dedicated colour for section titles and panel headings so the logical groupings read as distinct at a glance. Crosswind unit list revised: removed kts (not used for wind in hunting ballistics), added km/h for Central European use; final options are m/s, km/h, mph. Added a safeguard for stale unit preferences in localStorage.<br>
@@ -848,7 +849,7 @@ function fixComma(el) {
   el.addEventListener('input', function() {
     const pos = this.selectionStart;
     const before = this.value;
-    this.value = before.replace(',', '.');
+    this.value = before.replace(/,/g, '.');
     if (before !== this.value) this.setSelectionRange(pos, pos);
   });
 }
@@ -1210,6 +1211,24 @@ function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g, xMax) {
   return (lo+hi)/2;
 }
 
+// Recover true muzzle velocity from a chronograph-measured velocity.
+// Integrates drag forward over chrono_m and adds the loss back.
+// Returns v0 unchanged when chrono_m is effectively zero.
+function chronoCorrectV0(v0, chrono_m, atmo, BC_final, dragModel) {
+  if (!(chrono_m > 0.005)) return v0;
+  const DRAG_CHRONO = Math.PI / 8;
+  let vv = v0, x = 0;
+  const dt = 0.00005;
+  while (x < chrono_m) {
+    const mach = vv / atmo.vs;
+    const Cd   = getCd(mach, dragModel);
+    const a    = DRAG_CHRONO * atmo.rho * vv * vv * Cd / BC_final;
+    vv -= a * dt;
+    x  += vv * dt;
+  }
+  return v0 + (v0 - vv);
+}
+
 // Atmosphere helpers
 function calcAtmo(temp_C, press_hPa, rh_pct) {
   rh_pct = rh_pct || 0;
@@ -1340,12 +1359,14 @@ function estimateZfp() {
   if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) { resetRows(); return; }
 
   const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
+  const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');
+  const v0_true  = chronoCorrectV0(v0, chrono_m, { rho, vs }, BC_final, dragModel);
 
   // Trajectory for a given zero candidate.
   function trajForZero(z) {
     const xNeeded = Math.max(z, dist_m) + 30;
-    const theta = findTheta(v0, sight_h, z, rho, vs, BC_final, dragModel, g_eff, xNeeded);
-    return integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g_eff, 4.0, 0.001, xNeeded);
+    const theta = findTheta(v0_true, sight_h, z, rho, vs, BC_final, dragModel, g_eff, xNeeded);
+    return integrate(theta, v0_true, sight_h, rho, vs, BC_final, dragModel, g_eff, 4.0, 0.001, xNeeded);
   }
 
   // Characterize trajectory at dist_m: interpolated y and vy, plus peak (y,x)
@@ -1529,14 +1550,16 @@ function optimizeZeroForVital() {
   const alpha_deg      = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
   const g_eff = 9.80665 * Math.cos(alpha_deg * Math.PI / 180);
   const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
+  const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');
+  const v0_true  = chronoCorrectV0(v0, chrono_m, { rho, vs }, BC_final, dragModel);
 
   // peakY above sight line for a given zero candidate (monotonically increasing with Z)
   // y=0 is the sight line; we want the max y that is above it (y > 0).
   // xNeeded must cover well past the peak, which occurs at roughly 0.4–0.5 * zero.
   function peakYforZ(z) {
     const xNeeded = z + 50;
-    const theta = findTheta(v0, sight_h, z, rho, vs, BC_final, dragModel, g_eff, xNeeded);
-    const tr = integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g_eff, 4.0, 0.001, xNeeded);
+    const theta = findTheta(v0_true, sight_h, z, rho, vs, BC_final, dragModel, g_eff, xNeeded);
+    const tr = integrate(theta, v0_true, sight_h, rho, vs, BC_final, dragModel, g_eff, 4.0, 0.001, xNeeded);
     let maxY = 0;  // only count y above the sight line
     for (let i = 0; i < tr.length; i++) {
       if (tr[i].y > maxY) maxY = tr[i].y;
@@ -1655,6 +1678,11 @@ function calculate() {
     const BC_final = BC_input * 703.07;
     const dragModel = bc_type;
 
+    if (!(v0 > 0) || !(m_kg > 0) || !(BC_input > 0) || !(sight_h >= 0) || !(zero_m > 0)) {
+      setStatus('Invalid input: v\u2080, bullet weight, BC and zero range must be positive.', 'warn');
+      return;
+    }
+
     setStatus('Solving zero angle (bisection)…');
 
     const atmoZ = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
@@ -1663,23 +1691,8 @@ function calculate() {
     // ── Chronograph distance correction ──
     // User measured v0 at chrono, not at muzzle.
     // We integrate drag over chrono_m to recover true muzzle v0.
-    const chrono_cm = getSI('chrono', 'chrono_cm', 'chrono_unit');  // returns metres
-    const chrono_m  = chrono_cm;  // getSI returns SI = metres
-    let v0_true = v0;
-    if (chrono_m > 0.005) {
-      // Forward Euler: find speed lost over chrono distance, add it back
-      const DRAG_CHRONO = Math.PI / 8;  // Siacci/Ingalls, consistent with main integrator
-      let vv = v0, x = 0;
-      const dt = 0.00005;
-      while (x < chrono_m) {
-        const mach = vv / atmoZ.vs;
-        const Cd   = getCd(mach, dragModel);
-        const a    = DRAG_CHRONO * atmoZ.rho * vv * vv * Cd / BC_final;
-        vv -= a * dt;
-        x  += vv * dt;
-      }
-      v0_true = v0 + (v0 - vv); // add back the drag loss
-    }
+    const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');  // returns metres
+    const v0_true  = chronoCorrectV0(v0, chrono_m, atmoZ, BC_final, dragModel);
 
     // Fas 1: bisection for theta (use v0_true = corrected muzzle velocity)
     const theta = findTheta(v0_true, sight_h, zero_m, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g);
@@ -1724,7 +1737,7 @@ function calculate() {
     RANGES.sort((a,b) => a-b);
 
     // Extend integration if needed
-    const tMax = maxrange_m/v0 + 2;
+    const tMax = maxrange_m/v0_true + 2;
     const xMax = maxrange_m + 20;  // 20 m margin for interpolation at boundary
     const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
     const v0spread_eff = isNaN(v0spread_raw) ? 10 : v0spread_raw;
@@ -1786,19 +1799,20 @@ function calculate() {
 
     // V@100m
     const v100disp = interpV(trajRef, ref100m);
+    const has100   = !isNaN(v100) && !isNaN(v100disp);
     document.getElementById('c-v100-label').textContent = `V@${label100}`;
-    document.getElementById('c-v100').textContent = toVelDisp(v100disp).toFixed(0);
+    document.getElementById('c-v100').textContent = has100 ? toVelDisp(v100disp).toFixed(0) : '—';
     document.getElementById('c-v100-unit').textContent = velLabel;
 
-    document.getElementById('c-e100').textContent  = toEDisp(E100).toFixed(0);
+    document.getElementById('c-e100').textContent  = has100 ? toEDisp(E100).toFixed(0) : '—';
     document.getElementById('c-e100-unit').textContent  = eLabel;
     const eZero = 0.5 * m_kg * vAtZero * vAtZero;
     document.getElementById('c-ezero').textContent = toEDisp(eZero).toFixed(0);
     document.getElementById('c-ezero-unit').textContent = eLabel;
 
     const klassBadge = document.getElementById('c-klass-label');
-    klassBadge.textContent = klass;
-    klassBadge.className = 'klass-badge ' + klass.toLowerCase();
+    klassBadge.textContent = has100 ? klass : '—';
+    klassBadge.className = has100 ? ('klass-badge ' + klass.toLowerCase()) : 'klass-badge';
 
     // Show/hide Phase 3 legend entry
     document.getElementById('phase3-legend').style.display = hasPhase3 ? 'inline' : 'none';
@@ -1890,8 +1904,7 @@ function calculate() {
       const diff   = toDevDisp(diff_cm);
       const zVind  = toDevDisp(zVind_cm);
       const isZeroRow = Math.abs(r - zero_m) < 0.5;
-      const k      = isZeroRow ? '' : (Math.abs(r - 100) < 0.5 ? huntClass(m_kg,E) : '');
-      return {r, yRef, yShoot, diff, v, E, zVind, k, isZeroRow};
+      return {r, yRef, yShoot, diff, v, E, zVind, isZeroRow};
     }).filter(Boolean);
 
     // ── Render table ──
@@ -2090,13 +2103,13 @@ function calculate() {
     const R_disp = toRangeDisp(R).toFixed(0);
     document.getElementById('sens-panel-title').textContent =
       `Sensitivity Analysis at ${R_disp} ${rangeLabel} (fixed zero angle)`;
-    const yBas    = calcDropFixed(v0,    temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
-    const yV0hi   = showSpread ? calcDropFixed(v0+v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
-    const yV0lo   = showSpread ? calcDropFixed(v0-v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
-    const yPp20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa+20, rh_zero_pct, theta, R);
-    const yPm20   = calcDropFixed(v0,    temp_zero_C, press_zero_hPa-20, rh_zero_pct, theta, R);
-    const yThi    = calcDropFixed(v0,    temp_zero_C+15, press_zero_hPa, rh_zero_pct, theta, R);
-    const yTlo    = calcDropFixed(v0,    temp_zero_C-15, press_zero_hPa, rh_zero_pct, theta, R);
+    const yBas    = calcDropFixed(v0_true,    temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
+    const yV0hi   = showSpread ? calcDropFixed(v0_true+v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
+    const yV0lo   = showSpread ? calcDropFixed(v0_true-v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
+    const yPp20   = calcDropFixed(v0_true,    temp_zero_C, press_zero_hPa+20, rh_zero_pct, theta, R);
+    const yPm20   = calcDropFixed(v0_true,    temp_zero_C, press_zero_hPa-20, rh_zero_pct, theta, R);
+    const yThi    = calcDropFixed(v0_true,    temp_zero_C+15, press_zero_hPa, rh_zero_pct, theta, R);
+    const yTlo    = calcDropFixed(v0_true,    temp_zero_C-15, press_zero_hPa, rh_zero_pct, theta, R);
 
     function diffStr(d_cm) {
       const d = toDevDisp(d_cm);  // cm → mm (or in)
@@ -2127,8 +2140,8 @@ function calculate() {
     document.getElementById('sens-wrap').innerHTML=`
     <div class="sens-grid">
       <div class="sens-head">Parameter</div><div class="sens-head">Value</div><div class="sens-head">Δ@${R_disp} ${rangeLabel}</div>
-      ${showSpread ? `<div class="sens-cell sens-label">v₀ +${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0+v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0hi-yBas)}</div>` : ''}
-      ${showSpread ? `<div class="sens-cell sens-label">v₀ −${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0-v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0lo-yBas)}</div>` : ''}
+      ${showSpread ? `<div class="sens-cell sens-label">v₀ +${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0_true+v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0hi-yBas)}</div>` : ''}
+      ${showSpread ? `<div class="sens-cell sens-label">v₀ −${v0spread_eff} ${v0Unit==='fps'?'fps':'m/s'}</div><div class="sens-cell">${toVelDisp(v0_true-v0spread).toFixed(0)} ${velLabel}</div><div class="sens-cell sens-val">${diffStr(yV0lo-yBas)}</div>` : ''}
       <div class="sens-cell sens-label">Pressure +${dPabs_disp} ${pressUnit}</div><div class="sens-cell">${pPlus_disp.toFixed(pDispPrec)} ${pressUnit}</div><div class="sens-cell sens-val">${diffStr(yPp20-yBas)}</div>
       <div class="sens-cell sens-label">Pressure −${dPabs_disp} ${pressUnit}</div><div class="sens-cell">${pMinus_disp.toFixed(pDispPrec)} ${pressUnit}</div><div class="sens-cell sens-val">${diffStr(yPm20-yBas)}</div>
       <div class="sens-cell sens-label">Temp +${dTabs_disp}${tUnitLbl}</div><div class="sens-cell">${tPlus_disp.toFixed(tDispPrec)}${tUnitLbl}</div><div class="sens-cell sens-val">${diffStr(yThi-yBas)}</div>
@@ -2238,6 +2251,17 @@ function initTooltips() {
       hideTip(btn);
     });
   });
+
+  document.addEventListener('touchstart', function(e) {
+    const btn = e.target.closest('.tip-btn');
+    if (btn) {
+      e.preventDefault();
+      if (activeBtn === btn) { hideTip(btn); return; }
+      showTip(btn);
+    } else if (activeBtn) {
+      hideTip(activeBtn);
+    }
+  }, { passive: false });
 }
 
 function applyTheme(theme) {

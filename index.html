@@ -282,10 +282,12 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      <span style="margin-top:4px;display:inline-block">v2.7 · Sep 20, 2026 — robustness: sensitivity analysis now works beyond 300 m, clearer input validation, phase buttons update the chart directly.</span>
+      <span style="margin-top:4px;display:inline-block">v2.9 · Sep 20, 2026 — optional spin effects: spin drift and aerodynamic jump as extra table columns when S<sub>g</sub> is entered.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v2.9</b> (Sep 20, 2026) — New optional panel <i>Spin effects (advanced)</i> under Rifle &amp; Bullet: enter S<sub>g</sub> from the Stability Calculator to get spin drift (relative to the line of sight, zero at the zero range) and aerodynamic jump as two extra table columns. Left empty, the app behaves exactly as before.<br>
+          <b>v2.8</b> (Sep 20, 2026) — Shooting angle: the rifle is zeroed level and the angled shot is computed with the full gravity vector, so uphill/downhill shots now show how much higher they hit (previously the zero was re-solved at the angle, which hid the effect); level shots are unchanged. Wind drift is evaluated on the shooting-day trajectory (atmosphere and propellant temperature). Zero-range estimators always assume a level range.<br>
           <b>v2.7</b> (Sep 20, 2026) — Robustness: sensitivity analysis works at any max range (showed NaN beyond ~300 m); empty or invalid fields give a clear message instead of NaN; phase buttons redraw the chart directly; wind-drift warning threshold corrected to 50 mm; long ranges (1000 m+) are fully tabulated; wind-drift chart uses a true range axis.<br>
           <b>v2.6</b> (Jul 3, 2026) — Chronograph correction applied uniformly (sensitivity analysis, zero-range estimator, vital-zone optimizer); tooltips work on touch devices.<br>
           <b>v2.5</b> (Apr 17, 2026) — Terminology unified (Phase 2 = &ldquo;shooting&rdquo;); sensitivity analysis follows the selected pressure and temperature units.<br>
@@ -405,6 +407,27 @@ canvas{display:block}
           <div class="g7-result" id="g7-result" style="display:none">
             Estimated G7 BC: <span id="g7-result-val" style="color:var(--accent);font-weight:600"></span>
             <button class="g7-apply-btn" onclick="applyG7()">Apply →</button>
+          </div>
+        </div>
+      </div>
+      <!-- Spin effects (expandable, optional) -->
+      <div class="chrono-estimator" id="spin-estimator">
+        <div class="chrono-toggle" onclick="toggleSpin()">
+          <span id="spin-toggle-label">▶ Spin effects (advanced)</span>
+        </div>
+        <div class="chrono-body" id="spin-body" style="display:none">
+          <div class="field" style="margin-top:8px">
+            <label>Stability factor S<sub>g</sub> <button class="tip-btn">?<div class="tip-box">Optional. Gyroscopic stability factor of your bullet and barrel — get it from the companion <b>Stability Calculator</b> (link below).<br><br>When filled in, the table gets two extra columns:<br>· <b>Spin</b> — spin drift relative to the line of sight. It is zero at your zero range, slightly to one side before it and to the other side beyond it.<br>· <b>Jump</b> — aerodynamic jump: the small vertical shift caused by the crosswind (right-hand twist: wind from the left = low, from the right = high).<br><br>Both are a few mm at hunting ranges and grow at long range. Leave empty to switch them off — nothing else in the app changes.</div></button></label>
+            <div class="field-row">
+              <input type="text" inputmode="decimal" id="sg_val" value="" placeholder="empty = off">
+              <select id="twist_dir" class="unit-sel">
+                <option value="R">RH twist</option>
+                <option value="L">LH twist</option>
+              </select>
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px">
+              <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Get S<sub>g</sub> from the Stability Calculator ↗</a>
+            </div>
           </div>
         </div>
       </div>
@@ -576,7 +599,7 @@ canvas{display:block}
       <div class="section-title">Environment</div>
       <div class="field-inline">
         <div class="field">
-          <label>Crosswind <button class="tip-btn">?<div class="tip-box">Wind speed perpendicular to the line of fire (positive = left to right).<br>Wind drift is calculated using the lag-time method:<br><code>z = w × (t_flight − x/v₀)</code><br><br>Wind dominates all other uncertainties at 200 m.</div></button></label>
+          <label>Crosswind <button class="tip-btn">?<div class="tip-box">Wind speed perpendicular to the line of fire (positive = left to right).<br>With S<sub>g</sub> filled in under <i>Spin effects</i>, the table also shows the small vertical shift this wind causes (aerodynamic jump).<br>Wind drift is calculated using the lag-time method:<br><code>z = w × (t_flight − x/v₀)</code><br><br>Wind dominates all other uncertainties at 200 m.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="text" id="wind_val" value="5.0">
             <select id="wind_unit" class="unit-sel" onchange="onUnitChange('wind')">
@@ -587,7 +610,7 @@ canvas{display:block}
           </div>
         </div>
         <div class="field">
-          <label>Shooting Angle <button class="tip-btn">?<div class="tip-box">Angle of the shot relative to horizontal.<br>Positive = uphill, negative = downhill.<br><br>Reduces effective gravity: <code>g_eff = 9.81 × cos(α)</code><br>Both uphill and downhill shots hit higher than level shots.</div></button></label>
+          <label>Shooting Angle <button class="tip-btn">?<div class="tip-box">Angle of the shot relative to horizontal.<br>Positive = uphill, negative = downhill.<br><br>The rifle is assumed zeroed on a level range; the angled shot is then computed with gravity split into a part across the line of sight (<code>g·cos α</code>) and a part along it (<code>g·sin α</code>).<br>Both uphill and downhill shots hit higher than level shots — the table shows by how much.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="text" id="alpha_deg" value="0">
             <span class="unit">°</span>
@@ -728,8 +751,9 @@ canvas{display:block}
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Trajectory Model</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
             Point-mass ODE integrated with RK4 (dt = 1 ms):<br>
-            <span style="color:var(--accent)">dvx/dt = −a_drag · (vx/v)</span><br>
+            <span style="color:var(--accent)">dvx/dt = −g·sin(α) − a_drag · (vx/v)</span><br>
             <span style="color:var(--accent)">dvy/dt = −g·cos(α) − a_drag · (vy/v)</span><br>
+            <span style="color:var(--muted)">(x along the line of sight, y perpendicular to it, α = shooting angle)</span><br>
             <br>
             <span style="color:var(--muted)">where:</span><br>
             <span style="padding-left:16px">a_drag = (π/8) · ρ · v² · C<sub>d</sub>(M) / BC<sub>SI</sub></span><br>
@@ -741,9 +765,10 @@ canvas{display:block}
             <span style="padding-left:16px">M = v / v<sub>s</sub> &nbsp;(Mach number)</span><br>
             <br>
             <span style="color:var(--muted)">G1/G7 drag function C<sub>d</sub>(M):</span> Gehtsoft G1 tabulation (79 Mach points, 0–5), π/8 normalization (Siacci/Ingalls convention).<br>
-            <span style="color:var(--muted)">Zero angle θ:</span> found by bisection (60 iterations, ε &lt; 10⁻¹⁰ rad).<br>
-            <span style="color:var(--muted)">Wind drift:</span> lag-time method — z = w · (t<sub>flight</sub> − x/v₀).<br>
-            <span style="color:var(--muted)">Shooting angle α:</span> reduces effective gravity (g·cos α). Both uphill and downhill hit higher than level.
+            <span style="color:var(--muted)">Zero angle θ:</span> found by bisection (60 iterations, ε &lt; 10⁻¹⁰ rad) for a level shot in the zero-day atmosphere.<br>
+            <span style="color:var(--muted)">Wind drift:</span> lag-time method — z = w · (t<sub>flight</sub> − x/v₀), evaluated on the shooting-day trajectory.<br>
+            <span style="color:var(--muted)">Spin effects (optional, Litz):</span> spin drift = 1.25·(S<sub>g</sub>+1.2)·TOF<sup>1.83</sup> [in], shown relative to the line of sight (zero at the zero range); aerodynamic jump = 0.01·S<sub>g</sub> − 0.0024·L + 0.032 [MOA per mph crosswind], with L = 4.2 calibers as a typical bullet length. Empirical estimates, reported as separate columns.<br>
+            <span style="color:var(--muted)">Shooting angle α:</span> zero solved level, shot computed with the full gravity vector (g·cos α across, g·sin α along the line of sight). Both uphill and downhill hit higher than level.
           </div>
         </div>
 
@@ -995,6 +1020,7 @@ function persistInputs() {
                'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
                'v0_sensitivity',
                'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
+               'sg_val','twist_dir',
                'v0_unit','m_unit','sight_unit','zero_unit','temp_unit','press_unit','wind_unit','vital_unit','chrono_unit'];
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -1052,7 +1078,8 @@ function restorePrefs() {
   const valIds = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
                   'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
                   'v0_sensitivity',
-                  'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm'];
+                  'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
+                  'sg_val','twist_dir'];
   valIds.forEach(id => {
     const k = 'inp_' + id;
     if (prefs[k] !== undefined) {
@@ -1060,6 +1087,9 @@ function restorePrefs() {
       if (el) el.value = prefs[k];
     }
   });
+  // If spin effects were active last time, open the panel so the extra table columns are explained
+  const sgSaved = document.getElementById('sg_val');
+  if (sgSaved && sgSaved.value.trim() !== '' && document.getElementById('spin-body').style.display === 'none') toggleSpin();
 }
 
 // ── Apply comma fix + persistence to all inputs ──
@@ -1160,7 +1190,10 @@ function getCd(mach, dragModel) {
 }
 
 // RK4 integration — returns array of {x, y, vx, vy, t}
-function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5, dt=0.001, xMax=310) {
+// Frame: x along the line of sight, y perpendicular to it.
+//   g      = gravity component perpendicular to the line of sight (g0·cos α)
+//   gAlong = gravity component along the line of sight (g0·sin α; uphill decelerates, downhill accelerates)
+function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5, dt=0.001, xMax=310, gAlong=0) {
   let x=0, y=-sight_h, vx=v0*Math.cos(theta), vy=v0*Math.sin(theta), t=0;
   const out = [{x,y,vx,vy,t}];
 
@@ -1173,7 +1206,7 @@ function integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMax=2.5
     const mach = v/vs;
     const Cd = getCd(mach, dragModel);
     const a_drag = DRAG_COEFF*rho*v*v*Cd/BC_final;
-    return {dx:vx, dy:vy, dvx:-a_drag*(vx/v), dvy:-g - a_drag*(vy/v)};
+    return {dx:vx, dy:vy, dvx:-gAlong - a_drag*(vx/v), dvy:-g - a_drag*(vy/v)};
   }
 
   while (t < tMax && x < xMax) {
@@ -1296,6 +1329,14 @@ function toggleG7() {
   label.textContent = (open ? '▼' : '▶') + ' Estimate G7 from G1';
 }
 
+function toggleSpin() {
+  const body = document.getElementById('spin-body');
+  const label = document.getElementById('spin-toggle-label');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  label.textContent = (open ? '▼' : '▶') + ' Spin effects (advanced)';
+}
+
 function toggleChrono() {
   const body = document.getElementById('chrono-body');
   const label = document.getElementById('chrono-toggle-label');
@@ -1382,8 +1423,7 @@ function estimateZfp() {
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
   const press_zero_hPa = getSI('press', 'press_zero_val','press_unit');
   const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
-  const alpha_deg      = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
-  const g_eff = 9.80665 * Math.cos(alpha_deg * Math.PI / 180);
+  const g_eff = 9.80665;   // zeroing is done on a level range — the shooting angle does not apply here
 
   if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) { resetRows(); return; }
 
@@ -1576,8 +1616,7 @@ function optimizeZeroForVital() {
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
   const press_zero_hPa = getSI('press', 'press_zero_val','press_unit');
   const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
-  const alpha_deg      = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
-  const g_eff = 9.80665 * Math.cos(alpha_deg * Math.PI / 180);
+  const g_eff = 9.80665;   // zeroing is done on a level range — the shooting angle does not apply here
   const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
   const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');
   const v0_true  = chronoCorrectV0(v0, chrono_m, { rho, vs }, BC_final, dragModel);
@@ -1702,7 +1741,9 @@ function calculate() {
     const v0Unit    = document.getElementById('v0_unit').value;
 
     const alpha   = alpha_deg * Math.PI / 180;
-    const g       = 9.80665 * Math.cos(alpha);
+    const G0      = 9.80665;
+    const g       = G0 * Math.cos(alpha);   // perpendicular to the line of sight
+    const gAlong  = G0 * Math.sin(alpha);   // along the line of sight
     // BC: same conversion as MATLAB (BC_final = BC_input * 703.07)
     const BC_final = BC_input * 703.07;
     const dragModel = bc_type;
@@ -1721,6 +1762,16 @@ function calculate() {
       setStatus('Invalid input: crosswind and vital zone radius must be numbers.', 'warn');
       return;
     }
+    // Optional spin effects: empty Sg = off
+    const sgRawStr = document.getElementById('sg_val').value.replace(',','.').trim();
+    const sgVal    = sgRawStr === '' ? NaN : parseFloat(sgRawStr);
+    if (sgRawStr !== '' && !(sgVal >= 0.8 && sgVal <= 6)) {
+      setStatus('Invalid input: Sg must be a number between 0.8 and 6 \u2014 leave it empty to switch spin effects off.', 'warn');
+      return;
+    }
+    const spinOn   = !isNaN(sgVal);
+    const twistSgn = document.getElementById('twist_dir').value === 'L' ? -1 : 1;
+
     if (Math.abs(alpha_deg) >= 90) {
       setStatus('Invalid input: shooting angle must be between \u221290\u00b0 and +90\u00b0.', 'warn');
       return;
@@ -1738,12 +1789,13 @@ function calculate() {
     const v0_true  = chronoCorrectV0(v0, chrono_m, atmoZ, BC_final, dragModel);
 
     // Fas 1: bisection for theta (use v0_true = corrected muzzle velocity)
-    const theta = findTheta(v0_true, sight_h, zero_m, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g);
+    const theta = findTheta(v0_true, sight_h, zero_m, atmoZ.rho, atmoZ.vs, BC_final, dragModel, G0);
 
     // Verify that the zero angle really puts the bullet on the sight line at zero range.
     {
-      const chk = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g,
+      const chk = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, G0,
                             Math.max(2.5, 3*zero_m/v0_true + 1), 0.001, zero_m + 20);
+      var tofZeroLevel = interpT(chk, zero_m);
       const yChk = interpY(chk, zero_m);
       if (isNaN(yChk) || Math.abs(yChk) > 0.005) {
         setStatus('Could not solve the zero angle: zero range is out of reach for this load.', 'warn');
@@ -1819,17 +1871,17 @@ function calculate() {
     const vitalUnitLbl = document.getElementById('vital_unit').value;
     document.getElementById('vz-label').textContent = vital_raw;
     document.getElementById('vz-unit').textContent  = vitalUnitLbl;
-    const trajRef   = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
-    const trajShoot = integrate(theta, v0_true, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
+    const trajRef   = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong);
+    const trajShoot = integrate(theta, v0_true, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong);
     const trajPhase3 = hasPhase3
-      ? integrate(theta, v0_true + delta_v0_phase3, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax)
+      ? integrate(theta, v0_true + delta_v0_phase3, sight_h, atmoS.rho, atmoS.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong)
       : null;
     // v0spread phase selection
     const spreadPhase = window._spreadPhase || 2;
     const spreadAtmo  = spreadPhase === 1 ? atmoZ : atmoS;
     const spreadV0base = (spreadPhase === 3 && hasPhase3) ? v0_true + delta_v0_phase3 : v0_true;
-    const trajV0hi  = integrate(theta, spreadV0base+v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
-    const trajV0lo  = integrate(theta, spreadV0base-v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
+    const trajV0hi  = integrate(theta, spreadV0base+v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong);
+    const trajV0lo  = integrate(theta, spreadV0base-v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong);
 
     // ── Energy and class at 100 m ──
     const v100 = interpV(trajRef, 100);
@@ -1943,6 +1995,9 @@ function calculate() {
     document.getElementById('vzs-wrap').innerHTML = vzsHtml;
 
     // ── Build table data ──
+    const AJ_LENGTH_CAL = 4.2;   // typical bullet length in calibers; ±1.2 cal changes the jump by only ~7 %
+    const trajDay = trajPhase3 || trajShoot;
+    const v0Day   = hasPhase3 ? v0_true + delta_v0_phase3 : v0_true;
     const maxX = Math.max(...trajRef.map(p=>p.x));
     const rows = RANGES.map(r => {
       if (r > maxX + 0.5) return null;
@@ -1950,8 +2005,9 @@ function calculate() {
       const yShoot_cm= interpY(trajShoot, r) * 100;
       const v        = interpV(trajRef,   r);
       const E        = 0.5 * m_kg * v * v;
-      const tFlyg    = interpT(trajRef,   r);
-      const zVind_cm = wind_ms * (tFlyg - r/v0_true) * 100;
+      // Wind is a shooting-day quantity: use the shooting-day trajectory (incl. Phase 3 when active)
+      const tFlyg    = interpT(trajDay,   r);
+      const zVind_cm = wind_ms * (tFlyg - r/v0Day) * 100;
       const diff_cm  = yShoot_cm - yRef_cm;
       // Convert deviations to display unit
       const yRef   = toDevDisp(yRef_cm);
@@ -1959,12 +2015,23 @@ function calculate() {
       const diff   = toDevDisp(diff_cm);
       const zVind  = toDevDisp(zVind_cm);
       const isZeroRow = Math.abs(r - zero_m) < 0.5;
-      return {r, yRef, yShoot, diff, v, E, zVind, isZeroRow};
+      // Optional spin effects (Litz): shown as separate contributions, never mixed into the other columns
+      let spin = null, jump = null;
+      if (spinOn) {
+        const sdInch = t => 1.25 * (sgVal + 1.2) * Math.pow(t, 1.83);              // spin drift [in], TOF in s
+        const sd_cm  = (sdInch(tFlyg) - sdInch(tofZeroLevel) * r / zero_m) * 2.54; // relative to line of sight, zero at zero range
+        spin = toDevDisp(twistSgn * sd_cm);                                         // + = right
+        const ajMoaPerMph = 0.01 * sgVal - 0.0024 * AJ_LENGTH_CAL + 0.032;          // aerodynamic jump [MOA per mph crosswind]
+        const ajRad = ajMoaPerMph * (wind_ms / 0.44704) * (Math.PI / 180 / 60);
+        jump = toDevDisp(-twistSgn * ajRad * r * 100);                              // RH twist: wind from the left (+) = low
+      }
+      return {r, yRef, yShoot, diff, v, E, zVind, isZeroRow, spin, jump};
     }).filter(Boolean);
 
     // ── Render table ──
     let html='<table class="result-table"><thead><tr>';
     html+=`<th>Range (${rangeLabel})</th><th>Zero (${devLabel})</th><th>Shoot (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th>`;
+    if (spinOn) html+=`<th>Spin (${devLabel})</th><th>Jump (${devLabel})</th>`;
     html+='</tr></thead><tbody>';
     rows.forEach(row => {
       const yClass = y => y>0 ? 'val-pos' : (y<0 ? 'val-neg' : '');
@@ -1977,6 +2044,10 @@ function calculate() {
       html+=`<td>${toVelDisp(row.v).toFixed(0)}</td>`;
       html+=`<td>${toEDisp(row.E).toFixed(ePrec)}</td>`;
       html+=`<td class="${Math.abs(row.zVind)>warnThresh?'val-warn':''}">${row.zVind>=0?'+':''}${row.zVind.toFixed(devPrec)}</td>`;
+      if (spinOn) {
+        const sgn = v => (parseFloat(v.toFixed(devPrec)) >= 0 ? '+' : '') + parseFloat(v.toFixed(devPrec)).toFixed(devPrec);
+        html+=`<td>${sgn(row.spin)}</td><td>${sgn(row.jump)}</td>`;
+      }
       html+='</tr>';
     });
     html+='</tbody></table>';
@@ -2152,7 +2223,7 @@ function calculate() {
     // ── Sensitivity analysis ──
     function calcDropFixed(v0p, tempC, pressHPa, rhPct, thetaFix, rangeM) {
       const atm=calcAtmo(tempC, pressHPa, rhPct);
-      const traj=integrate(thetaFix, v0p, sight_h, atm.rho, atm.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
+      const traj=integrate(thetaFix, v0p, sight_h, atm.rho, atm.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong);
       return interpY(traj, rangeM)*100;
     }
     const R = maxrange_m;

@@ -3,7 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Josef's External Ballistics Calculator</title>
+<title>Josef's External Ballistics &amp; Trajectory Calculator</title>
+<meta name="description" content="Free external ballistics calculator for hunters and handloaders: trajectory, wind drift, energy and Swedish hunt classes. Three-phase model, RK4, G1/G7 drag.">
+<link rel="canonical" href="https://jsbartunek.github.io/josefs-external-ballistics/">
+<meta name="keywords" content="external ballistics calculator, trajectory calculator, wind drift calculator, ballistic trajectory, hunting ballistics, reloading, handloading, RK4, G1 G7 drag, zero range calculator, hunt classes Naturvårdsverket, bullet drop calculator">
+<meta name="author" content="Josef Ström Bartůněk">
+<meta property="og:title" content="Josef's External Ballistics Calculator">
+<meta property="og:description" content="Free external ballistics calculator: trajectory, wind drift, energy and Swedish hunt classes. Three-phase model separates zero, weather and propellant temperature effects.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jsbartunek.github.io/josefs-external-ballistics/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Josef's External Ballistics Calculator">
+<meta name="twitter:description" content="Free external ballistics calculator: trajectory, wind drift, energy and Swedish hunt classes. Three-phase model separates zero, weather and propellant temperature effects.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Josef's External Ballistics Calculator",
+  "url": "https://jsbartunek.github.io/josefs-external-ballistics/",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "description": "Free external ballistics calculator for hunters and handloaders: trajectory, wind drift, energy and Swedish hunt classes. Three-phase model, RK4, G1/G7 drag.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Josef Ström Bartůněk" }
+}
+</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-S2Q33KLL5P"></script>
 <script>
@@ -255,16 +282,17 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      <span style="margin-top:4px;display:inline-block">v2.6 · July 3, 2026 — consistency & robustness: chronograph correction now applied uniformly across the app.</span>
+      <span style="margin-top:4px;display:inline-block">v2.7 · Sep 20, 2026 — robustness: sensitivity analysis now works beyond 300 m, clearer input validation, phase buttons update the chart directly.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
-          <b>v2.6</b> (Jul 3, 2026) — Consistency & robustness: chronograph muzzle-velocity correction now applied uniformly in the sensitivity analysis, zero-range estimator, and vital-zone optimizer (previously only the main trajectory used the corrected v₀); tooltips now work on touch devices (tap to toggle); input validation guard prevents NaN output on zero/empty inputs; V@100 summary cards show "—" instead of NaN when max range is below 100 m/yd; comma-to-dot input fix now handles multiple commas; removed dead per-row hunt-class code left over from the v2.2 table simplification.<br>
-          <b>v2.5</b> (Apr 17, 2026) — Terminology unified across the UI: Phase 2 is now consistently labelled &ldquo;shooting&rdquo; (shooting atmosphere, shooting day, Shoot atm. P2, Shoot column) rather than mixing &ldquo;hunting/shooting&rdquo; and &ldquo;hunt&rdquo;. Trajectory table reference column renamed Ref → <b>Zero</b> to match the Zero atm. (P1) row label. &ldquo;Hunting&rdquo; is retained only where it is the actual subject (intro text, Swedish 150 m zero recommendation) and for the <i>Swedish Hunt Classes</i> (Naturvårdsverket), which is a proper name. Sensitivity analysis table now respects the selected pressure and temperature units — previously labels and values were hard-coded as hPa/°C regardless of user choice (visible when switching to mbar, inHg, or °F).<br>
-          <b>v2.4</b> (Apr 17, 2026) — Unit-system review: added <b>m</b> as an option for Chronograph distance (&ldquo;3 m&rdquo; reads more naturally than &ldquo;3000 mm&rdquo; for optical chrono setups); added <b>mbar</b> as a synonym for hPa in pressure fields (numerically identical, matches older meteorological habit); fixed bug where v₀ sensitivity value was not converted when temperature unit was switched between °C and °F (conversion factor: 1 m/s/°C = 1.8227 fps/°F).<br>
-          <b>v2.3</b> (Apr 17, 2026) — Darker, dedicated colour for section titles and panel headings so the logical groupings read as distinct at a glance. Crosswind unit list revised: removed kts (not used for wind in hunting ballistics), added km/h for Central European use; final options are m/s, km/h, mph. Added a safeguard for stale unit preferences in localStorage.<br>
-          <b>v2.2</b> (Apr 17, 2026) — Input panel reorganised: Vital Zone moved next to Zero Range since it drives the zero-range optimiser; Chronograph distance and v₀ spread grouped into a collapsible &ldquo;Chronograph details&rdquo; panel under Muzzle Velocity; VZS row labels unified as Zero atm. (P1) / Hunt atm. (P2) / +Propellant (P3); redundant Class column removed from the trajectory table.<br>
-          <b>v2.1</b> — Unified UI for zero-range estimators: both sections now use an explicit Calculate button, consistent result rows with dimmed &ldquo;&mdash;&rdquo; for empty scenarios, stale-clearing on input change; tooltip texts revised for clarity and Optimal tooltip added.
+          <b>v2.7</b> (Sep 20, 2026) — Robustness: sensitivity analysis works at any max range (showed NaN beyond ~300 m); empty or invalid fields give a clear message instead of NaN; phase buttons redraw the chart directly; wind-drift warning threshold corrected to 50 mm; long ranges (1000 m+) are fully tabulated; wind-drift chart uses a true range axis.<br>
+          <b>v2.6</b> (Jul 3, 2026) — Chronograph correction applied uniformly (sensitivity analysis, zero-range estimator, vital-zone optimizer); tooltips work on touch devices.<br>
+          <b>v2.5</b> (Apr 17, 2026) — Terminology unified (Phase 2 = &ldquo;shooting&rdquo;); sensitivity analysis follows the selected pressure and temperature units.<br>
+          <b>v2.4</b> (Apr 17, 2026) — Unit review: metres for chronograph distance, mbar for pressure; v₀ sensitivity now converted when switching °C/°F.<br>
+          <b>v2.3</b> (Apr 17, 2026) — Clearer section headings; crosswind units are now m/s, km/h and mph.<br>
+          <b>v2.2</b> (Apr 17, 2026) — Input panel reorganised: vital zone next to zero range, chronograph details in a collapsible panel.<br>
+          <b>v2.1</b> — Unified layout for the two zero-range estimators.
         </div>
       </details>
       &nbsp;·&nbsp;
@@ -328,9 +356,9 @@ canvas{display:block}
               <span class="unit" id="v0spread_unit_lbl">m/s</span>
             </div>
             <div style="display:flex;gap:6px;margin-top:6px;">
-              <button class="spread-phase-btn" id="spbtn1" onclick="setSpreadPhase(1)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 1</button>
-              <button class="spread-phase-btn" id="spbtn2" onclick="setSpreadPhase(2)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:all 0.15s;">PHASE 2</button>
-              <button class="spread-phase-btn" id="spbtn3" onclick="setSpreadPhase(3)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 3</button>
+              <button class="spread-phase-btn" id="spbtn1" onclick="selectSpreadPhase(1)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 1</button>
+              <button class="spread-phase-btn" id="spbtn2" onclick="selectSpreadPhase(2)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:all 0.15s;">PHASE 2</button>
+              <button class="spread-phase-btn" id="spbtn3" onclick="selectSpreadPhase(3)" style="flex:1;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:4px 0;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;">PHASE 3</button>
             </div>
           </div>
         </div>
@@ -1200,10 +1228,11 @@ function interpV(traj, xTarget) {
 // Bisection: find theta so y(zero_m)=0
 function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g, xMax) {
   xMax = xMax || (zero_m + 20);
+  const tMaxZ = Math.max(2.5, 3*zero_m/v0 + 1);   // 2.5 s as before for normal zero ranges
   let lo=-0.05, hi=0.05;
   for (let iter=0; iter<60; iter++) {
     const mid=(lo+hi)/2;
-    const traj=integrate(mid,v0,sight_h,rho,vs,BC_final,dragModel,g,2.5,0.001,xMax);
+    const traj=integrate(mid,v0,sight_h,rho,vs,BC_final,dragModel,g,tMaxZ,0.001,xMax);
     const y=interpY(traj,zero_m);
     if (y>0) hi=mid; else lo=mid;
     if ((hi-lo)<1e-10) break;
@@ -1668,7 +1697,7 @@ function calculate() {
     if (!hasPhase3 && window._spreadPhase === 3) setSpreadPhase(2);
 
     const wind_ms   = getSI('wind',  'wind_val',  'wind_unit');  // m/s
-    const alpha_deg = parseFloat(document.getElementById('alpha_deg').value.replace(',','.'));
+    const alpha_deg = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
     const vital_cm  = getSI('vital', 'vital_val', 'vital_unit'); // cm
     const v0Unit    = document.getElementById('v0_unit').value;
 
@@ -1680,6 +1709,20 @@ function calculate() {
 
     if (!(v0 > 0) || !(m_kg > 0) || !(BC_input > 0) || !(sight_h >= 0) || !(zero_m > 0)) {
       setStatus('Invalid input: v\u2080, bullet weight, BC and zero range must be positive.', 'warn');
+      return;
+    }
+
+    if ([temp_zero_C, press_zero_hPa, temp_shoot_C, press_shoot_hPa].some(v => isNaN(v)) ||
+        !(press_zero_hPa > 0) || !(press_shoot_hPa > 0)) {
+      setStatus('Invalid input: temperature and pressure must be filled in for both zero day and shooting day.', 'warn');
+      return;
+    }
+    if (isNaN(wind_ms) || isNaN(vital_cm)) {
+      setStatus('Invalid input: crosswind and vital zone radius must be numbers.', 'warn');
+      return;
+    }
+    if (Math.abs(alpha_deg) >= 90) {
+      setStatus('Invalid input: shooting angle must be between \u221290\u00b0 and +90\u00b0.', 'warn');
       return;
     }
 
@@ -1696,6 +1739,17 @@ function calculate() {
 
     // Fas 1: bisection for theta (use v0_true = corrected muzzle velocity)
     const theta = findTheta(v0_true, sight_h, zero_m, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g);
+
+    // Verify that the zero angle really puts the bullet on the sight line at zero range.
+    {
+      const chk = integrate(theta, v0_true, sight_h, atmoZ.rho, atmoZ.vs, BC_final, dragModel, g,
+                            Math.max(2.5, 3*zero_m/v0_true + 1), 0.001, zero_m + 20);
+      const yChk = interpY(chk, zero_m);
+      if (isNaN(yChk) || Math.abs(yChk) > 0.005) {
+        setStatus('Could not solve the zero angle: zero range is out of reach for this load.', 'warn');
+        return;
+      }
+    }
 
     // ── Display units ──
     const rangeUnit = document.getElementById('zero_unit').value;   // 'm' or 'yd'
@@ -1737,7 +1791,7 @@ function calculate() {
     RANGES.sort((a,b) => a-b);
 
     // Extend integration if needed
-    const tMax = maxrange_m/v0_true + 2;
+    const tMax = Math.max(maxrange_m/v0_true + 2, 3*maxrange_m/v0_true + 1);
     const xMax = maxrange_m + 20;  // 20 m margin for interpolation at boundary
     const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
     const v0spread_eff = isNaN(v0spread_raw) ? 10 : v0spread_raw;
@@ -1754,9 +1808,10 @@ function calculate() {
     ['spbtn1','spbtn2','spbtn3'].forEach(id => {
       const btn = document.getElementById(id);
       if (!btn) return;
-      btn.disabled = !showSpread;
-      btn.style.opacity = showSpread ? '1' : '0.35';
-      btn.style.cursor  = showSpread ? 'pointer' : 'not-allowed';
+      const on = showSpread && (id !== 'spbtn3' || hasPhase3);
+      btn.disabled = !on;
+      btn.style.opacity = on ? '1' : '0.35';
+      btn.style.cursor  = on ? 'pointer' : 'not-allowed';
     });
 
     // Update vital zone legend label
@@ -1913,7 +1968,7 @@ function calculate() {
     html+='</tr></thead><tbody>';
     rows.forEach(row => {
       const yClass = y => y>0 ? 'val-pos' : (y<0 ? 'val-neg' : '');
-      const warnThresh = vitalUnit === 'in' ? 2 : 5;
+      const warnThresh = vitalUnit === 'in' ? 2 : 50;
       html+=`<tr${row.isZeroRow?' class="zero-row"':''}>`;
       html+=`<td>${toRangeDisp(row.r).toFixed(0)} ${rangeLabel}</td>`;
       html+=`<td class="${yClass(row.yRef)}">${row.yRef>=0?'+':''}${row.yRef.toFixed(devPrec)}</td>`;
@@ -2071,10 +2126,9 @@ function calculate() {
     chartWind = new Chart(document.getElementById('chartWind'), {
       type:'line',
       data:{
-        labels:rArr,
         datasets:[{
           label:`Wind drift (${windSpeedDisp})`,
-          data:zVindArr,
+          data:rArr.map((x,i) => ({x:x, y:zVindArr[i]})),
           borderColor:cOrange, borderWidth:2, pointRadius:4,
           pointBackgroundColor:cOrange, tension:0.3, fill:false
         }]
@@ -2082,9 +2136,11 @@ function calculate() {
       options:{
         responsive:true, maintainAspectRatio:false,
         animation:{duration:400},
-        plugins:{legend:{display:false}},
+        plugins:{legend:{display:false},
+                 tooltip:{callbacks:{title: items => `Range: ${items[0].parsed.x.toFixed(0)} ${rangeLabel}`}}},
         scales:{
-          x:{ticks:{color:cMuted,font:{family:'IBM Plex Mono',size:10}},grid:{color:cBorder2},
+          x:{type:'linear', min:0, max:parseFloat(toRangeDisp(maxrange_m).toFixed(1)),
+             ticks:{color:cMuted,font:{family:'IBM Plex Mono',size:10},stepSize:step_disp,callback:v=>v.toFixed(0)},grid:{color:cBorder2},
              title:{display:true,text:`Range (${rangeLabel})`,color:cMuted,font:{family:'IBM Plex Mono',size:11}}},
           y:{ticks:{color:cMuted,font:{family:'IBM Plex Mono',size:10},callback:v=>(v>=0?'+':'')+v.toFixed(devPrec)},
              grid:{color:cBorder2},
@@ -2096,7 +2152,7 @@ function calculate() {
     // ── Sensitivity analysis ──
     function calcDropFixed(v0p, tempC, pressHPa, rhPct, thetaFix, rangeM) {
       const atm=calcAtmo(tempC, pressHPa, rhPct);
-      const traj=integrate(thetaFix, v0p, sight_h, atm.rho, atm.vs, BC_final, dragModel, g);
+      const traj=integrate(thetaFix, v0p, sight_h, atm.rho, atm.vs, BC_final, dragModel, g, tMax, 0.001, xMax);
       return interpY(traj, rangeM)*100;
     }
     const R = maxrange_m;
@@ -2149,7 +2205,8 @@ function calculate() {
     </div>
     <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Base: ${yBas_mm.toFixed(devPrec)} ${devLabel} at ${R_disp} ${rangeLabel} &nbsp;·&nbsp; Zero angle fixed</p>`;
 
-    const row200 = rows.reduce((best, r) => Math.abs(r.r-200) < Math.abs(best.r-200) ? r : best, rows[rows.length-1]);
+    const ref200m = use100yd ? 182.88 : 200;   // 200 yd or 200 m
+    const row200 = rows.reduce((best, r) => Math.abs(r.r-ref200m) < Math.abs(best.r-ref200m) ? r : best, rows[rows.length-1]);
     const zeroRow = rows.find(r => r.isZeroRow) || rows.reduce((best, r) => Math.abs(r.r - zero_m) < Math.abs(best.r - zero_m) ? r : best, rows[0]);
     const windZeroEl = document.getElementById('c-wind-zero');
     const windZeroUnitEl = document.getElementById('c-wind-zero-unit');
@@ -2164,7 +2221,12 @@ function calculate() {
     if (wind100LabelEl) wind100LabelEl.textContent = `@${label100}`;
     if (wind100El) { wind100El.textContent = (row100wind.zVind >= 0 ? '+' : '') + row100wind.zVind.toFixed(devPrec); }
     if (wind100UnitEl) { wind100UnitEl.textContent = devLabel; }
-    setStatus(`OK — θ=${(theta*1000).toFixed(3)} mrad · wind drift@${toRangeDisp(row200.r).toFixed(0)}${rangeLabel}: ${row200.zVind.toFixed(devPrec)} ${windLabel}`, 'ok');
+    const reachMin = Math.min(maxX, Math.max(...trajShoot.map(p=>p.x)));
+    if (reachMin < maxrange_m - 0.5) {
+      setStatus(`Bullet does not reach max range — table ends at ${toRangeDisp(reachMin).toFixed(0)} ${rangeLabel}. θ=${(theta*1000).toFixed(3)} mrad`, 'warn');
+    } else {
+      setStatus(`OK — θ=${(theta*1000).toFixed(3)} mrad · wind drift@${toRangeDisp(row200.r).toFixed(0)}${rangeLabel}: ${row200.zVind.toFixed(devPrec)} ${windLabel}`, 'ok');
+    }
 
   } catch(e) {
     setStatus('Error: ' + e.message, 'warn');
@@ -2286,14 +2348,15 @@ document.addEventListener('DOMContentLoaded', function() {
   if (sensEl) {
     sensEl.addEventListener('input', function() {
       var val = parseFloat(this.value.replace(',','.')) || 0;
-      var active = Math.abs(val) > 0.001;
+      var spreadV = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
+      var active = Math.abs(val) > 0.001 && !isNaN(spreadV) && spreadV > 0;
       var btn = document.getElementById('spbtn3');
       if (btn) {
         btn.disabled = !active;
         btn.style.opacity = active ? '1' : '0.35';
         btn.style.cursor  = active ? 'pointer' : 'not-allowed';
       }
-      if (!active && window._spreadPhase === 3) setSpreadPhase(2);
+      if (Math.abs(val) <= 0.001 && window._spreadPhase === 3) setSpreadPhase(2);
     });
   }
 });
@@ -2317,12 +2380,16 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateSpreadButtons() {
     var val = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
     var enabled = !isNaN(val) && val > 0;
+    var sensEl3 = document.getElementById('v0_sensitivity');
+    var sens3 = sensEl3 ? (parseFloat(sensEl3.value.replace(',','.')) || 0) : 0;
+    var p3active = Math.abs(sens3) > 0.001;
     ['spbtn1','spbtn2','spbtn3'].forEach(function(id) {
       var btn = document.getElementById(id);
       if (!btn) return;
-      btn.disabled = !enabled;
-      btn.style.opacity = enabled ? '1' : '0.35';
-      btn.style.cursor  = enabled ? 'pointer' : 'not-allowed';
+      var on = enabled && (id !== 'spbtn3' || p3active);
+      btn.disabled = !on;
+      btn.style.opacity = on ? '1' : '0.35';
+      btn.style.cursor  = on ? 'pointer' : 'not-allowed';
     });
     var legend = document.getElementById('v0band-legend');
     if (legend) legend.style.display = enabled ? '' : 'none';
@@ -2345,6 +2412,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+// Click handler for the phase buttons: select the phase and redraw.
+// (setSpreadPhase itself is also called from inside calculate(), so it must not recalc.)
+function selectSpreadPhase(n) {
+  setSpreadPhase(n);
+  calculate();
+}
 
 function setSpreadPhase(n) {
   window._spreadPhase = n;

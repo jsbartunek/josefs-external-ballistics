@@ -270,7 +270,7 @@ canvas{display:block}
 
     <p style="margin-bottom:12px">A central objective is clarity and understanding. The three-phase model separates the rifle's mechanical zero, the contribution of atmospheric conditions, and propellant temperature — making their individual contributions explicit. The aim is to support intuition and informed judgment, not merely to produce numerical output.</p>
 
-    <p style="margin-bottom:12px">Trajectory predictions agree with JBM Ballistics and QuickTARGET to within 10 mm (0.4 in) at 200 m (220 yd). Velocity agrees to within 0.5 m/s, validated against JBM Ballistics and Norma factory data.</p>
+    <p style="margin-bottom:12px">On the standard test load, trajectory predictions agree with JBM Ballistics within JBM's 0.1 in rounding out to 500 m, and velocity within 0.1 m/s; a QuickTARGET comparison agrees within about 1 mm and 1 m/s to 300 m.</p>
 
     <p style="margin-bottom:16px">This tool was developed with the assistance of <a href="https://www.anthropic.com" target="_blank" style="color:var(--accent)">Claude</a> by <a href="https://www.anthropic.com" target="_blank" style="color:var(--accent)">Anthropic</a>.</p>
 
@@ -282,10 +282,12 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      <span style="margin-top:4px;display:inline-block">v2.9 · Sep 20, 2026 — optional spin effects: spin drift and aerodynamic jump as extra table columns when S<sub>g</sub> is entered.</span>
+      <span style="margin-top:4px;display:inline-block">v3.0.1 · Oct 11, 2026 — zero-range optimizer rounds down so the apex stays inside the vital zone.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v3.0.1</b> (Oct 11, 2026) — Optimize zero range for vital zone: the result is rounded down (0.1 m or yd) and solved 0.1 mm inside the zone, so the zero-day apex is always within the vital zone (the old midpoint and round-to-nearest could exceed it by a fraction of a millimetre and show ✗).<br>
+          <b>v3.0</b> (Oct 11, 2026) — <b>Hunt classes per NFS 2023:8</b> (in force since Aug 2023): new <i>Bullet material</i> input — a lead-free bullet ≥ 7.7 g reaches class 1 at E₁₀₀ ≥ 2000 J; class 4 now means muzzle energy ≥ 150 J, and “—” is shown when no class applies (previously everything else was K4). E₁₀₀ for the class is computed with the chronograph-corrected v₀ in the ICAO standard atmosphere, level, no wind, so the class no longer changes with the weather. <b>Velocity and energy</b> in the table and the zero-range cards are now shooting-day values including Phase 3 (previously zero-day values: on a cold day with a propellant coefficient the energy was overstated by up to ~11 %). <b>Chronograph correction</b> is now an exact inversion (previously an approximation that was up to ~16 m/s low for slow, low-BC loads at 50 m); maximum chronograph distance 100 m. <b>Humid speed of sound</b> corrected (the humidity term was half its physical size; up to a few cm at long range in hot, humid air). Zero-angle search widened to ±0.30 rad (reachable zeros of slow loads were refused). Vital-zone summary also shows where a long zero rises <i>above</i> the vital zone. G1→G7 estimate factor 1.98 (was 1.95). Wind and velocity at the zero range now shown even when the zero lies beyond the table. G7 drag table reduced to the published 84 points (no numerical effect). Texts corrected: station pressure, JBM comparison with the documented JBM run, model notes, humidity formula name.<br>
           <b>v2.9</b> (Sep 20, 2026) — New optional panel <i>Spin effects (advanced)</i> under Rifle &amp; Bullet: enter S<sub>g</sub> from the Stability Calculator to get spin drift (relative to the line of sight, zero at the zero range) and aerodynamic jump as two extra table columns. Left empty, the app behaves exactly as before.<br>
           <b>v2.8</b> (Sep 20, 2026) — Shooting angle: the rifle is zeroed level and the angled shot is computed with the full gravity vector, so uphill/downhill shots now show how much higher they hit (previously the zero was re-solved at the angle, which hid the effect); level shots are unchanged. Wind drift is evaluated on the shooting-day trajectory (atmosphere and propellant temperature). Zero-range estimators always assume a level range.<br>
           <b>v2.7</b> (Sep 20, 2026) — Robustness: sensitivity analysis works at any max range (showed NaN beyond ~300 m); empty or invalid fields give a clear message instead of NaN; phase buttons redraw the chart directly; wind-drift warning threshold corrected to 50 mm; long ranges (1000 m+) are fully tabulated; wind-drift chart uses a true range axis.<br>
@@ -341,7 +343,7 @@ canvas{display:block}
         </div>
         <div class="chrono-body" id="chrono-body" style="display:none">
           <div class="field" style="margin-top:8px">
-            <label>Chronograph distance <button class="tip-btn">?<div class="tip-box">Distance from muzzle to chronograph.<br>The model integrates drag over this distance and uses the resulting speed as true v₀.<br><br>0 = muzzle (MagnetoSpeed, LabRadar close)<br>~3 m (3000 mm, 118 in) = typical optical chronograph<br>~5 m (5000 mm, 197 in) = further away setups<br><br>Leave at 0 if using manufacturer data or unsure.</div></button></label>
+            <label>Chronograph distance <button class="tip-btn">?<div class="tip-box">Distance from muzzle to chronograph (max 100 m).<br>The model finds the muzzle velocity that, after drag over this distance, gives the measured speed (exact inversion). The chronograph reading is assumed to be taken in the zero-day atmosphere.<br><br>0 = muzzle (MagnetoSpeed, LabRadar close)<br>~3 m (3000 mm, 118 in) = typical optical chronograph<br>~5 m (5000 mm, 197 in) = further away setups<br><br>Leave at 0 if using manufacturer data or unsure.</div></button></label>
             <div class="field-row">
               <input type="text" inputmode="decimal" id="chrono_cm" value="0">
               <select id="chrono_unit" class="unit-sel" onchange="onUnitChange('chrono')">
@@ -375,9 +377,16 @@ canvas{display:block}
           </select>
         </div>
       </div>
+      <div class="field">
+        <label>Bullet material <button class="tip-btn">?<div class="tip-box">Used only for the Swedish hunt class (NFS 2023:8).<br><br>A lead-free bullet (at most 3 % lead by weight) of at least 7.7 g reaches class 1 already at E₁₀₀ ≥ 2000 J.<br><br>Classes 1 and 2 also require a bullet designed to expand — this is not checked by the calculator.</div></button></label>
+        <select id="lead_free">
+          <option value="0">Lead core</option>
+          <option value="1">Lead-free (≤ 3 % Pb)</option>
+        </select>
+      </div>
       <div class="field-inline">
         <div class="field">
-          <label>BC <button class="tip-btn">?<div class="tip-box">Ballistic Coefficient — measures how well the bullet resists air drag.<br>Higher BC = less drag = flatter trajectory and less wind drift.<br><br>Typical G1 BC ranges:<br>· Flat-base (FB): 0.20–0.35<br>· Round-nose (RN): 0.15–0.25<br>· Boat-tail SP (BT): 0.35–0.55<br>· HPBT / VLD: 0.45–0.65<br>· Polymer-tip BT: 0.40–0.60<br><br>G7 BC is typically 55–65% of the G1 value for the same bullet.</div></button></label>
+          <label>BC <button class="tip-btn">?<div class="tip-box">Ballistic Coefficient — measures how well the bullet resists air drag.<br>Higher BC = less drag = flatter trajectory and less wind drift.<br><br>Typical G1 BC ranges:<br>· Flat-base (FB): 0.20–0.35<br>· Round-nose (RN): 0.15–0.25<br>· Boat-tail SP (BT): 0.35–0.55<br>· HPBT / VLD: 0.45–0.65<br>· Polymer-tip BT: 0.40–0.60<br><br>G7 BC is typically about 50 % of the G1 value for the same pointed boat-tail bullet (G1/G7 ≈ 1.98).</div></button></label>
           <input type="text" inputmode="decimal" id="bc_input" value="0.447">
         </div>
         <div class="field">
@@ -396,10 +405,10 @@ canvas{display:block}
         </div>
         <div class="g7-body" id="g7-body" style="display:none">
           <div class="field" style="margin-top:8px">
-            <label>Bullet type <button class="tip-btn">?<div class="tip-box">Conversion factor from G1 to G7 BC:<br><br>· All pointed boat-tail types: ÷ 1.95<br>· Flat-base: not applicable (G1 recommended)<br>· Round-nose: not applicable (G1 recommended)<br><br>The Litz (2009) factors (1.43–1.60) were derived from early chronograph data. Analysis of modern Doppler/radar data from Berger, Nosler, Lapua and Hornady shows a consistent ratio of ~1.95 across all pointed BT constructions regardless of type.</div></button></label>
+            <label>Bullet type <button class="tip-btn">?<div class="tip-box">Conversion factor from G1 to G7 BC:<br><br>· All pointed boat-tail types: ÷ 1.98<br>· Flat-base: not applicable (G1 recommended)<br>· Round-nose: not applicable (G1 recommended)<br><br>The Litz (2009) factors (1.43–1.60) were derived from early chronograph data. Manufacturer-published G1/G7 pairs from Berger, Nosler, Lapua and Hornady show a ratio of 1.95–2.00 for pointed BT constructions; 1.98 is the weighted mean (32 bullets). Enter a measured G7 BC when available.</div></button></label>
             <select id="g7_bullet_type" onchange="estimateG7()">
               <option value="">— select type —</option>
-              <option value="1.95">Pointed boat-tail (all types)</option>
+              <option value="1.98">Pointed boat-tail (all types)</option>
               <option value="" disabled>Flat base — G7 not applicable</option>
               <option value="" disabled>Round nose — G7 not applicable</option>
             </select>
@@ -452,7 +461,7 @@ canvas{display:block}
         </div>
       </div>
       <div class="field">
-        <label>Zero Range <button class="tip-btn">?<div class="tip-box">The distance at which the bullet path crosses the line of sight (POI = POA).<br><br>150 m (164 yd) zero is recommended in Sweden for hunting — keeps the bullet within ±80 mm (±3.1 in) out to 200 m (219 yd) without hold-over.</div></button></label>
+        <label>Zero Range <button class="tip-btn">?<div class="tip-box">The distance at which the bullet path crosses the line of sight (POI = POA).<br><br>150 m (164 yd) zero is recommended in Sweden for hunting — keeps a typical .308 hunting load within about ±85 mm (±3.3 in) out to 200 m (219 yd) without hold-over.</div></button></label>
         <div class="field-row">
           <input type="text" inputmode="decimal" id="zero_val" value="150">
           <select id="zero_unit" class="unit-sel" onchange="onUnitChange('zero')">
@@ -532,7 +541,7 @@ canvas{display:block}
       <div class="section-title">Zero Atmosphere (Phase 1)</div>
       <div class="field-inline">
         <div class="field">
-          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature when zeroing the rifle.<br>Affects air density and sound speed (Mach number), which influences drag.<br><br>Effect on external ballistics at ≤200 m (219 yd): &lt;0.2 mm (&lt;0.01 in). Main effect is on powder burn rate (internal ballistics).</div></button></label>
+          <label>Temp <button class="tip-btn">?<div class="tip-box">Temperature when zeroing the rifle.<br>Affects air density and sound speed (Mach number), which influences drag.<br><br>Effect on external ballistics at ≤200 m (219 yd): about ±2 mm for ±15 °C. The larger effect is usually on muzzle velocity (powder temperature) — see Phase 3.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="text" id="temp_zero_val" value="15">
             <select id="temp_unit" class="unit-sel" onchange="onUnitChange('temp')">
@@ -542,7 +551,7 @@ canvas{display:block}
           </div>
         </div>
         <div class="field">
-          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure when zeroing.<br>Determines air density: ρ = 1.225 × (P/1013.25) × (288.15/T)<br><br>Effect at ≤200 m (219 yd): &lt;0.1 mm per ±20 hPa (±0.59 inHg). Negligible at this range.</div></button></label>
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Station pressure when zeroing — the actual local pressure at the shooting site (barometer, Kestrel), <b>not</b> the sea-level pressure (QNH) given in weather reports. At 500 m elevation, entering QNH instead would make the drop about 10 cm too small at 600 m.<br>Air density from partial pressures of dry air and water vapour (temperature, pressure, humidity).<br><br>Effect at ≤200 m (219 yd): about ±1 mm per ±20 hPa (±0.59 inHg).</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="decimal" id="press_zero_val" value="1013">
             <select id="press_unit" class="unit-sel" onchange="onUnitChange('press')">
@@ -655,12 +664,12 @@ canvas{display:block}
 <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline">
   <span style="font-size:10px;color:var(--muted)">E@zero</span>
   <span style="text-align:right"><span class="card-val" id="c-ezero" style="display:inline">—</span> <span id="c-ezero-unit" style="font-size:11px;color:var(--muted)">J</span></span>
-  <span style="font-size:10px;color:var(--muted)"><span id="c-e100-label">E₁₀₀</span> <span id="c-klass-label" style="font-size:12px"></span> <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket)</b><br>Evaluated at 100 m.<br><br>
+  <span style="font-size:10px;color:var(--muted)"><span id="c-e100-label">E₁₀₀</span> <span id="c-klass-label" style="font-size:12px"></span> <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket, NFS 2023:8)</b><br>E₁₀₀ is the energy 100 m from the muzzle of your rifle — computed here with the chronograph-corrected v₀ in the ICAO standard atmosphere (15 °C, 1013 hPa), level, no wind, so the class does not change with the weather. Check the regulation for the exact rules of use.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
-<span style="color:var(--green);font-weight:600">K1</span><span>≥ 10 g bullet &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or ≥ 9 g &amp; E₁₀₀ ≥ 2700 J<br>Moose, red deer, fallow deer, bear, wild boar</span></span>
-<span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g bullet &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">Roe deer, beaver, lynx</span></span>
-<span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g bullet &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">Hare, fox, small game</span></span>
-<span style="color:var(--red);font-weight:600">K4</span><span>Other — air rifles, rimfire</span>
+<span style="color:var(--green);font-weight:600">K1</span><span>≥ 9 g &amp; E₁₀₀ ≥ 2700 J, or ≥ 10 g &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or lead-free ≥ 7.7 g &amp; E₁₀₀ ≥ 2000 J · expanding bullet · all game</span></span>
+<span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">expanding bullet · e.g. roe deer, lynx, beaver</span></span>
+<span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">e.g. fox, hare</span></span>
+<span style="color:var(--red);font-weight:600">K4</span><span>muzzle energy E₀ ≥ 150 J<br><span style="color:var(--muted);font-size:10px">listed small mammals and birds · “—” = no class</span></span>
 </span></div></button></span>
   <span style="text-align:right"><span class="card-val" id="c-e100" style="display:inline">—</span> <span id="c-e100-unit" style="font-size:11px;color:var(--muted)">J</span></span>
 </div></div>
@@ -761,11 +770,11 @@ canvas{display:block}
             <span style="padding-left:16px">BC<sub>SI</sub> = BC<sub>G1</sub> × 703.07 &nbsp;[kg/m²]</span><br>
             <span style="padding-left:16px">ρ = (P_d · M_d + e · M_w) / (R · T) &nbsp;[kg/m³] &nbsp;(humid air, M_d=28.964, M_w=18.016 g/mol)</span><br>
             <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) · √(1 + 0.16·e/P) &nbsp;[m/s] &nbsp;(humidity correction)</span><br>
-            <span style="padding-left:16px">e = RH/100 · e_s, &nbsp;e_s = 6.1078 · 10^(7.5·T_C/(237.3+T_C)) &nbsp;[hPa] (Magnus formula)</span><br>
+            <span style="padding-left:16px">e = RH/100 · e_s, &nbsp;e_s = 6.1078 · 10^(7.5·T_C/(237.3+T_C)) &nbsp;[hPa] (Tetens/Murray formula)</span><br>
             <span style="padding-left:16px">M = v / v<sub>s</sub> &nbsp;(Mach number)</span><br>
             <br>
             <span style="color:var(--muted)">G1/G7 drag function C<sub>d</sub>(M):</span> Gehtsoft G1 tabulation (79 Mach points, 0–5), π/8 normalization (Siacci/Ingalls convention).<br>
-            <span style="color:var(--muted)">Zero angle θ:</span> found by bisection (60 iterations, ε &lt; 10⁻¹⁰ rad) for a level shot in the zero-day atmosphere.<br>
+            <span style="color:var(--muted)">Zero angle θ:</span> found by bisection over ±0.30 rad (stops at ε &lt; 10⁻¹⁰ rad, about 33 iterations) for a level shot in the zero-day atmosphere.<br>
             <span style="color:var(--muted)">Wind drift:</span> lag-time method — z = w · (t<sub>flight</sub> − x/v₀), evaluated on the shooting-day trajectory.<br>
             <span style="color:var(--muted)">Spin effects (optional, Litz):</span> spin drift = 1.25·(S<sub>g</sub>+1.2)·TOF<sup>1.83</sup> [in], shown relative to the line of sight (zero at the zero range); aerodynamic jump = 0.01·S<sub>g</sub> − 0.0024·L + 0.032 [MOA per mph crosswind], with L = 4.2 calibers as a typical bullet length. Empirical estimates, reported as separate columns.<br>
             <span style="color:var(--muted)">Shooting angle α:</span> zero solved level, shot computed with the full gravity vector (g·cos α across, g·sin α along the line of sight). Both uphill and downhill hit higher than level.
@@ -777,7 +786,7 @@ canvas{display:block}
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Three-Phase Model</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
             <span style="color:var(--accent)">Phase 1 — Zero:</span> bisection solves for θ under zero-day atmosphere (T<sub>zero</sub>, P<sub>zero</sub>, RH<sub>zero</sub>). θ is fixed thereafter — it represents the rifle's mechanical setting.<br>
-            <span style="color:var(--accent)">Phase 2 — Shooting day:</span> same θ, new atmosphere (T<sub>shoot</sub>, P<sub>shoot</sub>, RH<sub>shoot</sub>). Shows the pure external ballistic effect of weather change. Typically &lt;2 mm at ≤200 m.<br>
+            <span style="color:var(--accent)">Phase 2 — Shooting day:</span> same θ, new atmosphere (T<sub>shoot</sub>, P<sub>shoot</sub>, RH<sub>shoot</sub>). Shows the pure external ballistic effect of weather change — typically a few mm at ≤200 m.<br>
             <span style="color:var(--accent)">Phase 3 — Propellant temperature</span> <span style="color:var(--orange);font-size:9px;border:1px solid var(--orange);padding:1px 4px;border-radius:2px">EXPERIMENTAL</span><span style="color:var(--accent)">:</span> same θ and shooting atmosphere, but v₀ is shifted by the propellant temperature effect: <b>Δv₀ = k · (T<sub>shoot</sub> − T<sub>zero</sub>)</b>, where k is the user-measured sensitivity [m/s/°C] and propellant temperature is assumed equal to shooting temperature. This is the dominant real-world weather effect — a −30°C temperature swing with a sensitive powder (k = 0.5 m/s/°C) shifts v₀ by 15 m/s. Disabled when k = 0.
           </div>
         </div>
@@ -786,51 +795,45 @@ canvas{display:block}
         <div style="padding:14px 16px;border-bottom:1px solid var(--border2)">
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Validation vs JBM Ballistics &amp; QuickTARGET</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Test conditions: 165 gr Hornady InterBond · G1 BC 0.447 · v₀ = 785 m/s · sight 45 mm · zero 150 m · 15°C / 1013 hPa / 0% RH · no wind</div>
-          <div style="display:grid;grid-template-columns:60px repeat(5,1fr);gap:2px 0;font-family:var(--mono);font-size:11px">
+          <div style="display:grid;grid-template-columns:60px repeat(4,1fr);gap:2px 0;font-family:var(--mono);font-size:11px">
             <span style="color:var(--muted);padding:3px 8px">Range</span>
-            <span style="color:var(--muted);padding:3px 8px">This app</span>
-            <span style="color:var(--muted);padding:3px 8px">JBM</span>
-            <span style="color:var(--muted);padding:3px 8px">Δ traj.</span>
-            <span style="color:var(--muted);padding:3px 8px">Δ vel.</span>
-            <span style="color:var(--muted);padding:3px 8px">Δ energy</span>
-
+            <span style="color:var(--muted);padding:3px 8px">This app (mm)</span>
+            <span style="color:var(--muted);padding:3px 8px">JBM (mm)</span>
+            <span style="color:var(--muted);padding:3px 8px">Δ traj. (mm)</span>
+            <span style="color:var(--muted);padding:3px 8px">v app / JBM (m/s)</span>
             <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">50 m</span>
-            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+15 mm</span>
-            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+15 mm</span>
-            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">0 mm</span>
-            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">+1 m/s</span>
-            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">&lt;1%</span>
-
-            <span style="color:var(--muted);padding:3px 8px">100 m</span>
-            <span style="color:var(--text);padding:3px 8px">+31 mm</span>
-            <span style="color:var(--text);padding:3px 8px">+30 mm</span>
-            <span style="color:var(--green);padding:3px 8px">+1 mm</span>
-            <span style="color:var(--green);padding:3px 8px">+1 m/s</span>
-            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
-
-            <span style="color:var(--muted);padding:3px 8px">150 m</span>
-            <span style="color:var(--text);padding:3px 8px">0 mm</span>
-            <span style="color:var(--text);padding:3px 8px">0 mm</span>
-            <span style="color:var(--green);padding:3px 8px">0 mm</span>
-            <span style="color:var(--green);padding:3px 8px">0 m/s</span>
-            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
-
-            <span style="color:var(--muted);padding:3px 8px">200 m</span>
-            <span style="color:var(--text);padding:3px 8px">−83 mm</span>
-            <span style="color:var(--text);padding:3px 8px">−84 mm</span>
-            <span style="color:var(--green);padding:3px 8px">+1 mm</span>
-            <span style="color:var(--green);padding:3px 8px">−1 m/s</span>
-            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
-
-            <span style="color:var(--muted);padding:3px 8px">300 m</span>
-            <span style="color:var(--text);padding:3px 8px">−425 mm</span>
-            <span style="color:var(--text);padding:3px 8px">−424 mm</span>
-            <span style="color:var(--green);padding:3px 8px">−1 mm</span>
-            <span style="color:var(--green);padding:3px 8px">0 m/s</span>
-            <span style="color:var(--green);padding:3px 8px">&lt;1%</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+14.7</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+15.2 (0.6 in)</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">−0.5</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">751.9 / 751.9</span>
+            <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">100 m</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+31.0</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">+30.5 (1.2 in)</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">+0.5</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">719.7 / 719.7</span>
+            <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">150 m</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">0.0</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">0.0</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">0.0</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">688.2 / 688.2</span>
+            <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">200 m</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">−82.9</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">−83.8 (−3.3 in)</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">+0.9</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">657.5 / 657.5</span>
+            <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">300 m</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">−424.4</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">−424.2 (−16.7 in)</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">−0.2</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">598.4 / 598.4</span>
+            <span style="color:var(--muted);padding:3px 8px;border-top:1px solid var(--border2)">500 m</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">−1991.3</span>
+            <span style="color:var(--text);padding:3px 8px;border-top:1px solid var(--border2)">−1991.4 (−78.4 in)</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">+0.1</span>
+            <span style="color:var(--green);padding:3px 8px;border-top:1px solid var(--border2)">491.0 / 491.0</span>
           </div>
           <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px">
-            Validated against JBM Ballistics and Norma factory data. Trajectory error ≤1 mm and velocity error ≤0.1 m/s across all ranges. Drag model uses Gehtsoft G1 tabulation with π/8 (Siacci/Ingalls) normalization — no empirical correction factors. Humidity model: Magnus formula + partial-pressure density, validated at 15°C / 1013 hPa / 50% RH → ρ = 1.2211 kg/m³ (QuickTarget).
+            JBM values from a JBM Ballistics run in April 2026 (online calculators retired in 2026); JBM reports drop to 0.1 in (±1.3 mm), so every difference above is within JBM's rounding. Velocity agrees to 0.1 m/s. Drag model: Gehtsoft G1 tabulation with π/8 (Siacci/Ingalls) normalization — no empirical correction factors. Humidity model: Tetens/Murray formula + partial-pressure density, validated at 15°C / 1013 hPa / 50% RH → ρ = 1.2211 kg/m³ (QuickTarget).
           </div>
         </div>
 
@@ -838,12 +841,15 @@ canvas{display:block}
         <div style="padding:14px 16px">
           <div style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Model Notes</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
-            <span style="color:var(--green)">▸ Trajectory, velocity, and energy validated to &lt;1% vs JBM</span> — Gehtsoft G1 drag tabulation with π/8 (Siacci/Ingalls) normalization. No empirical correction factors.<br>
-            <span style="color:var(--green)">▸ Reliable to ≤300 m</span> — trajectory error &lt;2 mm, velocity error &lt;0.2 m/s across the full range.<br>
-            <span style="color:var(--green)">▸ Relative humidity modelled</span> — Magnus formula + partial-pressure density. Effect &lt;0.5 mm at ≤200 m; included for physical correctness.<br>
+            <span style="color:var(--green)">▸ Trajectory and velocity agree with JBM</span> — Gehtsoft G1 drag tabulation with π/8 (Siacci/Ingalls) normalization. No empirical correction factors.<br>
+            <span style="color:var(--green)">▸ Point-mass model (2D)</span> — drop and velocity agree with JBM within its rounding to 500 m on the test load.<br>
+            <span style="color:var(--green)">▸ Relative humidity modelled</span> — Tetens/Murray saturation pressure, partial-pressure density and humid-air speed of sound. Effect &lt;0.5 mm at ≤200 m.<br>
             <span style="color:var(--muted)">▸ G1 and G7 drag models supported</span> — G7 recommended for VLD/boattail bullets.<br>
-            <span style="color:var(--muted)">▸ No spin drift, Coriolis, or aerodynamic jump</span> — negligible at ≤300 m.<br>
-            <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) is experimental</span> — user-measured v₀ sensitivity [m/s/°C]. Disabled when k = 0.
+            <span style="color:var(--muted)">▸ Spin drift and aerodynamic jump optional (Litz); no Coriolis</span> — Coriolis is negligible at hunting ranges.<br>
+            <span style="color:var(--muted)">▸ Steep shots</span> — crosswind on slopes uses the lag-time rule (about ±18 mm at 600 m and ±70 mm at 1000 m on a 45° slope), and air density and speed of sound are held at the muzzle values (about +15 mm at 600 m on a 45° slope).<br>
+            <span style="color:var(--muted)">▸ Pressure is station pressure</span> — the local pressure at the site, not sea-level QNH.<br>
+            <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) is experimental</span> — user-measured v₀ sensitivity [m/s/°C]. Disabled when k = 0.<br>
+            <span style="color:var(--muted)">▸ Velocity, energy and wind columns are shooting-day values</span> (incl. Phase 3); the hunt class uses E₁₀₀ in the ICAO standard atmosphere.
           </div>
         </div>
 
@@ -1020,7 +1026,7 @@ function persistInputs() {
                'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
                'v0_sensitivity',
                'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
-               'sg_val','twist_dir',
+               'sg_val','twist_dir','lead_free',
                'v0_unit','m_unit','sight_unit','zero_unit','temp_unit','press_unit','wind_unit','vital_unit','chrono_unit'];
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -1079,7 +1085,7 @@ function restorePrefs() {
                   'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
                   'v0_sensitivity',
                   'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
-                  'sg_val','twist_dir'];
+                  'sg_val','twist_dir','lead_free'];
   valIds.forEach(id => {
     const k = 'inp_' + id;
     if (prefs[k] !== undefined) {
@@ -1153,12 +1159,12 @@ const G1_CD = [0.2629,0.2558,0.2487,0.2413,0.2344,0.2278,0.2214,
   0.5685,0.5630,0.5577,0.5527,0.5481,0.5438,0.5397,0.5325,0.5264,
   0.5211,0.5168,0.5133,0.5105,0.5084,0.5067,0.5054,0.5040,0.5030,
   0.5022,0.5016,0.5010,0.5006,0.4998,0.4995,0.4992,0.4990,0.4988];
-// G7 drag function — 85-point table (Gehtsoft/BRL, GPL-3.0)
+// G7 drag function — 84-point table (Gehtsoft/BRL, GPL-3.0)
 const G7_MACH = [
   0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,
   0.50,0.55,0.60,0.65,0.70,0.725,0.75,0.775,0.80,0.825,
   0.85,0.875,0.90,0.925,0.95,0.975,1.0,1.025,1.05,1.075,
-  1.10,1.125,1.15,1.20,1.25,1.30,1.35,1.40,1.45,1.50,
+  1.10,1.125,1.15,1.20,1.25,1.30,1.35,1.40,1.50,
   1.55,1.60,1.65,1.70,1.75,1.80,1.85,1.90,1.95,2.00,
   2.05,2.10,2.15,2.20,2.25,2.30,2.35,2.40,2.45,2.50,
   2.55,2.60,2.65,2.70,2.75,2.80,2.85,2.90,2.95,3.00,
@@ -1168,7 +1174,7 @@ const G7_CD = [
   0.1198,0.1197,0.1196,0.1194,0.1193,0.1194,0.1194,0.1194,0.1193,0.1193,
   0.1194,0.1193,0.1194,0.1197,0.1202,0.1207,0.1215,0.1226,0.1242,0.1266,
   0.1306,0.1368,0.1464,0.1660,0.2054,0.2993,0.3803,0.4015,0.4043,0.4034,
-  0.4014,0.3987,0.3955,0.3884,0.3810,0.3732,0.3657,0.3580,0.3510,0.3440,
+  0.4014,0.3987,0.3955,0.3884,0.3810,0.3732,0.3657,0.3580,0.3440,
   0.3376,0.3315,0.3260,0.3209,0.3160,0.3117,0.3078,0.3042,0.3010,0.2980,
   0.2951,0.2922,0.2892,0.2864,0.2835,0.2807,0.2779,0.2752,0.2725,0.2697,
   0.2670,0.2643,0.2615,0.2588,0.2561,0.2533,0.2506,0.2479,0.2451,0.2424,
@@ -1262,7 +1268,7 @@ function interpV(traj, xTarget) {
 function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g, xMax) {
   xMax = xMax || (zero_m + 20);
   const tMaxZ = Math.max(2.5, 3*zero_m/v0 + 1);   // 2.5 s as before for normal zero ranges
-  let lo=-0.05, hi=0.05;
+  let lo=-0.30, hi=0.30;   // ±0.30 rad (≈ ±17°): wide enough for slow loads and long zeros
   for (let iter=0; iter<60; iter++) {
     const mid=(lo+hi)/2;
     const traj=integrate(mid,v0,sight_h,rho,vs,BC_final,dragModel,g,tMaxZ,0.001,xMax);
@@ -1273,22 +1279,36 @@ function findTheta(v0, sight_h, zero_m, rho, vs, BC_final, dragModel, g, xMax) {
   return (lo+hi)/2;
 }
 
-// Recover true muzzle velocity from a chronograph-measured velocity.
-// Integrates drag forward over chrono_m and adds the loss back.
-// Returns v0 unchanged when chrono_m is effectively zero.
-function chronoCorrectV0(v0, chrono_m, atmo, BC_final, dragModel) {
-  if (!(chrono_m > 0.005)) return v0;
-  const DRAG_CHRONO = Math.PI / 8;
-  let vv = v0, x = 0;
-  const dt = 0.00005;
-  while (x < chrono_m) {
-    const mach = vv / atmo.vs;
-    const Cd   = getCd(mach, dragModel);
-    const a    = DRAG_CHRONO * atmo.rho * vv * vv * Cd / BC_final;
-    vv -= a * dt;
-    x  += vv * dt;
+// Recover true muzzle velocity from a chronograph-measured velocity (exact inversion).
+// velAtDistance(v0) integrates the drag deceleration in distance (RK4, dv/dx = −a/v) from the
+// muzzle to the chronograph; the muzzle velocity is the v0 that reproduces the measured value.
+// Returns v0 unchanged when chrono_m is effectively zero, NaN when chrono_m > 100 m or no solution.
+const CHRONO_MAX_M = 100;
+function chronoCorrectV0(v_meas, chrono_m, atmo, BC_final, dragModel) {
+  if (!(chrono_m > 0.005)) return v_meas;
+  if (!(chrono_m <= CHRONO_MAX_M) || !(v_meas > 0)) return NaN;
+  const K = Math.PI / 8 * atmo.rho / BC_final;
+  const dvdx = v => -K * v * getCd(v / atmo.vs, dragModel);   // a/v with a = K·v²·Cd
+  function velAtDistance(v0) {
+    const nStep = Math.max(20, Math.ceil(chrono_m / 0.02));
+    const h = chrono_m / nStep;
+    let v = v0;
+    for (let i = 0; i < nStep; i++) {
+      const k1 = dvdx(v), k2 = dvdx(v + h/2*k1), k3 = dvdx(v + h/2*k2), k4 = dvdx(v + h*k3);
+      v += h * (k1 + 2*k2 + 2*k3 + k4) / 6;
+      if (!(v > 0)) return 0;
+    }
+    return v;
   }
-  return v0 + (v0 - vv);
+  let lo = v_meas, hi = v_meas * 1.05 + 1;
+  for (let k = 0; k < 60 && velAtDistance(hi) < v_meas; k++) hi = hi * 1.25 + 10;
+  if (velAtDistance(hi) < v_meas) return NaN;
+  for (let iter = 0; iter < 60; iter++) {
+    const mid = (lo + hi) / 2;
+    if (velAtDistance(mid) < v_meas) lo = mid; else hi = mid;
+    if (hi - lo < 1e-6) break;
+  }
+  return (lo + hi) / 2;
 }
 
 // Atmosphere helpers
@@ -1300,17 +1320,20 @@ function calcAtmo(temp_C, press_hPa, rh_pct) {
   const P_d = (press_hPa - e) * 100;
   const e_Pa = e * 100;
   const rho = (P_d * 0.028964 + e_Pa * 0.018016) / (8.31446 * T);
-  const vs = 331.3 * Math.sqrt(T / 273.15) * Math.sqrt(1 + 0.16 * (e / press_hPa));
+  // Humid air: c² ∝ γ_mix / M_mix ≈ 1 + 0.32·(e/p) for water-vapour mole fraction e/p
+  const vs = 331.3 * Math.sqrt(T / 273.15) * Math.sqrt(1 + 0.32 * (e / press_hPa));
   return { rho, vs, T };
 }
 
-// Swedish hunt class at 100 m
-function huntClass(m_kg, E) {
-  if (m_kg>=0.010 && E>=2000) return 'K1';
-  if (m_kg>=0.009 && E>=2700) return 'K1';
-  if (m_kg>=0.0032 && E>=800) return 'K2';
-  if (m_kg>=0.0025 && E>=200) return 'K3';
-  return 'K4';
+// Swedish hunt class per NFS 2023:8 (1 kap. 5 §). E100 = energy at 100 m, E0 = muzzle energy.
+// Classes 1–2 also require an expanding bullet (not checked). Returns '—' when no class applies.
+function huntClass(m_kg, E100, E0, leadFree) {
+  if ((m_kg>=0.009 && E100>=2700) || (m_kg>=0.010 && E100>=2000) ||
+      (leadFree && m_kg>=0.0077 && E100>=2000)) return 'K1';
+  if (m_kg>=0.0032 && E100>=800) return 'K2';
+  if (m_kg>=0.0025 && E100>=200) return 'K3';
+  if (E0>=150) return 'K4';
+  return '—';
 }
 
 let chartTraj=null, chartWind=null;
@@ -1662,30 +1685,34 @@ function optimizeZeroForVital() {
     return;
   }
 
-  // Bisect: find Z where peakY(Z) = vital_m
+  // Bisect: find Z where peakY(Z) = target. The target sits 0.1 mm inside the vital zone and the
+  // result is taken from the low side of the bracket, so the apex never exceeds the zone.
+  const target_m = vital_m - 0.0001;
   let lo = zLo, hi = zHi;
   for (let i = 0; i < 40; i++) {
     const mid = (lo + hi) / 2;
-    if (peakYforZ(mid) > vital_m) hi = mid;
+    if (peakYforZ(mid) > target_m) hi = mid;
     else lo = mid;
     if ((hi - lo) < 0.05) break;
   }
-  const optimalZ_m = (lo + hi) / 2;
 
-  // Store and display
-  window._ovzResult = optimalZ_m;
+  // Round DOWN to 0.1 in the display unit (peakY increases with Z, so a shorter zero keeps the apex
+  // inside the zone); the stored value is exactly what Apply writes into the zero-range field.
   const rangeUnit = document.getElementById('zero_unit').value;
-  const disp = parseFloat(CONV_FROM.zero[rangeUnit](optimalZ_m).toFixed(1));
+  const disp = Math.floor(CONV_FROM.zero[rangeUnit](lo) * 10 + 1e-9) / 10;
+  window._ovzResult = disp;
+  window._ovzUnit   = rangeUnit;
   valEl.textContent = disp + '\u00a0' + rangeUnit;
   valEl.style.opacity = '';
   applyBtn.style.display = '';
 }
 
 function applyOptimalZero() {
-  const z_m = window._ovzResult;
-  if (!z_m || isNaN(z_m)) return;
-  const rangeUnit = document.getElementById('zero_unit').value;
-  const disp = parseFloat(CONV_FROM.zero[rangeUnit](z_m).toFixed(1));
+  const disp = window._ovzResult;
+  if (!disp || isNaN(disp)) return;
+  // The result is in the unit that was active when it was computed; restore that unit if it changed.
+  const zu = document.getElementById('zero_unit');
+  if (window._ovzUnit && zu.value !== window._ovzUnit) zu.value = window._ovzUnit;
   document.getElementById('zero_val').value = disp;
   // collapse panel
   document.getElementById('zfp-body').style.display = 'none';
@@ -1786,7 +1813,15 @@ function calculate() {
     // User measured v0 at chrono, not at muzzle.
     // We integrate drag over chrono_m to recover true muzzle v0.
     const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');  // returns metres
+    if (chrono_m > CHRONO_MAX_M) {
+      setStatus('Invalid input: chronograph distance must be at most 100 m.', 'warn');
+      return;
+    }
     const v0_true  = chronoCorrectV0(v0, chrono_m, atmoZ, BC_final, dragModel);
+    if (!(v0_true > 0)) {
+      setStatus('Could not correct the chronograph velocity for this load and distance.', 'warn');
+      return;
+    }
 
     // Fas 1: bisection for theta (use v0_true = corrected muzzle velocity)
     const theta = findTheta(v0_true, sight_h, zero_m, atmoZ.rho, atmoZ.vs, BC_final, dragModel, G0);
@@ -1843,8 +1878,9 @@ function calculate() {
     RANGES.sort((a,b) => a-b);
 
     // Extend integration if needed
-    const tMax = Math.max(maxrange_m/v0_true + 2, 3*maxrange_m/v0_true + 1);
-    const xMax = maxrange_m + 20;  // 20 m margin for interpolation at boundary
+    const extent_m = Math.max(maxrange_m, zero_m);   // also cover the zero range when it lies beyond the table
+    const tMax = Math.max(extent_m/v0_true + 2, 3*extent_m/v0_true + 1);
+    const xMax = extent_m + 20;  // 20 m margin for interpolation at boundary
     const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
     const v0spread_eff = isNaN(v0spread_raw) ? 10 : v0spread_raw;
     const showSpread = v0spread_eff > 0;
@@ -1883,13 +1919,24 @@ function calculate() {
     const trajV0hi  = integrate(theta, spreadV0base+v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong);
     const trajV0lo  = integrate(theta, spreadV0base-v0spread, sight_h, spreadAtmo.rho, spreadAtmo.vs, BC_final, dragModel, g, tMax, 0.001, xMax, gAlong);
 
-    // ── Energy and class at 100 m ──
-    const v100 = interpV(trajRef, 100);
-    const E100 = 0.5 * m_kg * v100 * v100;
-    const klass = huntClass(m_kg, E100);
+    // ── Shooting-day trace (incl. Phase 3 when active): velocity, energy and wind are shooting-day quantities ──
+    const trajDay = trajPhase3 || trajShoot;
+    const v0Day   = hasPhase3 ? v0_true + delta_v0_phase3 : v0_true;
 
-    // v at zero_m
-    const vAtZero = interpV(trajRef, zero_m);
+    // ── Hunt class (NFS 2023:8) ──
+    // E100 is a property of the ammunition in this rifle, not of the weather: computed with the
+    // chronograph-corrected v0, ICAO standard atmosphere (15 °C, 1013.25 hPa, dry), level, no wind.
+    const atmoStd  = calcAtmo(15, 1013.25, 0);
+    const trajClass = integrate(0, v0_true, 0, atmoStd.rho, atmoStd.vs, BC_final, dragModel, G0,
+                                Math.max(2.5, 3*110/v0_true + 1), 0.001, 120);
+    const v100 = interpV(trajClass, 100);
+    const E100 = 0.5 * m_kg * v100 * v100;
+    const E0   = 0.5 * m_kg * v0_true * v0_true;
+    const leadFree = (document.getElementById('lead_free') || {value:'0'}).value === '1';
+    const klass = huntClass(m_kg, E100, E0, leadFree);
+
+    // v at zero_m — shooting day
+    const vAtZero = interpV(trajDay, zero_m);
 
     // ── Determine 100m vs 100yd label ──
     const use100yd = (rangeUnit === 'yd');
@@ -1898,14 +1945,14 @@ function calculate() {
 
     // Update summary panel heading
     document.getElementById('summary-panel-head').textContent =
-      `Summary at Zero Range & ${label100}`;
+      `Summary — shooting day at zero range · hunt class at ${label100} (ICAO reference)`;
 
     // Update cards
-    document.getElementById('c-vnull').textContent = toVelDisp(vAtZero).toFixed(0);
+    document.getElementById('c-vnull').textContent = isNaN(vAtZero) ? '—' : toVelDisp(vAtZero).toFixed(0);
     document.getElementById('c-vnull-unit').textContent = velLabel;
 
     // V@100m
-    const v100disp = interpV(trajRef, ref100m);
+    const v100disp = interpV(trajClass, ref100m);
     const has100   = !isNaN(v100) && !isNaN(v100disp);
     document.getElementById('c-v100-label').textContent = `V@${label100}`;
     document.getElementById('c-v100').textContent = has100 ? toVelDisp(v100disp).toFixed(0) : '—';
@@ -1914,12 +1961,12 @@ function calculate() {
     document.getElementById('c-e100').textContent  = has100 ? toEDisp(E100).toFixed(0) : '—';
     document.getElementById('c-e100-unit').textContent  = eLabel;
     const eZero = 0.5 * m_kg * vAtZero * vAtZero;
-    document.getElementById('c-ezero').textContent = toEDisp(eZero).toFixed(0);
+    document.getElementById('c-ezero').textContent = isNaN(eZero) ? '—' : toEDisp(eZero).toFixed(0);
     document.getElementById('c-ezero-unit').textContent = eLabel;
 
     const klassBadge = document.getElementById('c-klass-label');
     klassBadge.textContent = has100 ? klass : '—';
-    klassBadge.className = has100 ? ('klass-badge ' + klass.toLowerCase()) : 'klass-badge';
+    klassBadge.className = (has100 && klass !== '—') ? ('klass-badge ' + klass.toLowerCase()) : 'klass-badge';
 
     // Show/hide Phase 3 legend entry
     document.getElementById('phase3-legend').style.display = hasPhase3 ? 'inline' : 'none';
@@ -1932,6 +1979,14 @@ function calculate() {
         if (pt.y * 100 > apexY_cm) { apexY_cm = pt.y * 100; apexX_m = pt.x; }
       }
       const apexInside = Math.abs(apexY_cm) <= vital_cm;
+      // Above the vital zone before the apex (long zeros): range where y > +vital
+      let upX1_m = NaN, upX2_m = NaN;
+      for (let i = 1; i < traj.length; i++) {
+        const y0 = traj[i-1].y*100, y1 = traj[i].y*100;
+        const xa = traj[i-1].x, xb = traj[i].x;
+        if (isNaN(upX1_m) && y0 <= vital_cm && y1 > vital_cm) upX1_m = xa + (vital_cm - y0)/(y1 - y0)*(xb - xa);
+        else if (!isNaN(upX1_m) && y0 > vital_cm && y1 <= vital_cm) { upX2_m = xa + (vital_cm - y0)/(y1 - y0)*(xb - xa); break; }
+      }
       // Falling through −vital_cm after apex
       let crossDnX_m = NaN, crossDnV = NaN, crossDnE = NaN;
       let pastApex = false;
@@ -1949,7 +2004,7 @@ function calculate() {
           break;
         }
       }
-      return { apexY_cm, apexX_m, apexInside, crossDnX_m, crossDnV, crossDnE };
+      return { apexY_cm, apexX_m, apexInside, upX1_m, upX2_m, crossDnX_m, crossDnV, crossDnE };
     }
 
     function vzsApexHtml(st) {
@@ -1957,7 +2012,8 @@ function calculate() {
       const col   = st.apexInside ? 'var(--green)' : 'var(--red)';
       const tick  = st.apexInside ? '✓' : '✗';
       return `<div class="vzs-val" style="color:${col}">${yDisp>=0?'+':''}${yDisp.toFixed(devPrec)} ${devLabel}</div>
-              <div class="vzs-sub">@ ${toRangeDisp(st.apexX_m).toFixed(0)} ${rangeLabel} &nbsp;<span style="color:${col}">${tick}</span></div>`;
+              <div class="vzs-sub">@ ${toRangeDisp(st.apexX_m).toFixed(0)} ${rangeLabel} &nbsp;<span style="color:${col}">${tick}</span></div>`
+           + (!isNaN(st.upX1_m) ? `<div class="vzs-sub2" style="color:var(--red)">above zone ${toRangeDisp(st.upX1_m).toFixed(0)}–${isNaN(st.upX2_m) ? '…' : toRangeDisp(st.upX2_m).toFixed(0)} ${rangeLabel}</div>` : '');
     }
     function vzsDnHtml(st) {
       if (isNaN(st.crossDnX_m) || st.crossDnX_m > maxrange_m)
@@ -1996,18 +2052,16 @@ function calculate() {
 
     // ── Build table data ──
     const AJ_LENGTH_CAL = 4.2;   // typical bullet length in calibers; ±1.2 cal changes the jump by only ~7 %
-    const trajDay = trajPhase3 || trajShoot;
-    const v0Day   = hasPhase3 ? v0_true + delta_v0_phase3 : v0_true;
     const maxX = Math.max(...trajRef.map(p=>p.x));
     const rows = RANGES.map(r => {
       if (r > maxX + 0.5) return null;
       const yRef_cm  = interpY(trajRef,   r) * 100;
       const yShoot_cm= interpY(trajShoot, r) * 100;
-      const v        = interpV(trajRef,   r);
+      const v        = interpV(trajDay,   r);   // shooting day (incl. Phase 3)
       const E        = 0.5 * m_kg * v * v;
       // Wind is a shooting-day quantity: use the shooting-day trajectory (incl. Phase 3 when active)
       const tFlyg    = interpT(trajDay,   r);
-      const zVind_cm = wind_ms * (tFlyg - r/v0Day) * 100;
+      const zVind_cm = wind_ms * (tFlyg - r/v0Day) * 100;   // NaN where the shooting-day trace ends
       const diff_cm  = yShoot_cm - yRef_cm;
       // Convert deviations to display unit
       const yRef   = toDevDisp(yRef_cm);
@@ -2041,8 +2095,8 @@ function calculate() {
       html+=`<td class="${yClass(row.yRef)}">${row.yRef>=0?'+':''}${row.yRef.toFixed(devPrec)}</td>`;
       html+=`<td class="${yClass(row.yShoot)}">${row.yShoot>=0?'+':''}${row.yShoot.toFixed(devPrec)}</td>`;
       html+=`<td class="${Math.abs(row.diff)>toDevDisp(1)?'val-warn':''}">${row.diff>=0?'+':''}${row.diff.toFixed(devPrec)}</td>`;
-      html+=`<td>${toVelDisp(row.v).toFixed(0)}</td>`;
-      html+=`<td>${toEDisp(row.E).toFixed(ePrec)}</td>`;
+      html+=`<td>${isNaN(row.v) ? '—' : toVelDisp(row.v).toFixed(0)}</td>`;
+      html+=`<td>${isNaN(row.E) ? '—' : toEDisp(row.E).toFixed(ePrec)}</td>`;
       html+=`<td class="${Math.abs(row.zVind)>warnThresh?'val-warn':''}">${row.zVind>=0?'+':''}${row.zVind.toFixed(devPrec)}</td>`;
       if (spinOn) {
         const sgn = v => (parseFloat(v.toFixed(devPrec)) >= 0 ? '+' : '') + parseFloat(v.toFixed(devPrec)).toFixed(devPrec);
@@ -2281,7 +2335,8 @@ function calculate() {
     const zeroRow = rows.find(r => r.isZeroRow) || rows.reduce((best, r) => Math.abs(r.r - zero_m) < Math.abs(best.r - zero_m) ? r : best, rows[0]);
     const windZeroEl = document.getElementById('c-wind-zero');
     const windZeroUnitEl = document.getElementById('c-wind-zero-unit');
-    if (windZeroEl) { windZeroEl.textContent = (zeroRow.zVind >= 0 ? '+' : '') + zeroRow.zVind.toFixed(devPrec); }
+    const windZero = toDevDisp(wind_ms * (interpT(trajDay, zero_m) - zero_m/v0Day) * 100);
+    if (windZeroEl) { windZeroEl.textContent = isNaN(windZero) ? '—' : (windZero >= 0 ? '+' : '') + windZero.toFixed(devPrec); }
     if (windZeroUnitEl) { windZeroUnitEl.textContent = devLabel; }
 
     // Wind drift @ 100m (or 100yd)

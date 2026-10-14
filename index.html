@@ -282,10 +282,12 @@ canvas{display:block}
 
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
-      <span style="margin-top:4px;display:inline-block">v3.0.1 · Oct 11, 2026 — zero-range optimizer rounds down so the apex stays inside the vital zone.</span>
+      Drag tables (G1, G7): <a href="https://github.com/gehtsoft-usa/BallisticCalculator1" target="_blank" style="color:var(--accent);text-decoration:none">Gehtsoft BallisticCalculator</a>, LGPL-2.1.<br>
+      <span style="margin-top:4px;display:inline-block">v3.0.2 · Oct 12, 2026 — exact humid-air speed of sound; summary cards and Phase 3 table column made consistent.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v3.0.2</b> (Oct 12, 2026) — <b>Humid speed of sound</b> now uses the exact ideal-gas mixture (heat-capacity ratio and molar mass of the air/water-vapour mixture) instead of the approximation √(1 + 0.32·e/p). Dry air is unchanged. The difference is at most ~0.25 % in hot, humid air at low pressure, otherwise ≤ 0.05 %. Formula display in the model notes corrected (it showed the old 0.16 factor). Attribution for the drag tables (Gehtsoft BallisticCalculator, LGPL-2.1) added. Summary cards: the Velocity card now shows shooting-day values only — V@100 m or V@100 yd follows the range unit like the wind card (previously V@100 came from the ICAO reference trajectory). E₁₀₀ and the hunt class always refer to 100 m in the ICAO reference, as defined by the regulation; the heading says so also in yard mode (it said “hunt class at 100yd”). Wind drift @100 is now evaluated exactly at 100 m/yd (it took the nearest table row, e.g. 90 m with a 30 m step). Table: with Phase 3 active, the Shoot and Δ columns now follow the same shooting-day trajectory as v, E and wind (incl. propellant temperature; header “Shoot +P3”) — previously they showed the Phase 2 trajectory, so one row mixed two trajectories. The chart and the vital-zone summary still show Phase 2 and Phase 3 separately.<br>
           <b>v3.0.1</b> (Oct 11, 2026) — Optimize zero range for vital zone: the result is rounded down (0.1 m or yd) and solved 0.1 mm inside the zone, so the zero-day apex is always within the vital zone (the old midpoint and round-to-nearest could exceed it by a fraction of a millimetre and show ✗).<br>
           <b>v3.0</b> (Oct 11, 2026) — <b>Hunt classes per NFS 2023:8</b> (in force since Aug 2023): new <i>Bullet material</i> input — a lead-free bullet ≥ 7.7 g reaches class 1 at E₁₀₀ ≥ 2000 J; class 4 now means muzzle energy ≥ 150 J, and “—” is shown when no class applies (previously everything else was K4). E₁₀₀ for the class is computed with the chronograph-corrected v₀ in the ICAO standard atmosphere, level, no wind, so the class no longer changes with the weather. <b>Velocity and energy</b> in the table and the zero-range cards are now shooting-day values including Phase 3 (previously zero-day values: on a cold day with a propellant coefficient the energy was overstated by up to ~11 %). <b>Chronograph correction</b> is now an exact inversion (previously an approximation that was up to ~16 m/s low for slow, low-BC loads at 50 m); maximum chronograph distance 100 m. <b>Humid speed of sound</b> corrected (the humidity term was half its physical size; up to a few cm at long range in hot, humid air). Zero-angle search widened to ±0.30 rad (reachable zeros of slow loads were refused). Vital-zone summary also shows where a long zero rises <i>above</i> the vital zone. G1→G7 estimate factor 1.98 (was 1.95). Wind and velocity at the zero range now shown even when the zero lies beyond the table. G7 drag table reduced to the published 84 points (no numerical effect). Texts corrected: station pressure, JBM comparison with the documented JBM run, model notes, humidity formula name.<br>
           <b>v2.9</b> (Sep 20, 2026) — New optional panel <i>Spin effects (advanced)</i> under Rifle &amp; Bullet: enter S<sub>g</sub> from the Stability Calculator to get spin drift (relative to the line of sight, zero at the zero range) and aerodynamic jump as two extra table columns. Left empty, the app behaves exactly as before.<br>
@@ -769,7 +771,8 @@ canvas{display:block}
             <span style="padding-left:16px">π/8 = 0.3927 &nbsp;(Siacci/Ingalls normalization, matches Gehtsoft G1 table)</span><br>
             <span style="padding-left:16px">BC<sub>SI</sub> = BC<sub>G1</sub> × 703.07 &nbsp;[kg/m²]</span><br>
             <span style="padding-left:16px">ρ = (P_d · M_d + e · M_w) / (R · T) &nbsp;[kg/m³] &nbsp;(humid air, M_d=28.964, M_w=18.016 g/mol)</span><br>
-            <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) · √(1 + 0.16·e/P) &nbsp;[m/s] &nbsp;(humidity correction)</span><br>
+            <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) · √((γ<sub>mix</sub>/γ<sub>d</sub>) · (M_d/M<sub>mix</sub>)) &nbsp;[m/s] &nbsp;(humid air, exact ideal-gas mixture)</span><br>
+            <span style="padding-left:16px">x = e/P, &nbsp;M<sub>mix</sub> = (1−x)·M_d + x·M_w, &nbsp;γ = c<sub>p</sub>/(c<sub>p</sub>−R) with c<sub>p</sub>/R = (1−x)·3.5 + x·4.04</span><br>
             <span style="padding-left:16px">e = RH/100 · e_s, &nbsp;e_s = 6.1078 · 10^(7.5·T_C/(237.3+T_C)) &nbsp;[hPa] (Tetens/Murray formula)</span><br>
             <span style="padding-left:16px">M = v / v<sub>s</sub> &nbsp;(Mach number)</span><br>
             <br>
@@ -1159,7 +1162,7 @@ const G1_CD = [0.2629,0.2558,0.2487,0.2413,0.2344,0.2278,0.2214,
   0.5685,0.5630,0.5577,0.5527,0.5481,0.5438,0.5397,0.5325,0.5264,
   0.5211,0.5168,0.5133,0.5105,0.5084,0.5067,0.5054,0.5040,0.5030,
   0.5022,0.5016,0.5010,0.5006,0.4998,0.4995,0.4992,0.4990,0.4988];
-// G7 drag function — 84-point table (Gehtsoft/BRL, GPL-3.0)
+// G7 drag function — 84-point table (Gehtsoft/BRL, LGPL-2.1)
 const G7_MACH = [
   0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,
   0.50,0.55,0.60,0.65,0.70,0.725,0.75,0.775,0.80,0.825,
@@ -1320,8 +1323,16 @@ function calcAtmo(temp_C, press_hPa, rh_pct) {
   const P_d = (press_hPa - e) * 100;
   const e_Pa = e * 100;
   const rho = (P_d * 0.028964 + e_Pa * 0.018016) / (8.31446 * T);
-  // Humid air: c² ∝ γ_mix / M_mix ≈ 1 + 0.32·(e/p) for water-vapour mole fraction e/p
-  const vs = 331.3 * Math.sqrt(T / 273.15) * Math.sqrt(1 + 0.32 * (e / press_hPa));
+  // Humid air, exact ideal-gas mixture:
+  // c = 331.3·√(T/273.15)·√((γ_mix/γ_d)·(M_d/M_mix)), x = e/p (vapour mole fraction),
+  // c_p/R = 3.5 (dry air) and 4.04 (water vapour). The factor is exactly 1 at x = 0.
+  const x      = e / press_hPa;
+  const cpR_d  = 3.5, cpR_w = 4.04;
+  const cpR_m  = (1 - x) * cpR_d + x * cpR_w;
+  const gam_d  = cpR_d / (cpR_d - 1);
+  const gam_m  = cpR_m / (cpR_m - 1);
+  const M_mix  = (1 - x) * 0.028964 + x * 0.018016;
+  const vs = 331.3 * Math.sqrt(T / 273.15) * Math.sqrt((gam_m / gam_d) * (0.028964 / M_mix));
   return { rho, vs, T };
 }
 
@@ -1945,17 +1956,18 @@ function calculate() {
 
     // Update summary panel heading
     document.getElementById('summary-panel-head').textContent =
-      `Summary — shooting day at zero range · hunt class at ${label100} (ICAO reference)`;
+      `Summary — shooting day at zero range · hunt class at 100 m (ICAO reference)`;
 
     // Update cards
     document.getElementById('c-vnull').textContent = isNaN(vAtZero) ? '—' : toVelDisp(vAtZero).toFixed(0);
     document.getElementById('c-vnull-unit').textContent = velLabel;
 
-    // V@100m
-    const v100disp = interpV(trajClass, ref100m);
-    const has100   = !isNaN(v100) && !isNaN(v100disp);
+    // V@100m / V@100yd — shooting day (incl. Phase 3), follows the range unit like the wind card.
+    // E100 and the hunt class stay at 100 m in the ICAO reference (defined by regulation).
+    const has100   = !isNaN(v100);
+    const vDay100  = interpV(trajDay, ref100m);
     document.getElementById('c-v100-label').textContent = `V@${label100}`;
-    document.getElementById('c-v100').textContent = has100 ? toVelDisp(v100disp).toFixed(0) : '—';
+    document.getElementById('c-v100').textContent = isNaN(vDay100) ? '—' : toVelDisp(vDay100).toFixed(0);
     document.getElementById('c-v100-unit').textContent = velLabel;
 
     document.getElementById('c-e100').textContent  = has100 ? toEDisp(E100).toFixed(0) : '—';
@@ -2056,7 +2068,7 @@ function calculate() {
     const rows = RANGES.map(r => {
       if (r > maxX + 0.5) return null;
       const yRef_cm  = interpY(trajRef,   r) * 100;
-      const yShoot_cm= interpY(trajShoot, r) * 100;
+      const yShoot_cm= interpY(trajDay,   r) * 100;   // shooting day (incl. Phase 3), same trace as v, E, wind
       const v        = interpV(trajDay,   r);   // shooting day (incl. Phase 3)
       const E        = 0.5 * m_kg * v * v;
       // Wind is a shooting-day quantity: use the shooting-day trajectory (incl. Phase 3 when active)
@@ -2084,7 +2096,7 @@ function calculate() {
 
     // ── Render table ──
     let html='<table class="result-table"><thead><tr>';
-    html+=`<th>Range (${rangeLabel})</th><th>Zero (${devLabel})</th><th>Shoot (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th>`;
+    html+=`<th>Range (${rangeLabel})</th><th>Zero (${devLabel})</th><th>${hasPhase3 ? 'Shoot +P3' : 'Shoot'} (${devLabel})</th><th>Δ</th><th>v (${velLabel})</th><th>E (${eLabel})</th><th>Wind (${windLabel})</th>`;
     if (spinOn) html+=`<th>Spin (${devLabel})</th><th>Jump (${devLabel})</th>`;
     html+='</tr></thead><tbody>';
     rows.forEach(row => {
@@ -2339,13 +2351,14 @@ function calculate() {
     if (windZeroEl) { windZeroEl.textContent = isNaN(windZero) ? '—' : (windZero >= 0 ? '+' : '') + windZero.toFixed(devPrec); }
     if (windZeroUnitEl) { windZeroUnitEl.textContent = devLabel; }
 
-    // Wind drift @ 100m (or 100yd)
-    const row100wind = rows.reduce((best, r) => Math.abs(r.r - ref100m) < Math.abs(best.r - ref100m) ? r : best, rows[0]);
+    // Wind drift @ 100m (or 100yd) — evaluated exactly at 100 m/yd on the shooting-day trace (like @zero and V@100),
+    // not at the nearest table row (which is off when the range step does not hit 100)
+    const wind100 = toDevDisp(wind_ms * (interpT(trajDay, ref100m) - ref100m/v0Day) * 100);
     const wind100El = document.getElementById('c-wind-100');
     const wind100UnitEl = document.getElementById('c-wind-100-unit');
     const wind100LabelEl = document.getElementById('c-wind100-label');
     if (wind100LabelEl) wind100LabelEl.textContent = `@${label100}`;
-    if (wind100El) { wind100El.textContent = (row100wind.zVind >= 0 ? '+' : '') + row100wind.zVind.toFixed(devPrec); }
+    if (wind100El) { wind100El.textContent = isNaN(wind100) ? '—' : (wind100 >= 0 ? '+' : '') + wind100.toFixed(devPrec); }
     if (wind100UnitEl) { wind100UnitEl.textContent = devLabel; }
     const reachMin = Math.min(maxX, Math.max(...trajShoot.map(p=>p.x)));
     if (reachMin < maxrange_m - 0.5) {

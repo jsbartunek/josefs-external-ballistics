@@ -117,6 +117,7 @@ main{max-width:1120px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-tem
 .field select{cursor:pointer}
 .unit{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;min-width:32px}
 .field-inline{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.press-hint{font-family:var(--mono);font-size:10px;color:var(--muted);align-self:end;margin-bottom:18px}
 
 /* ── Buttons ── */
 .btn-calc{width:100%;margin-top:16px;padding:10px;background:var(--accent);color:#0d0f12;font-family:var(--mono);font-size:13px;font-weight:600;border:none;border-radius:2px;cursor:pointer;letter-spacing:.04em;transition:opacity .15s}
@@ -253,7 +254,8 @@ canvas{display:block}
 .tip-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:none;border:1px solid var(--muted);color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:600;cursor:help;position:relative;vertical-align:middle;margin-left:5px;flex-shrink:0;line-height:1}
 .tip-btn.tip-active{border-color:var(--accent);color:var(--accent)}
 .tip-box{visibility:hidden;opacity:0;transition:opacity .12s;position:absolute;left:20px;top:-4px;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:10px 12px;width:min(280px,80vw);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:normal;text-align:left;pointer-events:none}
-.tip-box.tip-visible{visibility:visible;opacity:1}
+.tip-box.tip-visible{visibility:visible;opacity:1;max-height:70vh;overflow-y:auto}
+.tip-box.tip-pinned{pointer-events:auto}
 .tip-box code{background:var(--border2);padding:1px 4px;border-radius:2px;font-size:10px}
 .field label{display:flex;align-items:center}
 </style>
@@ -283,10 +285,11 @@ canvas{display:block}
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
       Drag tables (G1, G7): <a href="https://github.com/gehtsoft-usa/BallisticCalculator1" target="_blank" style="color:var(--accent);text-decoration:none">Gehtsoft BallisticCalculator</a>, LGPL-2.1.<br>
-      <span style="margin-top:4px;display:inline-block">v3.0.2 · Oct 12, 2026 — exact humid-air speed of sound; summary cards and Phase 3 table column made consistent.</span>
+      <span style="margin-top:4px;display:inline-block">v3.1 · Oct 14, 2026 — pressure reference (sea level or on site) and elevation for each day; stricter input checks; pinnable tooltips.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v3.1</b> (Oct 14, 2026) — <b>Pressure reference and elevation</b> for the zero day and the shooting day. Weather apps and reports almost always give pressure reduced to sea level, also for your own town; with <i>Sea level</i> the calculator converts the value to the actual pressure on site from the entered elevation and that day's temperature (weather-service reduction, T₀ = T + L·h). <i>On site</i> uses the value as entered. The default is sea level at 0 m, which gives exactly the same results as before; previously the field was meant as the pressure on site, while the shooting-day tooltip suggested weather-report values. The converted pressure on site is shown next to each elevation. New input checks: pressure 850–1100 hPa at sea level, 400–1100 hPa on site; elevation −500 to 6000 m (ft when the range unit is yd); temperature between −100 and +100 °C; the water vapour pressure must stay below the air pressure; max range and table step must be positive, the step no larger than the range, and at most 2000 table rows (a zero or empty field was silently replaced by 200 and 25); the v₀ spread must be smaller than v₀, and the Phase 3 change must leave v₀ positive. The sensitivity analysis perturbs the pressure as entered. <b>Tooltips</b>: a click or tap on “?” pins the tip, so it stays open while you scroll; long tips scroll inside; close with another click on “?”, a click or tap outside, or Escape. An unverified example in the zero-day pressure tooltip was removed.<br>
           <b>v3.0.2</b> (Oct 12, 2026) — <b>Humid speed of sound</b> now uses the exact ideal-gas mixture (heat-capacity ratio and molar mass of the air/water-vapour mixture) instead of the approximation √(1 + 0.32·e/p). Dry air is unchanged. The difference is at most ~0.25 % in hot, humid air at low pressure, otherwise ≤ 0.05 %. Formula display in the model notes corrected (it showed the old 0.16 factor). Attribution for the drag tables (Gehtsoft BallisticCalculator, LGPL-2.1) added. Summary cards: the Velocity card now shows shooting-day values only — V@100 m or V@100 yd follows the range unit like the wind card (previously V@100 came from the ICAO reference trajectory). E₁₀₀ and the hunt class always refer to 100 m in the ICAO reference, as defined by the regulation; the heading says so also in yard mode (it said “hunt class at 100yd”). Wind drift @100 is now evaluated exactly at 100 m/yd (it took the nearest table row, e.g. 90 m with a 30 m step). Table: with Phase 3 active, the Shoot and Δ columns now follow the same shooting-day trajectory as v, E and wind (incl. propellant temperature; header “Shoot +P3”) — previously they showed the Phase 2 trajectory, so one row mixed two trajectories. The chart and the vital-zone summary still show Phase 2 and Phase 3 separately.<br>
           <b>v3.0.1</b> (Oct 11, 2026) — Optimize zero range for vital zone: the result is rounded down (0.1 m or yd) and solved 0.1 mm inside the zone, so the zero-day apex is always within the vital zone (the old midpoint and round-to-nearest could exceed it by a fraction of a millimetre and show ✗).<br>
           <b>v3.0</b> (Oct 11, 2026) — <b>Hunt classes per NFS 2023:8</b> (in force since Aug 2023): new <i>Bullet material</i> input — a lead-free bullet ≥ 7.7 g reaches class 1 at E₁₀₀ ≥ 2000 J; class 4 now means muzzle energy ≥ 150 J, and “—” is shown when no class applies (previously everything else was K4). E₁₀₀ for the class is computed with the chronograph-corrected v₀ in the ICAO standard atmosphere, level, no wind, so the class no longer changes with the weather. <b>Velocity and energy</b> in the table and the zero-range cards are now shooting-day values including Phase 3 (previously zero-day values: on a cold day with a propellant coefficient the energy was overstated by up to ~11 %). <b>Chronograph correction</b> is now an exact inversion (previously an approximation that was up to ~16 m/s low for slow, low-BC loads at 50 m); maximum chronograph distance 100 m. <b>Humid speed of sound</b> corrected (the humidity term was half its physical size; up to a few cm at long range in hot, humid air). Zero-angle search widened to ±0.30 rad (reachable zeros of slow loads were refused). Vital-zone summary also shows where a long zero rises <i>above</i> the vital zone. G1→G7 estimate factor 1.98 (was 1.95). Wind and velocity at the zero range now shown even when the zero lies beyond the table. G7 drag table reduced to the published 84 points (no numerical effect). Texts corrected: station pressure, JBM comparison with the documented JBM run, model notes, humidity formula name.<br>
@@ -553,7 +556,7 @@ canvas{display:block}
           </div>
         </div>
         <div class="field">
-          <label>Pressure <button class="tip-btn">?<div class="tip-box">Station pressure when zeroing — the actual local pressure at the shooting site (barometer, Kestrel), <b>not</b> the sea-level pressure (QNH) given in weather reports. At 500 m elevation, entering QNH instead would make the drop about 10 cm too small at 600 m.<br>Air density from partial pressures of dry air and water vapour (temperature, pressure, humidity).<br><br>Effect at ≤200 m (219 yd): about ±1 mm per ±20 hPa (±0.59 inHg).</div></button></label>
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Air pressure when zeroing, as given by the selected <i>pressure reference</i> below.<br>Air density from partial pressures of dry air and water vapour (temperature, pressure on site, humidity).<br><br>Effect at ≤200 m (219 yd): about ±1 mm per ±20 hPa (±0.59 inHg).<br><br>Allowed: 850–1100 hPa (25.10–32.48 inHg) at sea level, 400–1100 hPa (11.81–32.48 inHg) on site.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="decimal" id="press_zero_val" value="1013">
             <select id="press_unit" class="unit-sel" onchange="onUnitChange('press')">
@@ -563,6 +566,23 @@ canvas{display:block}
             </select>
           </div>
         </div>
+      </div>
+      <div class="field">
+        <label>Pressure reference <button class="tip-btn">?<div class="tip-box"><b>Is your pressure value reduced to sea level, or the actual pressure where you are?</b><br><br><b>Sea level:</b> weather apps, forecasts and weather reports almost always give pressure reduced to sea level (also called MSL, QFF, QNH or “relative” pressure), so that weather maps can be compared. Many home weather stations show it too. Enter your elevation, and the calculator converts the value to the actual pressure on site.<br><br><b>On site:</b> the actual pressure at the shooting site (also called station or “absolute” pressure), for example from a Kestrel or a barometer that is not adjusted to sea level. It is used as entered.<br><br><b>How to check:</b> at a given moment, sea-level values are roughly the same across your region (about 1000–1030 hPa), while the pressure on site drops by about 1.2 hPa per 10 m of elevation. If you are at 500 m and your source shows about 1013 hPa, it is a sea-level value.</div></button></label>
+        <select id="psrc_zero">
+          <option value="sea" selected>Sea level</option>
+          <option value="station">On site</option>
+        </select>
+      </div>
+      <div class="field-inline" id="elev_zero_field">
+        <div class="field">
+          <label>Elevation <button class="tip-btn">?<div class="tip-box">Elevation of the zeroing site above sea level. Used only with a sea-level pressure, to convert it to the actual pressure on site.<br><br>Shown in ft when the range unit is yd. Allowed: −500 to 6000 m (−1640 to 19 685 ft).<br><br>Find it in a map app or your phone's compass app.</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="text" id="elev_zero_val" value="0">
+            <span class="unit" id="elev_zero_unit_lbl">m</span>
+          </div>
+        </div>
+        <div class="press-hint" id="press_zero_hint"></div>
       </div>
 
       <div class="field">
@@ -583,12 +603,29 @@ canvas{display:block}
           </div>
         </div>
         <div class="field">
-          <label>Pressure <button class="tip-btn">?<div class="tip-box">Atmospheric pressure on the day of shooting.<br>Combined with temperature to compute shooting-day air density.<br>Typical range in Sweden: 980–1030 hPa (28.9–30.4 inHg).</div></button></label>
+          <label>Pressure <button class="tip-btn">?<div class="tip-box">Air pressure on the day of shooting, as given by the selected <i>pressure reference</i> below.<br>Combined with temperature and humidity to compute shooting-day air density.<br><br>The zero day and the shooting day each have their own pressure reference and elevation — for example zeroed at the coast, hunting in the mountains.<br><br>Allowed: 850–1100 hPa (25.10–32.48 inHg) at sea level, 400–1100 hPa (11.81–32.48 inHg) on site.</div></button></label>
           <div class="field-row">
             <input type="text" inputmode="decimal" id="press_shoot_val" value="1013">
             <span class="unit" id="press_shoot_unit_lbl">hPa</span>
           </div>
         </div>
+      </div>
+      <div class="field">
+        <label>Pressure reference <button class="tip-btn">?<div class="tip-box"><b>Is your pressure value reduced to sea level, or the actual pressure where you are?</b><br><br><b>Sea level:</b> weather apps, forecasts and weather reports almost always give pressure reduced to sea level (also called MSL, QFF, QNH or “relative” pressure), so that weather maps can be compared. Many home weather stations show it too. Enter your elevation, and the calculator converts the value to the actual pressure on site.<br><br><b>On site:</b> the actual pressure at the shooting site (also called station or “absolute” pressure), for example from a Kestrel or a barometer that is not adjusted to sea level. It is used as entered.<br><br><b>How to check:</b> at a given moment, sea-level values are roughly the same across your region (about 1000–1030 hPa), while the pressure on site drops by about 1.2 hPa per 10 m of elevation. If you are at 500 m and your source shows about 1013 hPa, it is a sea-level value.</div></button></label>
+        <select id="psrc_shoot">
+          <option value="sea" selected>Sea level</option>
+          <option value="station">On site</option>
+        </select>
+      </div>
+      <div class="field-inline" id="elev_shoot_field">
+        <div class="field">
+          <label>Elevation <button class="tip-btn">?<div class="tip-box">Elevation of the hunting or shooting site above sea level. Used only with a sea-level pressure, to convert it to the actual pressure on site.<br><br>Shown in ft when the range unit is yd. Allowed: −500 to 6000 m (−1640 to 19 685 ft).<br><br>Find it in a map app or your phone's compass app.</div></button></label>
+          <div class="field-row">
+            <input type="text" inputmode="text" id="elev_shoot_val" value="0">
+            <span class="unit" id="elev_shoot_unit_lbl">m</span>
+          </div>
+        </div>
+        <div class="press-hint" id="press_shoot_hint"></div>
       </div>
       <div class="field">
         <label>Rel. Humidity <button class="tip-btn">?<div class="tip-box">Relative humidity on the day of shooting.<br>Moist air is slightly less dense than dry air — reduces drag very marginally.<br><br>A wet winter day (90% RH) vs dry summer day (30% RH) typically shifts impact &lt;1 mm at 200 m. Included for completeness and physical correctness.</div></button></label>
@@ -771,6 +808,7 @@ canvas{display:block}
             <span style="padding-left:16px">π/8 = 0.3927 &nbsp;(Siacci/Ingalls normalization, matches Gehtsoft G1 table)</span><br>
             <span style="padding-left:16px">BC<sub>SI</sub> = BC<sub>G1</sub> × 703.07 &nbsp;[kg/m²]</span><br>
             <span style="padding-left:16px">ρ = (P_d · M_d + e · M_w) / (R · T) &nbsp;[kg/m³] &nbsp;(humid air, M_d=28.964, M_w=18.016 g/mol)</span><br>
+            <span style="padding-left:16px">P = actual pressure on site; from a sea-level value P₀: P = P₀ · (1 − L·h/T₀)<sup>n</sup>, T₀ = T + L·h, L = 0.0065 K/m, n = g·M_d/(R·L) = 5.2557</span><br>
             <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) · √((γ<sub>mix</sub>/γ<sub>d</sub>) · (M_d/M<sub>mix</sub>)) &nbsp;[m/s] &nbsp;(humid air, exact ideal-gas mixture)</span><br>
             <span style="padding-left:16px">x = e/P, &nbsp;M<sub>mix</sub> = (1−x)·M_d + x·M_w, &nbsp;γ = c<sub>p</sub>/(c<sub>p</sub>−R) with c<sub>p</sub>/R = (1−x)·3.5 + x·4.04</span><br>
             <span style="padding-left:16px">e = RH/100 · e_s, &nbsp;e_s = 6.1078 · 10^(7.5·T_C/(237.3+T_C)) &nbsp;[hPa] (Tetens/Murray formula)</span><br>
@@ -850,7 +888,7 @@ canvas{display:block}
             <span style="color:var(--muted)">▸ G1 and G7 drag models supported</span> — G7 recommended for VLD/boattail bullets.<br>
             <span style="color:var(--muted)">▸ Spin drift and aerodynamic jump optional (Litz); no Coriolis</span> — Coriolis is negligible at hunting ranges.<br>
             <span style="color:var(--muted)">▸ Steep shots</span> — crosswind on slopes uses the lag-time rule (about ±18 mm at 600 m and ±70 mm at 1000 m on a 45° slope), and air density and speed of sound are held at the muzzle values (about +15 mm at 600 m on a 45° slope).<br>
-            <span style="color:var(--muted)">▸ Pressure is station pressure</span> — the local pressure at the site, not sea-level QNH.<br>
+            <span style="color:var(--muted)">▸ Pressure reference per day</span> — a sea-level value (as from weather apps) is converted to the actual pressure on site with the entered elevation and that day's temperature; a pressure on site is used as entered.<br>
             <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) is experimental</span> — user-measured v₀ sensitivity [m/s/°C]. Disabled when k = 0.<br>
             <span style="color:var(--muted)">▸ Velocity, energy and wind columns are shooting-day values</span> (incl. Phase 3); the hunt class uses E₁₀₀ in the ICAO standard atmosphere.
           </div>
@@ -882,6 +920,7 @@ const CONV = {
   wind:  { ms:  v=>v,             kmh: v=>v/3.6,       mph: v=>v*0.44704   },
   vital: { mm:  v=>v/10,           in:  v=>v*2.54      },
   chrono:{ mm:  v=>v/1000,         m:   v=>v,           in:  v=>v*0.0254    },
+  elev:  { m:   v=>v,             ft:  v=>v*0.3048    },
 };
 
 // Display conversions (SI → display unit)
@@ -895,6 +934,7 @@ const CONV_FROM = {
   wind:  { ms:  v=>v,             kmh: v=>v*3.6,       mph: v=>v/0.44704   },
   vital: { mm:  v=>v*10,           in:  v=>v/2.54      },
   chrono:{ mm:  v=>v*1000,         m:   v=>v,           in:  v=>v/0.0254    },
+  elev:  { m:   v=>v,             ft:  v=>v/0.3048    },
 };
 
 // ── localStorage keys ──
@@ -1002,6 +1042,18 @@ function onUnitChange(field) {
       const si_off = oldOffUnit === 'mm' ? zfpOV / 1000 : zfpOV * 0.0254;
       zfpOffEl.value = parseFloat((zfpOffsetUnit === 'mm' ? si_off * 1000 : si_off / 0.0254).toFixed(2));
     }
+    // Elevation follows the range unit: m with m, ft with yd
+    const oldElevUnit = oldRangeUnit === 'yd' ? 'ft' : 'm';
+    const newElevUnit = newUnit === 'yd' ? 'ft' : 'm';
+    ['elev_zero_val', 'elev_shoot_val'].forEach(id => {
+      const el = document.getElementById(id);
+      const v = parseFloat(el.value.replace(',','.'));
+      if (!isNaN(v) && oldElevUnit !== newElevUnit) {
+        el.value = parseFloat(CONV_FROM.elev[newElevUnit](CONV.elev[oldElevUnit](v)).toFixed(1));
+      }
+    });
+    document.getElementById('elev_zero_unit_lbl').textContent  = newElevUnit;
+    document.getElementById('elev_shoot_unit_lbl').textContent = newElevUnit;
   }
 
   prefs['unit_' + field] = newUnit;
@@ -1022,11 +1074,90 @@ function getSI(field, valId, unitId) {
   return unit ? CONV[field][unit](raw) : raw;
 }
 
+// ── Pressure reference and elevation ──
+// A sea-level pressure (as from weather apps) is converted to the actual pressure on site
+// with the elevation h and that day's temperature T (weather-service reduction,
+// T₀ = T + L·h): p_site = p · (1 − L·h/T₀)^n, n = g·M_d/(R·L) = 5.255715.
+// At h = 0 the factor is exactly 1. A pressure on site is used as entered.
+const LAPSE_K_PER_M = 0.0065;
+const BARO_EXP      = 9.80665 * 0.028964 / (8.31446 * LAPSE_K_PER_M);
+const PRESS_BOUNDS_HPA = { sea: [850, 1100], station: [400, 1100] };   // value as entered
+const PRESS_BOUND_SLACK_HPA = 0.1;   // accepts the rounded inHg bounds shown (25.10, 11.81 inHg)
+const ELEV_MIN_M = -500, ELEV_MAX_M = 6000;
+const MAX_TABLE_ROWS = 2000;   // protects the browser from a huge table (tiny step, long range)
+
+function elevUnit() {
+  return (document.getElementById('zero_unit')?.value || 'm') === 'yd' ? 'ft' : 'm';
+}
+
+function toSitePressure(p_hPa, temp_C, src, elev_m) {
+  if (src !== 'sea') return p_hPa;
+  const T0 = temp_C + 273.15 + LAPSE_K_PER_M * elev_m;
+  return p_hPa * Math.pow(1 - LAPSE_K_PER_M * elev_m / T0, BARO_EXP);
+}
+
+// Reads one day's temperature, pressure, pressure reference and elevation.
+// day: 'zero' | 'shoot'. err: null | 'missing' | 'temp' | 'press' | 'elev'.
+function readDayAtmo(day) {
+  const tempUnit  = document.getElementById('temp_unit').value;
+  const pressUnit = document.getElementById('press_unit').value;
+  const num = id => parseFloat(document.getElementById(id).value.replace(',', '.'));
+  const temp_C = CONV.temp[tempUnit](num('temp_' + day + '_val'));
+  const p_hPa  = CONV.press[pressUnit](num('press_' + day + '_val'));
+  const src    = document.getElementById('psrc_' + day).value === 'station' ? 'station' : 'sea';
+  const elev_m = src === 'sea' ? CONV.elev[elevUnit()](num('elev_' + day + '_val')) : 0;
+  const [pMin, pMax] = PRESS_BOUNDS_HPA[src];
+  let err = null;
+  if (!isFinite(temp_C) || !isFinite(p_hPa)) err = 'missing';
+  else if (!(temp_C > -100 && temp_C < 100)) err = 'temp';
+  else if (!(p_hPa >= pMin - PRESS_BOUND_SLACK_HPA && p_hPa <= pMax + PRESS_BOUND_SLACK_HPA)) err = 'press';
+  else if (src === 'sea' && !(elev_m >= ELEV_MIN_M && elev_m <= ELEV_MAX_M)) err = 'elev';
+  const p_site_hPa = err ? NaN : toSitePressure(p_hPa, temp_C, src, elev_m);
+  return { temp_C, p_hPa, src, elev_m, p_site_hPa, err };
+}
+
+function atmoErrorText(at, dayName) {
+  if (at.err === 'temp') {
+    return `Invalid input: ${dayName} temperature must be between −100 and +100 °C (−148 and +212 °F).`;
+  }
+  if (at.err === 'press') {
+    return at.src === 'sea'
+      ? `Invalid input: ${dayName} sea-level pressure must be 850–1100 hPa (25.10–32.48 inHg).`
+      : `Invalid input: ${dayName} pressure on site must be 400–1100 hPa (11.81–32.48 inHg).`;
+  }
+  if (at.err === 'elev') {
+    return `Invalid input: ${dayName} elevation must be between −500 and 6000 m (−1640 and 19 685 ft).`;
+  }
+  return 'Invalid input: temperature and pressure must be filled in for both zero day and shooting day.';
+}
+
+// Shows the elevation field only for a sea-level pressure, and the converted pressure on site.
+function applyPressSource() {
+  const pressUnit = document.getElementById('press_unit')?.value || 'hPa';
+  ['zero', 'shoot'].forEach(day => {
+    const sel   = document.getElementById('psrc_' + day);
+    const field = document.getElementById('elev_' + day + '_field');
+    const hint  = document.getElementById('press_' + day + '_hint');
+    if (!sel || !field || !hint) return;
+    field.style.display = sel.value === 'station' ? 'none' : '';
+    const at = readDayAtmo(day);
+    if (at.src === 'sea' && !at.err && at.elev_m !== 0) {
+      const v = CONV_FROM.press[pressUnit](at.p_site_hPa);
+      hint.textContent = `→ on site: ${v.toFixed(pressUnit === 'inHg' ? 2 : 1)} ${pressUnit}`;
+    } else {
+      hint.textContent = '';
+    }
+  });
+}
+document.addEventListener('input',  applyPressSource);
+document.addEventListener('change', applyPressSource);
+
 // ── Persist input values on change ──
 function persistInputs() {
   const prefs = loadPrefs();
   const ids = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
                'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
+               'psrc_zero','elev_zero_val','psrc_shoot','elev_shoot_val',
                'v0_sensitivity',
                'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
                'sg_val','twist_dir','lead_free',
@@ -1082,10 +1213,13 @@ function restorePrefs() {
   // zfp unit labels
   document.getElementById('zfp_offset_unit_lbl').textContent = rangeUnit === 'm' ? 'mm' : 'in';
   document.getElementById('zfp_dist_unit_lbl').textContent   = rangeUnit;
+  document.getElementById('elev_zero_unit_lbl').textContent  = rangeUnit === 'yd' ? 'ft' : 'm';
+  document.getElementById('elev_shoot_unit_lbl').textContent = rangeUnit === 'yd' ? 'ft' : 'm';
 
   // Input values
   const valIds = ['v0_val','m_val','bc_input','bc_type','sight_val','zero_val',
                   'temp_zero_val','press_zero_val','rh_zero_val','temp_shoot_val','press_shoot_val','rh_shoot_val',
+                  'psrc_zero','elev_zero_val','psrc_shoot','elev_shoot_val',
                   'v0_sensitivity',
                   'wind_val','alpha_deg','vital_val','maxrange_val','step_val','v0spread_val','chrono_cm',
                   'sg_val','twist_dir','lead_free'];
@@ -1096,6 +1230,12 @@ function restorePrefs() {
       if (el) el.value = prefs[k];
     }
   });
+  // A stale or unknown pressure source falls back to the default (weather app, sea level)
+  ['psrc_zero', 'psrc_shoot'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value !== 'sea' && el.value !== 'station') el.value = 'sea';
+  });
+  applyPressSource();
   // If spin effects were active last time, open the panel so the extra table columns are explained
   const sgSaved = document.getElementById('sg_val');
   if (sgSaved && sgSaved.value.trim() !== '' && document.getElementById('spin-body').style.display === 'none') toggleSpin();
@@ -1320,6 +1460,7 @@ function calcAtmo(temp_C, press_hPa, rh_pct) {
   const T = temp_C + 273.15;
   const e_s = 6.1078 * Math.pow(10, (7.5 * temp_C) / (237.3 + temp_C));
   const e   = (rh_pct / 100) * e_s;
+  if (!(e < press_hPa)) return { rho: NaN, vs: NaN, T };   // vapour pressure must stay below the total pressure
   const P_d = (press_hPa - e) * 100;
   const e_Pa = e * 100;
   const rho = (P_d * 0.028964 + e_Pa * 0.018016) / (8.31446 * T);
@@ -1455,13 +1596,25 @@ function estimateZfp() {
   const BC_final = BC_input * 703.07;
   const dragModel = bc_type;
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
-  const press_zero_hPa = getSI('press', 'press_zero_val','press_unit');
+  const atZ = readDayAtmo('zero');
+  const press_zero_hPa = atZ.p_site_hPa;   // actual pressure on site
   const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
   const g_eff = 9.80665;   // zeroing is done on a level range — the shooting angle does not apply here
 
   if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) { resetRows(); return; }
+  if (atZ.err) {
+    resetRows();
+    errEl.textContent = atmoErrorText(atZ, 'zero-day');
+    errEl.style.display = 'block';
+    return;
+  }
 
   const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
+  if (!(rho > 0)) {
+    errEl.textContent = 'Invalid input: the water vapour pressure exceeds the zero-day air pressure on site.';
+    errEl.style.display = 'block';
+    return;
+  }
   const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');
   const v0_true  = chronoCorrectV0(v0, chrono_m, { rho, vs }, BC_final, dragModel);
 
@@ -1648,10 +1801,21 @@ function optimizeZeroForVital() {
   const BC_final  = BC_input * 703.07;
   const dragModel = bc_type;
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
-  const press_zero_hPa = getSI('press', 'press_zero_val','press_unit');
+  const atZ = readDayAtmo('zero');
+  const press_zero_hPa = atZ.p_site_hPa;   // actual pressure on site
   const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
   const g_eff = 9.80665;   // zeroing is done on a level range — the shooting angle does not apply here
+  if (atZ.err) {
+    errEl.textContent = atmoErrorText(atZ, 'zero-day');
+    errEl.style.display = 'block';
+    return;
+  }
   const { rho, vs } = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
+  if (!(rho > 0)) {
+    errEl.textContent = 'Invalid input: the water vapour pressure exceeds the zero-day air pressure on site.';
+    errEl.style.display = 'block';
+    return;
+  }
   const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');
   const v0_true  = chronoCorrectV0(v0, chrono_m, { rho, vs }, BC_final, dragModel);
 
@@ -1748,12 +1912,13 @@ function calculate() {
     // Atmosphere — temp and press share one unit selector per quantity
     const tempUnit  = document.getElementById('temp_unit').value;
     const pressUnit = document.getElementById('press_unit').value;
-    const temp_zero_C    = getSI('temp',  'temp_zero_val',   'temp_unit');
-    const press_zero_hPa = getSI('press', 'press_zero_val',  'press_unit');
-    const temp_shoot_raw  = parseFloat(document.getElementById('temp_shoot_val').value.replace(',','.'));
-    const press_shoot_raw = parseFloat(document.getElementById('press_shoot_val').value.replace(',','.'));
-    const temp_shoot_C    = CONV.temp[tempUnit](temp_shoot_raw);
-    const press_shoot_hPa = CONV.press[pressUnit](press_shoot_raw);
+    // Pressures used in the physics are the actual pressures on site (see readDayAtmo)
+    const atZ = readDayAtmo('zero');
+    const atS = readDayAtmo('shoot');
+    const temp_zero_C     = atZ.temp_C;
+    const press_zero_hPa  = atZ.p_site_hPa;
+    const temp_shoot_C    = atS.temp_C;
+    const press_shoot_hPa = atS.p_site_hPa;
     const rh_zero_pct     = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.'))  || 0;
     const rh_shoot_pct    = parseFloat(document.getElementById('rh_shoot_val').value.replace(',','.')) || 0;
 
@@ -1791,9 +1956,8 @@ function calculate() {
       return;
     }
 
-    if ([temp_zero_C, press_zero_hPa, temp_shoot_C, press_shoot_hPa].some(v => isNaN(v)) ||
-        !(press_zero_hPa > 0) || !(press_shoot_hPa > 0)) {
-      setStatus('Invalid input: temperature and pressure must be filled in for both zero day and shooting day.', 'warn');
+    if (atZ.err || atS.err) {
+      setStatus(atZ.err ? atmoErrorText(atZ, 'zero-day') : atmoErrorText(atS, 'shooting-day'), 'warn');
       return;
     }
     if (isNaN(wind_ms) || isNaN(vital_cm)) {
@@ -1819,6 +1983,10 @@ function calculate() {
 
     const atmoZ = calcAtmo(temp_zero_C, press_zero_hPa, rh_zero_pct);
     const atmoS = calcAtmo(temp_shoot_C, press_shoot_hPa, rh_shoot_pct);
+    if (!(atmoZ.rho > 0) || !(atmoS.rho > 0)) {
+      setStatus('Invalid input: the water vapour pressure exceeds the air pressure on site \u2014 check temperature, humidity and pressure.', 'warn');
+      return;
+    }
 
     // ── Chronograph distance correction ──
     // User measured v0 at chrono, not at muzzle.
@@ -1874,8 +2042,20 @@ function calculate() {
     const ePrec     = 0;
 
     // Max range and step — read as display units, convert to metres
-    const maxrange_disp = parseFloat(document.getElementById('maxrange_val').value.replace(',','.')) || 200;
-    const step_disp     = parseFloat(document.getElementById('step_val').value.replace(',','.'))     || 25;
+    const maxrange_disp = parseFloat(document.getElementById('maxrange_val').value.replace(',','.'));
+    const step_disp     = parseFloat(document.getElementById('step_val').value.replace(',','.'));
+    if (!(maxrange_disp > 0) || !(step_disp > 0)) {
+      setStatus('Invalid input: max range and table step must be positive numbers.', 'warn');
+      return;
+    }
+    if (step_disp > maxrange_disp) {
+      setStatus('Invalid input: the table step cannot be greater than the max range.', 'warn');
+      return;
+    }
+    if (Math.floor(maxrange_disp / step_disp) + 1 > MAX_TABLE_ROWS) {
+      setStatus(`Invalid input: these settings give more than ${MAX_TABLE_ROWS} table rows \u2014 increase the table step.`, 'warn');
+      return;
+    }
     const maxrange_m    = CONV.zero[rangeUnit](maxrange_disp);
     const step_m        = CONV.zero[rangeUnit](step_disp);
 
@@ -1896,6 +2076,16 @@ function calculate() {
     const v0spread_eff = isNaN(v0spread_raw) ? 10 : v0spread_raw;
     const showSpread = v0spread_eff > 0;
     const v0spread = v0Unit === 'fps' ? v0spread_eff * 0.3048 : v0spread_eff; // → m/s
+    if (hasPhase3 && !(v0_true + delta_v0_phase3 > 0)) {
+      setStatus('Invalid input: the Phase 3 propellant-temperature change makes v\u2080 zero or negative \u2014 check the v\u2080 sensitivity.', 'warn');
+      return;
+    }
+    // The spread band is computed around v₀ (Phases 1–2) or v₀ + Δv₀ (Phase 3); the lower edge must stay positive
+    const v0SpreadBaseMin = hasPhase3 ? Math.min(v0_true, v0_true + delta_v0_phase3) : v0_true;
+    if (showSpread && !(v0SpreadBaseMin - v0spread > 0)) {
+      setStatus('Invalid input: the v\u2080 spread must be smaller than the muzzle velocity.', 'warn');
+      return;
+    }
 
     // Update legend visibility
     const v0bandLegend = document.getElementById('v0band-legend');
@@ -2299,10 +2489,13 @@ function calculate() {
     const yBas    = calcDropFixed(v0_true,    temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R);
     const yV0hi   = showSpread ? calcDropFixed(v0_true+v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
     const yV0lo   = showSpread ? calcDropFixed(v0_true-v0spread, temp_zero_C, press_zero_hPa, rh_zero_pct, theta, R) : null;
-    const yPp20   = calcDropFixed(v0_true,    temp_zero_C, press_zero_hPa+20, rh_zero_pct, theta, R);
-    const yPm20   = calcDropFixed(v0_true,    temp_zero_C, press_zero_hPa-20, rh_zero_pct, theta, R);
-    const yThi    = calcDropFixed(v0_true,    temp_zero_C+15, press_zero_hPa, rh_zero_pct, theta, R);
-    const yTlo    = calcDropFixed(v0_true,    temp_zero_C-15, press_zero_hPa, rh_zero_pct, theta, R);
+    // Perturb the pressure as entered (same source and elevation), then convert to the pressure on site;
+    // a temperature change also changes the sea-level conversion.
+    const pSiteZ  = (pEntered, tC) => toSitePressure(pEntered, tC, atZ.src, atZ.elev_m);
+    const yPp20   = calcDropFixed(v0_true,    temp_zero_C, pSiteZ(atZ.p_hPa+20, temp_zero_C), rh_zero_pct, theta, R);
+    const yPm20   = calcDropFixed(v0_true,    temp_zero_C, pSiteZ(atZ.p_hPa-20, temp_zero_C), rh_zero_pct, theta, R);
+    const yThi    = calcDropFixed(v0_true,    temp_zero_C+15, pSiteZ(atZ.p_hPa, temp_zero_C+15), rh_zero_pct, theta, R);
+    const yTlo    = calcDropFixed(v0_true,    temp_zero_C-15, pSiteZ(atZ.p_hPa, temp_zero_C-15), rh_zero_pct, theta, R);
 
     function diffStr(d_cm) {
       const d = toDevDisp(d_cm);  // cm → mm (or in)
@@ -2318,10 +2511,10 @@ function calculate() {
     // from the internal SI units back to the user's chosen display units so the
     // labels, values, and value units are all consistent.
     const dP_hPa = 20, dT_C = 15;
-    const dP_disp  = CONV_FROM.press[pressUnit](press_zero_hPa + dP_hPa) - CONV_FROM.press[pressUnit](press_zero_hPa);
+    const dP_disp  = CONV_FROM.press[pressUnit](atZ.p_hPa + dP_hPa) - CONV_FROM.press[pressUnit](atZ.p_hPa);
     const dT_disp  = CONV_FROM.temp[tempUnit](temp_zero_C + dT_C)        - CONV_FROM.temp[tempUnit](temp_zero_C);
-    const pPlus_disp  = CONV_FROM.press[pressUnit](press_zero_hPa + dP_hPa);
-    const pMinus_disp = CONV_FROM.press[pressUnit](press_zero_hPa - dP_hPa);
+    const pPlus_disp  = CONV_FROM.press[pressUnit](atZ.p_hPa + dP_hPa);
+    const pMinus_disp = CONV_FROM.press[pressUnit](atZ.p_hPa - dP_hPa);
     const tPlus_disp  = CONV_FROM.temp[tempUnit](temp_zero_C + dT_C);
     const tMinus_disp = CONV_FROM.temp[tempUnit](temp_zero_C - dT_C);
     const pDispPrec   = pressUnit === 'inHg' ? 2 : 0;
@@ -2399,7 +2592,10 @@ window.addEventListener('load', () => {
 });
 
 function initTooltips() {
-  let openTimer = null, activeBtn = null;
+  // Hover shows a tip on desktop; a click or tap on "?" pins it, so it stays open while the
+  // page or the tip itself is scrolled. A pinned tip closes on another click/tap on "?",
+  // a click or tap outside it (not a scroll), or Escape.
+  let openTimer = null, activeBtn = null, pinned = false;
 
   function showTip(btn) {
     if (activeBtn && activeBtn !== btn) hideTip(activeBtn);
@@ -2436,33 +2632,68 @@ function initTooltips() {
     btn.classList.remove('tip-active');
     const box = btn.querySelector('.tip-box');
     if (box) {
-      box.classList.remove('tip-visible');
+      box.classList.remove('tip-visible', 'tip-pinned');
       box.style.left = '';
       box.style.right = '';
     }
-    if (activeBtn === btn) activeBtn = null;
+    if (activeBtn === btn) { activeBtn = null; pinned = false; }
+  }
+  function pinTip(btn) {
+    showTip(btn);
+    pinned = true;
+    btn.querySelector('.tip-box').classList.add('tip-pinned');
   }
 
   document.querySelectorAll('.tip-btn').forEach(btn => {
     btn.addEventListener('mouseenter', () => {
+      if (pinned) return;
+      clearTimeout(openTimer);
       openTimer = setTimeout(() => showTip(btn), 400);
     });
     btn.addEventListener('mouseleave', () => {
       clearTimeout(openTimer);
+      if (pinned) return;
       hideTip(btn);
     });
   });
 
-  document.addEventListener('touchstart', function(e) {
+  document.addEventListener('click', function(e) {
+    const inBox = e.target.closest('.tip-box');
+    if (inBox) {                                     // reading or scrolling inside an open tip
+      if (e.target.closest('a') && activeBtn) hideTip(activeBtn);   // a link inside the tip navigates away
+      return;
+    }
     const btn = e.target.closest('.tip-btn');
     if (btn) {
       e.preventDefault();
-      if (activeBtn === btn) { hideTip(btn); return; }
-      showTip(btn);
-    } else if (activeBtn) {
-      hideTip(activeBtn);
+      clearTimeout(openTimer);
+      if (pinned && activeBtn === btn) hideTip(btn); else pinTip(btn);
+      return;
     }
-  }, { passive: false });
+    // A label that holds a tip button must not forward a click on its text to the button
+    const lbl = e.target.closest('label');
+    if (lbl && lbl.querySelector('.tip-btn')) e.preventDefault();
+    if (activeBtn) hideTip(activeBtn);
+  });
+
+  // Touch: a tap outside closes the tip (some mobile browsers send no click for taps on plain
+  // text); a scroll gesture does not.
+  let touchX = 0, touchY = 0;
+  document.addEventListener('touchstart', function(e) {
+    const t = e.touches[0];
+    touchX = t.clientX; touchY = t.clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    if (!activeBtn) return;
+    const t = e.changedTouches[0];
+    if (Math.abs(t.clientX - touchX) > 10 || Math.abs(t.clientY - touchY) > 10) return;
+    if (e.target.closest('.tip-box') || e.target.closest('.tip-btn')) return;
+    hideTip(activeBtn);
+  }, { passive: true });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && activeBtn) hideTip(activeBtn);
+  });
 }
 
 function applyTheme(theme) {
@@ -2502,7 +2733,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Input clamping on blur
 document.addEventListener('DOMContentLoaded', function() {
-  // Strictly positive (min 0.001)
+  // Non-negative numeric inputs (a negative or invalid value becomes 0 on blur)
   var positiveIds = ['v0_val','chrono_cm','m_val','bc_input','sight_val','zero_val',
                      'press_zero_val','press_shoot_val','vital_val','v0spread_val',
                      'maxrange_val','step_val'];

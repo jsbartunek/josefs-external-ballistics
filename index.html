@@ -194,6 +194,9 @@ canvas{display:block}
 
 /* ── Theme toggle switch ── */
 .theme-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.stale-banner{display:none;font-family:var(--mono);font-size:11px;line-height:1.6;color:var(--orange);background:var(--surface);border:1px solid var(--orange);border-radius:3px;padding:8px 12px;margin-bottom:12px}
+.right-col.results-stale > .panel:not(.notes-panel){opacity:.4}
 .toggle-track{width:36px;height:20px;border-radius:10px;background:var(--border);border:1px solid var(--border);position:relative;transition:background .2s}
 .toggle-track.on{background:var(--accent)}
 .toggle-knob{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
@@ -285,10 +288,11 @@ canvas{display:block}
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
       Drag tables (G1, G7): <a href="https://github.com/gehtsoft-usa/BallisticCalculator1" target="_blank" style="color:var(--accent);text-decoration:none">Gehtsoft BallisticCalculator</a>, LGPL-2.1.<br>
-      <span style="margin-top:4px;display:inline-block">v3.1 · Oct 14, 2026 — pressure reference (sea level or on site) and elevation for each day; stricter input checks; pinnable tooltips.</span>
+      <span style="margin-top:4px;display:inline-block">v3.1.1 · Oct 16, 2026 — results marked when they no longer match the input; strict number checks; spin effects held at S<sub>g</sub> 1.0.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v3.1.1</b> (Oct 16, 2026) — <b>Results that no longer match the input</b> are dimmed and marked when a calculation stops on an input error (they stayed on screen looking valid). <b>Number checks</b>: a field must contain only a number — text such as “12abc” was read as 12, and invalid text in humidity, v₀ sensitivity, shooting angle or the v₀ spread was silently replaced by 0 or the default; invalid text is no longer replaced by 0 when you leave a field. Humidity must be 0–100 % (empty = 0). <b>Unit switches</b> stay correct when the browser blocks storage (the previous unit was read from storage). <b>Spin effects</b>: below S<sub>g</sub> 1.0 the bullet is expected to tumble; spin drift and jump are then computed at S<sub>g</sub> 1.0 and the status line says they are not reliable (Litz's relations were extrapolated below 1.0). Tooltips near the bottom of the window open upwards. The theme switch can be used with the keyboard. If the chart library cannot load, the table and cards are still shown.<br>
           <b>v3.1</b> (Oct 14, 2026) — <b>Pressure reference and elevation</b> for the zero day and the shooting day. Weather apps and reports almost always give pressure reduced to sea level, also for your own town; with <i>Sea level</i> the calculator converts the value to the actual pressure on site from the entered elevation and that day's temperature (weather-service reduction, T₀ = T + L·h). <i>On site</i> uses the value as entered. The default is sea level at 0 m, which gives exactly the same results as before; previously the field was meant as the pressure on site, while the shooting-day tooltip suggested weather-report values. The converted pressure on site is shown next to each elevation. New input checks: pressure 850–1100 hPa at sea level, 400–1100 hPa on site; elevation −500 to 6000 m (ft when the range unit is yd); temperature between −100 and +100 °C; the water vapour pressure must stay below the air pressure; max range and table step must be positive, the step no larger than the range, and at most 2000 table rows (a zero or empty field was silently replaced by 200 and 25); the v₀ spread must be smaller than v₀, and the Phase 3 change must leave v₀ positive. The sensitivity analysis perturbs the pressure as entered. <b>Tooltips</b>: a click or tap on “?” pins the tip, so it stays open while you scroll; long tips scroll inside; close with another click on “?”, a click or tap outside, or Escape. An unverified example in the zero-day pressure tooltip was removed.<br>
           <b>v3.0.2</b> (Oct 12, 2026) — <b>Humid speed of sound</b> now uses the exact ideal-gas mixture (heat-capacity ratio and molar mass of the air/water-vapour mixture) instead of the approximation √(1 + 0.32·e/p). Dry air is unchanged. The difference is at most ~0.25 % in hot, humid air at low pressure, otherwise ≤ 0.05 %. Formula display in the model notes corrected (it showed the old 0.16 factor). Attribution for the drag tables (Gehtsoft BallisticCalculator, LGPL-2.1) added. Summary cards: the Velocity card now shows shooting-day values only — V@100 m or V@100 yd follows the range unit like the wind card (previously V@100 came from the ICAO reference trajectory). E₁₀₀ and the hunt class always refer to 100 m in the ICAO reference, as defined by the regulation; the heading says so also in yard mode (it said “hunt class at 100yd”). Wind drift @100 is now evaluated exactly at 100 m/yd (it took the nearest table row, e.g. 90 m with a 30 m step). Table: with Phase 3 active, the Shoot and Δ columns now follow the same shooting-day trajectory as v, E and wind (incl. propellant temperature; header “Shoot +P3”) — previously they showed the Phase 2 trajectory, so one row mixed two trajectories. The chart and the vital-zone summary still show Phase 2 and Phase 3 separately.<br>
           <b>v3.0.1</b> (Oct 11, 2026) — Optimize zero range for vital zone: the result is rounded down (0.1 m or yd) and solved 0.1 mm inside the zone, so the zero-day apex is always within the vital zone (the old midpoint and round-to-nearest could exceed it by a fraction of a millimetre and show ✗).<br>
@@ -319,7 +323,7 @@ canvas{display:block}
     <button onclick="openAbout()" class="header-btn">About</button>
     <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" class="header-link">Stability ↗</a>
     <div class="header-spacer"></div>
-    <div class="theme-toggle" onclick="toggleTheme()">
+    <div class="theme-toggle" onclick="toggleTheme()" role="button" tabindex="0" aria-label="Switch between light and dark theme" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTheme();}">
       <div class="toggle-track on" id="toggle-track"><div class="toggle-knob"></div></div>
       <span class="theme-label" id="theme-label">Light mode</span>
     </div>
@@ -431,7 +435,7 @@ canvas{display:block}
         </div>
         <div class="chrono-body" id="spin-body" style="display:none">
           <div class="field" style="margin-top:8px">
-            <label>Stability factor S<sub>g</sub> <button class="tip-btn">?<div class="tip-box">Optional. Gyroscopic stability factor of your bullet and barrel — get it from the companion <b>Stability Calculator</b> (link below).<br><br>When filled in, the table gets two extra columns:<br>· <b>Spin</b> — spin drift relative to the line of sight. It is zero at your zero range, slightly to one side before it and to the other side beyond it.<br>· <b>Jump</b> — aerodynamic jump: the small vertical shift caused by the crosswind (right-hand twist: wind from the left = low, from the right = high).<br><br>Both are a few mm at hunting ranges and grow at long range. Leave empty to switch them off — nothing else in the app changes.</div></button></label>
+            <label>Stability factor S<sub>g</sub> <button class="tip-btn">?<div class="tip-box">Optional. Gyroscopic stability factor of your bullet and barrel — get it from the companion <b>Stability Calculator</b> (link below).<br><br>When filled in, the table gets two extra columns:<br>· <b>Spin</b> — spin drift relative to the line of sight. It is zero at your zero range, slightly to one side before it and to the other side beyond it.<br>· <b>Jump</b> — aerodynamic jump: the small vertical shift caused by the crosswind (right-hand twist: wind from the left = low, from the right = high).<br><br>Both are a few mm at hunting ranges and grow at long range. Leave empty to switch them off — nothing else in the app changes.<br><br>Below S<sub>g</sub> 1.0 the bullet is expected to tumble; spin drift and jump are then computed at S<sub>g</sub> 1.0 and the status line warns that they are not reliable.</div></button></label>
             <div class="field-row">
               <input type="text" inputmode="decimal" id="sg_val" value="" placeholder="empty = off">
               <select id="twist_dir" class="unit-sel">
@@ -692,7 +696,8 @@ canvas{display:block}
   </div>
 
   <!-- ══════════════ RIGHT: RESULTS ══════════════ -->
-  <div class="right-col">
+  <div class="right-col" id="results-col">
+    <div class="stale-banner" id="stale-banner">⚠ The results below are from the last successful calculation and do not match the current input. Correct the input and calculate again.</div>
 
     <!-- Summary cards -->
     <div class="panel">
@@ -787,7 +792,7 @@ canvas{display:block}
     </div>
 
     <!-- Model & Math -->
-    <div class="panel">
+    <div class="panel notes-panel">
       <div class="panel-head" style="cursor:pointer;user-select:none" onclick="toggleMath()">
         <span>Model &amp; Mathematics</span>
         <span id="math-toggle-icon" style="font-family:var(--mono);font-size:11px;color:var(--muted)">▶ expand</span>
@@ -886,7 +891,7 @@ canvas{display:block}
             <span style="color:var(--green)">▸ Point-mass model (2D)</span> — drop and velocity agree with JBM within its rounding to 500 m on the test load.<br>
             <span style="color:var(--green)">▸ Relative humidity modelled</span> — Tetens/Murray saturation pressure, partial-pressure density and humid-air speed of sound. Effect &lt;0.5 mm at ≤200 m.<br>
             <span style="color:var(--muted)">▸ G1 and G7 drag models supported</span> — G7 recommended for VLD/boattail bullets.<br>
-            <span style="color:var(--muted)">▸ Spin drift and aerodynamic jump optional (Litz); no Coriolis</span> — Coriolis is negligible at hunting ranges.<br>
+            <span style="color:var(--muted)">▸ Spin drift and aerodynamic jump optional (Litz); no Coriolis</span> — Coriolis is negligible at hunting ranges. Below S<sub>g</sub> 1.0 (the bullet tumbles) spin drift and jump are computed at S<sub>g</sub> 1.0.<br>
             <span style="color:var(--muted)">▸ Steep shots</span> — crosswind on slopes uses the lag-time rule (about ±18 mm at 600 m and ±70 mm at 1000 m on a 45° slope), and air density and speed of sound are held at the muzzle values (about +15 mm at 600 m on a 45° slope).<br>
             <span style="color:var(--muted)">▸ Pressure reference per day</span> — a sea-level value (as from weather apps) is converted to the actual pressure on site with the entered elevation and that day's temperature; a pressure on site is used as entered.<br>
             <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) is experimental</span> — user-measured v₀ sensitivity [m/s/°C]. Disabled when k = 0.<br>
@@ -946,6 +951,30 @@ function savePrefs(obj) {
   try { localStorage.setItem(LS, JSON.stringify(obj)); } catch {}
 }
 
+// ── Strict number parsing (v3.1.1) ──
+// The whole field must be a number: "12abc" is rejected instead of being read as 12.
+// Comma or point as decimal separator. Empty → NaN.
+function numVal(str) {
+  const s = String(str).trim().replace(',', '.');
+  return /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(s) ? Number(s) : NaN;
+}
+// Optional field: empty → 0, otherwise strict (invalid text → NaN, never silently 0).
+function optVal(str) {
+  return String(str).trim() === '' ? 0 : numVal(str);
+}
+
+// ── Stale results (v3.1.1) ──
+// When a calculation stops on an input error, the previous results stay visible but are
+// dimmed and marked as not matching the current input.
+let _hasResults = false;
+function setResultsStale(stale) {
+  const show = stale && _hasResults;
+  const col = document.getElementById('results-col');
+  const banner = document.getElementById('stale-banner');
+  if (col) col.classList.toggle('results-stale', show);
+  if (banner) banner.style.display = show ? 'block' : 'none';
+}
+
 // ── Comma → dot fix for all decimal inputs ──
 function fixComma(el) {
   el.addEventListener('input', function() {
@@ -961,7 +990,9 @@ function onUnitChange(field) {
   const prefs = loadPrefs();
   const selEl = document.getElementById(field + '_unit');
   const newUnit = selEl.value;
-  let oldUnit = prefs['unit_' + field] || selEl.options[0].value;
+  // The previous unit is kept on the select itself (v3.1.1), so unit switches stay correct
+  // when the browser blocks storage; the stored preference is only a fallback.
+  let oldUnit = selEl.dataset.prev || prefs['unit_' + field] || selEl.options[0].value;
   // Guard: if the stored oldUnit no longer exists in the CONV table (e.g. a unit option
   // was removed in a later version), fall back to the first available option so we don't
   // crash with "CONV[field][oldUnit] is not a function".
@@ -981,7 +1012,7 @@ function onUnitChange(field) {
   fieldIds.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const rawVal = parseFloat(el.value.replace(',', '.'));
+    const rawVal = numVal(el.value);
     if (!isNaN(rawVal)) {
       const si = CONV[field][oldUnit](rawVal);
       el.value = parseFloat(CONV_FROM[field][newUnit](si).toFixed(4));
@@ -995,7 +1026,7 @@ function onUnitChange(field) {
   // 1 m/s/°C = 3.2808 fps/(m/s) × (5/9) °C/°F = 1.8227 fps/°F
   if (field === 'temp') {
     const sensEl = document.getElementById('v0_sensitivity');
-    const sensV = parseFloat(sensEl.value.replace(',','.'));
+    const sensV = numVal(sensEl.value);
     if (!isNaN(sensV) && sensV !== 0) {
       // oldUnit → newUnit
       if (oldUnit === 'C' && newUnit === 'F') {
@@ -1015,9 +1046,9 @@ function onUnitChange(field) {
     document.getElementById('step_unit_lbl').textContent     = newUnit;
     const mrEl = document.getElementById('maxrange_val');
     const stEl = document.getElementById('step_val');
-    const oldRangeUnit = prefs['unit_zero'] || 'm';
+    const oldRangeUnit = oldUnit;
     [mrEl, stEl].forEach(el => {
-      const v = parseFloat(el.value.replace(',','.'));
+      const v = numVal(el.value);
       if (!isNaN(v)) {
         const si = CONV.zero[oldRangeUnit](v);
         el.value = parseFloat(CONV_FROM.zero[newUnit](si).toFixed(1));
@@ -1029,14 +1060,14 @@ function onUnitChange(field) {
     document.getElementById('zfp_dist_unit_lbl').textContent   = newUnit;
     // Convert zfp dist value if populated
     const zfpDistEl = document.getElementById('zfp_dist_val');
-    const zfpDV = parseFloat(zfpDistEl.value.replace(',','.'));
+    const zfpDV = numVal(zfpDistEl.value);
     if (!isNaN(zfpDV)) {
       const si = CONV.zero[oldRangeUnit](zfpDV);
       zfpDistEl.value = parseFloat(CONV_FROM.zero[newUnit](si).toFixed(1));
     }
     // Convert zfp offset value if populated
     const zfpOffEl = document.getElementById('zfp_offset_val');
-    const zfpOV = parseFloat(zfpOffEl.value.replace(',','.'));
+    const zfpOV = numVal(zfpOffEl.value);
     if (!isNaN(zfpOV)) {
       const oldOffUnit = oldRangeUnit === 'm' ? 'mm' : 'in';
       const si_off = oldOffUnit === 'mm' ? zfpOV / 1000 : zfpOV * 0.0254;
@@ -1047,7 +1078,7 @@ function onUnitChange(field) {
     const newElevUnit = newUnit === 'yd' ? 'ft' : 'm';
     ['elev_zero_val', 'elev_shoot_val'].forEach(id => {
       const el = document.getElementById(id);
-      const v = parseFloat(el.value.replace(',','.'));
+      const v = numVal(el.value);
       if (!isNaN(v) && oldElevUnit !== newElevUnit) {
         el.value = parseFloat(CONV_FROM.elev[newElevUnit](CONV.elev[oldElevUnit](v)).toFixed(1));
       }
@@ -1056,6 +1087,7 @@ function onUnitChange(field) {
     document.getElementById('elev_shoot_unit_lbl').textContent = newElevUnit;
   }
 
+  selEl.dataset.prev = newUnit;
   prefs['unit_' + field] = newUnit;
   savePrefs(prefs);
 }
@@ -1069,7 +1101,7 @@ function getSI(field, valId, unitId) {
   const unitEl = document.getElementById(unitId);
   if (!valEl) return NaN;
   const unit = unitEl ? unitEl.value : null;
-  const raw = parseFloat(valEl.value.replace(',', '.'));
+  const raw = numVal(valEl.value);
   if (isNaN(raw)) return NaN;
   return unit ? CONV[field][unit](raw) : raw;
 }
@@ -1101,7 +1133,7 @@ function toSitePressure(p_hPa, temp_C, src, elev_m) {
 function readDayAtmo(day) {
   const tempUnit  = document.getElementById('temp_unit').value;
   const pressUnit = document.getElementById('press_unit').value;
-  const num = id => parseFloat(document.getElementById(id).value.replace(',', '.'));
+  const num = id => numVal(document.getElementById(id).value);
   const temp_C = CONV.temp[tempUnit](num('temp_' + day + '_val'));
   const p_hPa  = CONV.press[pressUnit](num('press_' + day + '_val'));
   const src    = document.getElementById('psrc_' + day).value === 'station' ? 'station' : 'sea';
@@ -1197,6 +1229,12 @@ function restorePrefs() {
         }
       }
     }
+  });
+
+  // Remember each unit as the starting point for the next unit switch (see onUnitChange)
+  ['v0','m','sight','zero','temp','press','wind','vital','chrono'].forEach(f => {
+    const el = document.getElementById(f + '_unit');
+    if (el) el.dataset.prev = el.value;
   });
 
   // Sync shoot atmosphere labels
@@ -1522,7 +1560,7 @@ function toggleChrono() {
 
 function estimateG7() {
   const factor = parseFloat(document.getElementById('g7_bullet_type').value);
-  const g1 = parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+  const g1 = numVal(document.getElementById('bc_input').value);
   const resultDiv = document.getElementById('g7-result');
   if (!factor || isNaN(g1)) { resultDiv.style.display='none'; return; }
   const g7 = (g1 / factor).toFixed(3);
@@ -1564,8 +1602,8 @@ function estimateZfp() {
   const rangeUnit  = document.getElementById('zero_unit').value;
   const offsetUnit = rangeUnit === 'm' ? 'mm' : 'in';
 
-  const offsetRaw = parseFloat(document.getElementById('zfp_offset_val').value.replace(',','.'));
-  const distRaw   = parseFloat(document.getElementById('zfp_dist_val').value.replace(',','.'));
+  const offsetRaw = numVal(document.getElementById('zfp_offset_val').value);
+  const distRaw   = numVal(document.getElementById('zfp_dist_val').value);
 
   const errEl       = document.getElementById('zfp-err');
 
@@ -1591,17 +1629,17 @@ function estimateZfp() {
   // Read ballistic parameters
   const v0      = getSI('v0',    'v0_val',    'v0_unit');
   const sight_h = getSI('sight', 'sight_val', 'sight_unit');
-  const BC_input= parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+  const BC_input= numVal(document.getElementById('bc_input').value);
   const bc_type = document.getElementById('bc_type').value;
   const BC_final = BC_input * 703.07;
   const dragModel = bc_type;
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
   const atZ = readDayAtmo('zero');
   const press_zero_hPa = atZ.p_site_hPa;   // actual pressure on site
-  const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
+  const rh_zero_pct    = optVal(document.getElementById('rh_zero_val').value);
   const g_eff = 9.80665;   // zeroing is done on a level range — the shooting angle does not apply here
 
-  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) { resetRows(); return; }
+  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h) || !(rh_zero_pct >= 0 && rh_zero_pct <= 100)) { resetRows(); return; }
   if (atZ.err) {
     resetRows();
     errEl.textContent = atmoErrorText(atZ, 'zero-day');
@@ -1779,7 +1817,7 @@ function optimizeZeroForVital() {
   errEl.style.display = 'none';
 
   // Read vital zone radius directly (mm or in -> metres)
-  const vital_raw  = parseFloat(document.getElementById('vital_val').value.replace(',','.'));
+  const vital_raw  = numVal(document.getElementById('vital_val').value);
   const vital_unit = document.getElementById('vital_unit').value;
   if (isNaN(vital_raw) || vital_raw <= 0) {
     errEl.textContent = 'Enter a valid vital zone radius.';
@@ -1791,7 +1829,7 @@ function optimizeZeroForVital() {
   // Read ballistic parameters (same as estimateZfp)
   const v0      = getSI('v0',    'v0_val',    'v0_unit');
   const sight_h = getSI('sight', 'sight_val', 'sight_unit');
-  const BC_input= parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+  const BC_input= numVal(document.getElementById('bc_input').value);
   const bc_type = document.getElementById('bc_type').value;
   if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h)) {
     errEl.textContent = 'Fill in v\u2080, BC and sight height first.';
@@ -1803,10 +1841,15 @@ function optimizeZeroForVital() {
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
   const atZ = readDayAtmo('zero');
   const press_zero_hPa = atZ.p_site_hPa;   // actual pressure on site
-  const rh_zero_pct    = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.')) || 0;
+  const rh_zero_pct    = optVal(document.getElementById('rh_zero_val').value);
   const g_eff = 9.80665;   // zeroing is done on a level range — the shooting angle does not apply here
   if (atZ.err) {
     errEl.textContent = atmoErrorText(atZ, 'zero-day');
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!(rh_zero_pct >= 0 && rh_zero_pct <= 100)) {
+    errEl.textContent = 'Invalid input: zero-day humidity must be a number from 0 to 100 % (empty = 0).';
     errEl.style.display = 'block';
     return;
   }
@@ -1901,10 +1944,11 @@ function applyOptimalZero() {
 
 function calculate() {
   try {
+    setResultsStale(true);   // cleared again only when this calculation succeeds
     // Read all inputs via unit-aware getSI(field, valId, unitId)
     const v0      = getSI('v0',    'v0_val',    'v0_unit');     // m/s
     const m_kg    = getSI('m',     'm_val',     'm_unit');      // kg
-    const BC_input= parseFloat(document.getElementById('bc_input').value.replace(',','.'));
+    const BC_input= numVal(document.getElementById('bc_input').value);
     const bc_type = document.getElementById('bc_type').value;
     const sight_h = getSI('sight', 'sight_val', 'sight_unit');  // m
     const zero_m  = getSI('zero',  'zero_val',  'zero_unit');   // m
@@ -1919,12 +1963,12 @@ function calculate() {
     const press_zero_hPa  = atZ.p_site_hPa;
     const temp_shoot_C    = atS.temp_C;
     const press_shoot_hPa = atS.p_site_hPa;
-    const rh_zero_pct     = parseFloat(document.getElementById('rh_zero_val').value.replace(',','.'))  || 0;
-    const rh_shoot_pct    = parseFloat(document.getElementById('rh_shoot_val').value.replace(',','.')) || 0;
+    const rh_zero_pct     = optVal(document.getElementById('rh_zero_val').value);
+    const rh_shoot_pct    = optVal(document.getElementById('rh_shoot_val').value);
 
     // Phase 3 — propellant temperature effect on v₀
     // Propellant temp assumed = shooting temp (Phase 2)
-    const v0sens_raw      = parseFloat(document.getElementById('v0_sensitivity').value.replace(',','.')) || 0;
+    const v0sens_raw      = optVal(document.getElementById('v0_sensitivity').value);
     const v0sens_ms_C     = tempUnit === 'F' ? v0sens_raw * 0.3048 * (9/5) : v0sens_raw;
     const delta_v0_phase3 = v0sens_ms_C * (temp_shoot_C - temp_zero_C);
     const hasPhase3       = Math.abs(v0sens_ms_C) > 0.001;
@@ -1939,7 +1983,7 @@ function calculate() {
     if (!hasPhase3 && window._spreadPhase === 3) setSpreadPhase(2);
 
     const wind_ms   = getSI('wind',  'wind_val',  'wind_unit');  // m/s
-    const alpha_deg = parseFloat(document.getElementById('alpha_deg').value.replace(',','.')) || 0;
+    const alpha_deg = optVal(document.getElementById('alpha_deg').value);
     const vital_cm  = getSI('vital', 'vital_val', 'vital_unit'); // cm
     const v0Unit    = document.getElementById('v0_unit').value;
 
@@ -1952,12 +1996,20 @@ function calculate() {
     const dragModel = bc_type;
 
     if (!(v0 > 0) || !(m_kg > 0) || !(BC_input > 0) || !(sight_h >= 0) || !(zero_m > 0)) {
-      setStatus('Invalid input: v\u2080, bullet weight, BC and zero range must be positive.', 'warn');
+      setStatus('Invalid input: v\u2080, bullet weight, BC and zero range must be positive numbers.', 'warn');
       return;
     }
 
     if (atZ.err || atS.err) {
       setStatus(atZ.err ? atmoErrorText(atZ, 'zero-day') : atmoErrorText(atS, 'shooting-day'), 'warn');
+      return;
+    }
+    if (!(rh_zero_pct >= 0 && rh_zero_pct <= 100) || !(rh_shoot_pct >= 0 && rh_shoot_pct <= 100)) {
+      setStatus('Invalid input: relative humidity must be a number from 0 to 100 % (empty = 0).', 'warn');
+      return;
+    }
+    if (isNaN(v0sens_raw) || isNaN(alpha_deg)) {
+      setStatus('Invalid input: v\u2080 sensitivity and shooting angle must be numbers (empty = 0).', 'warn');
       return;
     }
     if (isNaN(wind_ms) || isNaN(vital_cm)) {
@@ -1966,12 +2018,18 @@ function calculate() {
     }
     // Optional spin effects: empty Sg = off
     const sgRawStr = document.getElementById('sg_val').value.replace(',','.').trim();
-    const sgVal    = sgRawStr === '' ? NaN : parseFloat(sgRawStr);
+    const sgVal    = sgRawStr === '' ? NaN : numVal(sgRawStr);
     if (sgRawStr !== '' && !(sgVal >= 0.8 && sgVal <= 6)) {
       setStatus('Invalid input: Sg must be a number between 0.8 and 6 \u2014 leave it empty to switch spin effects off.', 'warn');
       return;
     }
     const spinOn   = !isNaN(sgVal);
+    // Litz's spin-drift and jump relations are fits for stable bullets. Below Sg 1.0 the bullet
+    // is expected to tumble, so both are evaluated at Sg 1.0 and the status says so (v3.1.1).
+    const sgUsed   = spinOn ? Math.max(sgVal, 1.0) : NaN;
+    const sgNote   = spinOn && sgVal < 1.0
+      ? ' \u00b7 Sg below 1.0: the bullet is expected to tumble \u2014 spin drift and jump are computed at Sg 1.0 and are not reliable'
+      : '';
     const twistSgn = document.getElementById('twist_dir').value === 'L' ? -1 : 1;
 
     if (Math.abs(alpha_deg) >= 90) {
@@ -2042,8 +2100,8 @@ function calculate() {
     const ePrec     = 0;
 
     // Max range and step — read as display units, convert to metres
-    const maxrange_disp = parseFloat(document.getElementById('maxrange_val').value.replace(',','.'));
-    const step_disp     = parseFloat(document.getElementById('step_val').value.replace(',','.'));
+    const maxrange_disp = numVal(document.getElementById('maxrange_val').value);
+    const step_disp     = numVal(document.getElementById('step_val').value);
     if (!(maxrange_disp > 0) || !(step_disp > 0)) {
       setStatus('Invalid input: max range and table step must be positive numbers.', 'warn');
       return;
@@ -2072,7 +2130,12 @@ function calculate() {
     const extent_m = Math.max(maxrange_m, zero_m);   // also cover the zero range when it lies beyond the table
     const tMax = Math.max(extent_m/v0_true + 2, 3*extent_m/v0_true + 1);
     const xMax = extent_m + 20;  // 20 m margin for interpolation at boundary
-    const v0spread_raw = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
+    const v0spreadStr  = document.getElementById('v0spread_val').value.trim();
+    const v0spread_raw = numVal(v0spreadStr);
+    if (v0spreadStr !== '' && isNaN(v0spread_raw)) {
+      setStatus('Invalid input: the v\u2080 spread must be a number (empty = 10).', 'warn');
+      return;
+    }
     const v0spread_eff = isNaN(v0spread_raw) ? 10 : v0spread_raw;
     const showSpread = v0spread_eff > 0;
     const v0spread = v0Unit === 'fps' ? v0spread_eff * 0.3048 : v0spread_eff; // → m/s
@@ -2104,7 +2167,7 @@ function calculate() {
     });
 
     // Update vital zone legend label
-    const vital_raw = parseFloat(document.getElementById('vital_val').value.replace(',','.')) || 60;
+    const vital_raw = numVal(document.getElementById('vital_val').value) || 60;
     const vitalUnitLbl = document.getElementById('vital_unit').value;
     document.getElementById('vz-label').textContent = vital_raw;
     document.getElementById('vz-unit').textContent  = vitalUnitLbl;
@@ -2274,10 +2337,10 @@ function calculate() {
       // Optional spin effects (Litz): shown as separate contributions, never mixed into the other columns
       let spin = null, jump = null;
       if (spinOn) {
-        const sdInch = t => 1.25 * (sgVal + 1.2) * Math.pow(t, 1.83);              // spin drift [in], TOF in s
+        const sdInch = t => 1.25 * (sgUsed + 1.2) * Math.pow(t, 1.83);              // spin drift [in], TOF in s
         const sd_cm  = (sdInch(tFlyg) - sdInch(tofZeroLevel) * r / zero_m) * 2.54; // relative to line of sight, zero at zero range
         spin = toDevDisp(twistSgn * sd_cm);                                         // + = right
-        const ajMoaPerMph = 0.01 * sgVal - 0.0024 * AJ_LENGTH_CAL + 0.032;          // aerodynamic jump [MOA per mph crosswind]
+        const ajMoaPerMph = 0.01 * sgUsed - 0.0024 * AJ_LENGTH_CAL + 0.032;          // aerodynamic jump [MOA per mph crosswind]
         const ajRad = ajMoaPerMph * (wind_ms / 0.44704) * (Math.PI / 180 / 60);
         jump = toDevDisp(-twistSgn * ajRad * r * 100);                              // RH twist: wind from the left (+) = low
       }
@@ -2337,7 +2400,9 @@ function calculate() {
     const yAxisMin = Math.floor(yMin - yPad);
     const yAxisMax = Math.ceil(yMax  + yPad);
 
-    if (chartTraj) chartTraj.destroy();
+    if (chartTraj) { chartTraj.destroy(); chartTraj = null; }
+    // Charts need the Chart.js library from the CDN; without it the table and cards still work (v3.1.1).
+    const chartsOk = typeof Chart !== 'undefined';
 
     // Read current theme colors
     const cs = getComputedStyle(document.documentElement);
@@ -2350,7 +2415,7 @@ function calculate() {
     const cOrange = cs.getPropertyValue('--orange').trim();
     const cGreen  = cs.getPropertyValue('--green').trim();
 
-    chartTraj = new Chart(document.getElementById('chartTraj'), {
+    if (chartsOk) chartTraj = new Chart(document.getElementById('chartTraj'), {
       type: 'line',
       data: {
         datasets: (() => {
@@ -2449,8 +2514,8 @@ function calculate() {
     // ── Chart: wind drift ──
     const zVindArr = rows.map(r => r.zVind);
     const rArr     = rows.map(r => parseFloat(toRangeDisp(r.r).toFixed(1)));
-    if (chartWind) chartWind.destroy();
-    chartWind = new Chart(document.getElementById('chartWind'), {
+    if (chartWind) { chartWind.destroy(); chartWind = null; }
+    if (chartsOk) chartWind = new Chart(document.getElementById('chartWind'), {
       type:'line',
       data:{
         datasets:[{
@@ -2553,11 +2618,14 @@ function calculate() {
     if (wind100LabelEl) wind100LabelEl.textContent = `@${label100}`;
     if (wind100El) { wind100El.textContent = isNaN(wind100) ? '—' : (wind100 >= 0 ? '+' : '') + wind100.toFixed(devPrec); }
     if (wind100UnitEl) { wind100UnitEl.textContent = devLabel; }
+    _hasResults = true;
+    setResultsStale(false);
+    const chartNote = chartsOk ? '' : ' \u00b7 charts unavailable (the chart library did not load)';
     const reachMin = Math.min(maxX, Math.max(...trajShoot.map(p=>p.x)));
     if (reachMin < maxrange_m - 0.5) {
-      setStatus(`Bullet does not reach max range — table ends at ${toRangeDisp(reachMin).toFixed(0)} ${rangeLabel}. θ=${(theta*1000).toFixed(3)} mrad`, 'warn');
+      setStatus(`Bullet does not reach max range — table ends at ${toRangeDisp(reachMin).toFixed(0)} ${rangeLabel}. θ=${(theta*1000).toFixed(3)} mrad${sgNote}${chartNote}`, 'warn');
     } else {
-      setStatus(`OK — θ=${(theta*1000).toFixed(3)} mrad · wind drift@${toRangeDisp(row200.r).toFixed(0)}${rangeLabel}: ${row200.zVind.toFixed(devPrec)} ${windLabel}`, 'ok');
+      setStatus(`OK — θ=${(theta*1000).toFixed(3)} mrad · wind drift@${toRangeDisp(row200.r).toFixed(0)}${rangeLabel}: ${row200.zVind.toFixed(devPrec)} ${windLabel}${sgNote}${chartNote}`, (sgNote || chartNote) ? 'warn' : 'ok');
     }
 
   } catch(e) {
@@ -2605,6 +2673,8 @@ function initTooltips() {
     // Reset any previous inline positioning
     box.style.left = '';
     box.style.right = '';
+    box.style.top = '';
+    box.style.bottom = '';
     // Make visible so we can measure
     box.classList.add('tip-visible');
     // Viewport collision check
@@ -2626,6 +2696,17 @@ function initTooltips() {
       box.style.left = (-btn.getBoundingClientRect().left + 4) + 'px';
       box.style.right = 'auto';
     }
+    // Vertical (v3.1.1): if the tip runs past the bottom of the window, open it upwards;
+    // if it would then run past the top, keep it downwards (it scrolls inside, max 70vh).
+    const r3 = box.getBoundingClientRect();
+    if (r3.bottom > window.innerHeight - 8) {
+      box.style.top = 'auto';
+      box.style.bottom = '-4px';
+      if (box.getBoundingClientRect().top < 8) {
+        box.style.top = '';
+        box.style.bottom = '';
+      }
+    }
   }
   function hideTip(btn) {
     if (!btn) return;
@@ -2635,6 +2716,8 @@ function initTooltips() {
       box.classList.remove('tip-visible', 'tip-pinned');
       box.style.left = '';
       box.style.right = '';
+      box.style.top = '';
+      box.style.bottom = '';
     }
     if (activeBtn === btn) { activeBtn = null; pinned = false; }
   }
@@ -2717,8 +2800,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var sensEl = document.getElementById('v0_sensitivity');
   if (sensEl) {
     sensEl.addEventListener('input', function() {
-      var val = parseFloat(this.value.replace(',','.')) || 0;
-      var spreadV = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
+      var val = numVal(this.value) || 0;
+      var spreadV = numVal(document.getElementById('v0spread_val').value);
       var active = Math.abs(val) > 0.001 && !isNaN(spreadV) && spreadV > 0;
       var btn = document.getElementById('spbtn3');
       if (btn) {
@@ -2733,7 +2816,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Input clamping on blur
 document.addEventListener('DOMContentLoaded', function() {
-  // Non-negative numeric inputs (a negative or invalid value becomes 0 on blur)
+  // Non-negative numeric inputs: a negative number becomes 0 on blur. Invalid text is left as
+  // typed (v3.1.1) so the input check can point to it; it was silently replaced by 0 before.
   var positiveIds = ['v0_val','chrono_cm','m_val','bc_input','sight_val','zero_val',
                      'press_zero_val','press_shoot_val','vital_val','v0spread_val',
                      'maxrange_val','step_val'];
@@ -2741,17 +2825,17 @@ document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('blur', function() {
-      var v = parseFloat(this.value.replace(',','.'));
-      if (isNaN(v) || v < 0) this.value = 0;
+      var v = numVal(this.value);
+      if (!isNaN(v) && v < 0) this.value = 0;
     });
   });
 
   // Real-time spread button disable/enable
   function updateSpreadButtons() {
-    var val = parseFloat(document.getElementById('v0spread_val').value.replace(',','.'));
+    var val = numVal(document.getElementById('v0spread_val').value);
     var enabled = !isNaN(val) && val > 0;
     var sensEl3 = document.getElementById('v0_sensitivity');
-    var sens3 = sensEl3 ? (parseFloat(sensEl3.value.replace(',','.')) || 0) : 0;
+    var sens3 = sensEl3 ? (numVal(sensEl3.value) || 0) : 0;
     var p3active = Math.abs(sens3) > 0.001;
     ['spbtn1','spbtn2','spbtn3'].forEach(function(id) {
       var btn = document.getElementById(id);
@@ -2771,14 +2855,13 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSpreadButtons(); // run on load
   }
 
-  // RH: clamp 0-100
+  // RH: clamp a number to 0–100; empty stays empty (= 0), invalid text is left for the input check
   ['rh_zero_val','rh_shoot_val'].forEach(function(id) {
     var el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('blur', function() {
-      var v = parseFloat(this.value.replace(',','.'));
-      if (isNaN(v)) v = 0;
-      this.value = Math.min(100, Math.max(0, v));
+      var v = numVal(this.value);
+      if (!isNaN(v)) this.value = Math.min(100, Math.max(0, v));
     });
   });
 });

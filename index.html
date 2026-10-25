@@ -288,10 +288,11 @@ canvas{display:block}
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
       Drag tables (G1, G7): <a href="https://github.com/gehtsoft-usa/BallisticCalculator1" target="_blank" style="color:var(--accent);text-decoration:none">Gehtsoft BallisticCalculator</a>, LGPL-2.1.<br>
-      <span style="margin-top:4px;display:inline-block">v3.1.1 · Oct 16, 2026 — results marked when they no longer match the input; strict number checks; spin effects held at S<sub>g</sub> 1.0.</span>
+      <span style="margin-top:4px;display:inline-block">v3.2 · Oct 25, 2026 — exact physical constants and unit conversions; hunt class descriptions.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v3.2</b> (Oct 25, 2026) — <b>Exact constants.</b> Air now uses the coherent set of the ICAO standard atmosphere (ISO 2533): R* = 8.31432 J/(mol·K) and M<sub>d</sub> = 28.9644 g/mol (was 8.31446 and 28.964), which reproduces the standard density 1.2250 kg/m³; water vapour 18.01528 g/mol (IUPAC). The speed of sound at 0 °C is derived from the same constants, 331.3185 m/s (was the rounded 331.3). The BC conversion (703.0696, was 703.07), inHg (33.86389 hPa, was 33.8639), grains (the last digit of 0.06479891 g was missing) and ft·lbf are computed from their defining values. Air density rises by 0.003 % and the speed of sound by 0.006 %; the drop at 1000 m changes by less than 1 mm, and the barometric exponent becomes 5.2559 (was 5.2557). <b>Hunt class</b>: a short line under the class says which game it allows, and the tooltip lists the game per class with the sections of NFS 2023:8. Class 4 is now shown whenever the muzzle energy is at least 150 J, also when E₁₀₀ cannot be computed (the badge showed “—”). When no class applies, the card says “No class (E₀ &lt; 150 J)” instead of “—”.<br>
           <b>v3.1.1</b> (Oct 16, 2026) — <b>Results that no longer match the input</b> are dimmed and marked when a calculation stops on an input error (they stayed on screen looking valid). <b>Number checks</b>: a field must contain only a number — text such as “12abc” was read as 12, and invalid text in humidity, v₀ sensitivity, shooting angle or the v₀ spread was silently replaced by 0 or the default; invalid text is no longer replaced by 0 when you leave a field. Humidity must be 0–100 % (empty = 0). <b>Unit switches</b> stay correct when the browser blocks storage (the previous unit was read from storage). <b>Spin effects</b>: below S<sub>g</sub> 1.0 the bullet is expected to tumble; spin drift and jump are then computed at S<sub>g</sub> 1.0 and the status line says they are not reliable (Litz's relations were extrapolated below 1.0). Tooltips near the bottom of the window open upwards. The theme switch can be used with the keyboard. If the chart library cannot load, the table and cards are still shown.<br>
           <b>v3.1</b> (Oct 14, 2026) — <b>Pressure reference and elevation</b> for the zero day and the shooting day. Weather apps and reports almost always give pressure reduced to sea level, also for your own town; with <i>Sea level</i> the calculator converts the value to the actual pressure on site from the entered elevation and that day's temperature (weather-service reduction, T₀ = T + L·h). <i>On site</i> uses the value as entered. The default is sea level at 0 m, which gives exactly the same results as before; previously the field was meant as the pressure on site, while the shooting-day tooltip suggested weather-report values. The converted pressure on site is shown next to each elevation. New input checks: pressure 850–1100 hPa at sea level, 400–1100 hPa on site; elevation −500 to 6000 m (ft when the range unit is yd); temperature between −100 and +100 °C; the water vapour pressure must stay below the air pressure; max range and table step must be positive, the step no larger than the range, and at most 2000 table rows (a zero or empty field was silently replaced by 200 and 25); the v₀ spread must be smaller than v₀, and the Phase 3 change must leave v₀ positive. The sensitivity analysis perturbs the pressure as entered. <b>Tooltips</b>: a click or tap on “?” pins the tip, so it stays open while you scroll; long tips scroll inside; close with another click on “?”, a click or tap outside, or Escape. An unverified example in the zero-day pressure tooltip was removed.<br>
           <b>v3.0.2</b> (Oct 12, 2026) — <b>Humid speed of sound</b> now uses the exact ideal-gas mixture (heat-capacity ratio and molar mass of the air/water-vapour mixture) instead of the approximation √(1 + 0.32·e/p). Dry air is unchanged. The difference is at most ~0.25 % in hot, humid air at low pressure, otherwise ≤ 0.05 %. Formula display in the model notes corrected (it showed the old 0.16 factor). Attribution for the drag tables (Gehtsoft BallisticCalculator, LGPL-2.1) added. Summary cards: the Velocity card now shows shooting-day values only — V@100 m or V@100 yd follows the range unit like the wind card (previously V@100 came from the ICAO reference trajectory). E₁₀₀ and the hunt class always refer to 100 m in the ICAO reference, as defined by the regulation; the heading says so also in yard mode (it said “hunt class at 100yd”). Wind drift @100 is now evaluated exactly at 100 m/yd (it took the nearest table row, e.g. 90 m with a 30 m step). Table: with Phase 3 active, the Shoot and Δ columns now follow the same shooting-day trajectory as v, E and wind (incl. propellant temperature; header “Shoot +P3”) — previously they showed the Phase 2 trajectory, so one row mixed two trajectories. The chart and the vital-zone summary still show Phase 2 and Phase 3 separately.<br>
@@ -711,11 +712,12 @@ canvas{display:block}
   <span style="font-size:10px;color:var(--muted)"><span id="c-e100-label">E₁₀₀</span> <span id="c-klass-label" style="font-size:12px"></span> <button class="tip-btn" style="font-size:8px;width:12px;height:12px">?<div class="tip-box"><b>Swedish Hunt Classes (Naturvårdsverket, NFS 2023:8)</b><br>E₁₀₀ is the energy 100 m from the muzzle of your rifle — computed here with the chronograph-corrected v₀ in the ICAO standard atmosphere (15 °C, 1013 hPa), level, no wind, so the class does not change with the weather. Check the regulation for the exact rules of use.<br><br>
 <span style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;">
 <span style="color:var(--green);font-weight:600">K1</span><span>≥ 9 g &amp; E₁₀₀ ≥ 2700 J, or ≥ 10 g &amp; E₁₀₀ ≥ 2000 J<br><span style="color:var(--muted);font-size:10px">or lead-free ≥ 7.7 g &amp; E₁₀₀ ≥ 2000 J · expanding bullet · all game</span></span>
-<span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">expanding bullet · e.g. roe deer, lynx, beaver</span></span>
-<span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">e.g. fox, hare</span></span>
-<span style="color:var(--red);font-weight:600">K4</span><span>muzzle energy E₀ ≥ 150 J<br><span style="color:var(--muted);font-size:10px">listed small mammals and birds · “—” = no class</span></span>
-</span></div></button></span>
+<span style="color:var(--blue);font-weight:600">K2</span><span>≥ 3.2 g &amp; E₁₀₀ ≥ 800 J<br><span style="color:var(--muted);font-size:10px">expanding bullet · all game except moose, deer other than roe deer, wisent, bison, muskox, mouflon, wolf, bear and wild boar</span></span>
+<span style="color:var(--orange);font-weight:600">K3</span><span>≥ 2.5 g &amp; E₁₀₀ ≥ 200 J<br><span style="color:var(--muted);font-size:10px">as K2, and also not roe deer, lynx, wolverine, beaver or seals</span></span>
+<span style="color:var(--red);font-weight:600">K4</span><span>muzzle energy E₀ ≥ 150 J<br><span style="color:var(--muted);font-size:10px">only the small mammals and birds listed in the regulation</span></span>
+</span><br>No class: E₀ below 150 J. Thresholds in NFS 2023:8, 1 kap. 5 §; game per class in 2 kap. 11–14 §§, with exceptions in 2 kap. 15–20 §§. The expanding bullet required for K1 and K2 is not checked here.</div></button></span>
   <span style="text-align:right"><span class="card-val" id="c-e100" style="display:inline">—</span> <span id="c-e100-unit" style="font-size:11px;color:var(--muted)">J</span></span>
+  <span id="c-klass-desc" style="grid-column:1 / -1;font-size:10px;color:var(--muted);line-height:1.3"></span>
 </div></div>
           <div class="card"><div class="card-label" id="c-vnull-label">Velocity</div>
 <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline">
@@ -811,10 +813,10 @@ canvas{display:block}
             <span style="color:var(--muted)">where:</span><br>
             <span style="padding-left:16px">a_drag = (π/8) · ρ · v² · C<sub>d</sub>(M) / BC<sub>SI</sub></span><br>
             <span style="padding-left:16px">π/8 = 0.3927 &nbsp;(Siacci/Ingalls normalization, matches Gehtsoft G1 table)</span><br>
-            <span style="padding-left:16px">BC<sub>SI</sub> = BC<sub>G1</sub> × 703.07 &nbsp;[kg/m²]</span><br>
-            <span style="padding-left:16px">ρ = (P_d · M_d + e · M_w) / (R · T) &nbsp;[kg/m³] &nbsp;(humid air, M_d=28.964, M_w=18.016 g/mol)</span><br>
-            <span style="padding-left:16px">P = actual pressure on site; from a sea-level value P₀: P = P₀ · (1 − L·h/T₀)<sup>n</sup>, T₀ = T + L·h, L = 0.0065 K/m, n = g·M_d/(R·L) = 5.2557</span><br>
-            <span style="padding-left:16px">v<sub>s</sub> = 331.3 · √(T/273.15) · √((γ<sub>mix</sub>/γ<sub>d</sub>) · (M_d/M<sub>mix</sub>)) &nbsp;[m/s] &nbsp;(humid air, exact ideal-gas mixture)</span><br>
+            <span style="padding-left:16px">BC<sub>SI</sub> = BC × 0.45359237/0.0254² = BC × 703.0696 &nbsp;[kg/m²]</span><br>
+            <span style="padding-left:16px">ρ = (P_d · M_d + e · M_w) / (R* · T) &nbsp;[kg/m³] &nbsp;(humid air; R* = 8.31432 J/(mol·K), M_d = 28.9644 g/mol per ICAO/ISO 2533, M_w = 18.01528 g/mol)</span><br>
+            <span style="padding-left:16px">P = actual pressure on site; from a sea-level value P₀: P = P₀ · (1 − L·h/T₀)<sup>n</sup>, T₀ = T + L·h, L = 0.0065 K/m, n = g·M_d/(R*·L) = 5.2559</span><br>
+            <span style="padding-left:16px">v<sub>s</sub> = c₀ · √(T/273.15) · √((γ<sub>mix</sub>/γ<sub>d</sub>) · (M_d/M<sub>mix</sub>)) &nbsp;[m/s] &nbsp;(humid air, exact ideal-gas mixture; c₀ = √(1.4 · R* · 273.15 K / M_d) = 331.32 m/s)</span><br>
             <span style="padding-left:16px">x = e/P, &nbsp;M<sub>mix</sub> = (1−x)·M_d + x·M_w, &nbsp;γ = c<sub>p</sub>/(c<sub>p</sub>−R) with c<sub>p</sub>/R = (1−x)·3.5 + x·4.04</span><br>
             <span style="padding-left:16px">e = RH/100 · e_s, &nbsp;e_s = 6.1078 · 10^(7.5·T_C/(237.3+T_C)) &nbsp;[hPa] (Tetens/Murray formula)</span><br>
             <span style="padding-left:16px">M = v / v<sub>s</sub> &nbsp;(Mach number)</span><br>
@@ -913,15 +915,28 @@ canvas{display:block}
 //   Unit system + localStorage persistence
 // ══════════════════════════════════════════
 
+// ── Physical constants and exact unit conversions (v3.2) ──
+// Air is the coherent ICAO Doc 7488 / ISO 2533 set: R* with M_d gives the standard
+// density 1.2250 kg/m³ at 15 °C and 1013.25 hPa. Do not mix in the SI 2019 gas constant.
+const R_STAR   = 8.31432;      // J/(mol·K), ICAO Doc 7488 / ISO 2533
+const M_DRY    = 0.0289644;    // kg/mol, dry air, ICAO Doc 7488 / ISO 2533
+const M_VAP    = 0.01801528;   // kg/mol, water vapour, IUPAC
+const C0_MS    = Math.sqrt((3.5 / 2.5) * R_STAR * 273.15 / M_DRY);   // dry air at 0 °C, γ = 1.4: 331.3185… m/s
+// Unit conversions, written as their defining values
+const GRAIN_KG   = 0.45359237 / 7000;                 // 1 gr = 1/7000 lb
+const BC_TO_SI   = 0.45359237 / (0.0254 * 0.0254);    // lb/in² → kg/m² = 703.0695796…
+const INHG_HPA   = 0.0254 * 13595.1 * 9.80665 / 100;  // 1 inHg (Hg 13595.1 kg/m³ at 0 °C) = 33.8638864… hPa
+const FTLBF_J    = 0.3048 * 9.80665 * 0.45359237;     // 1 ft·lbf = 1.3558179483… J
+
 // ── Unit conversion helpers ──
 const CONV = {
   // To SI (m/s, kg, m, °C, hPa, m/s, m, cm)
   v0:    { fps: v=>v*0.3048,      ms:  v=>v          },
-  m:     { gr:  v=>v*6.47989e-5,  g:   v=>v/1000     },
+  m:     { gr:  v=>v*GRAIN_KG,    g:   v=>v/1000     },
   sight: { mm:  v=>v/1000,        in:  v=>v*0.0254    },
   zero:  { m:   v=>v,             yd:  v=>v*0.9144    },
   temp:  { C:   v=>v,             F:   v=>(v-32)*5/9  },
-  press: { hPa: v=>v,             mbar:v=>v,           inHg:v=>v*33.8639   },
+  press: { hPa: v=>v,             mbar:v=>v,           inHg:v=>v*INHG_HPA  },
   wind:  { ms:  v=>v,             kmh: v=>v/3.6,       mph: v=>v*0.44704   },
   vital: { mm:  v=>v/10,           in:  v=>v*2.54      },
   chrono:{ mm:  v=>v/1000,         m:   v=>v,           in:  v=>v*0.0254    },
@@ -931,11 +946,11 @@ const CONV = {
 // Display conversions (SI → display unit)
 const CONV_FROM = {
   v0:    { fps: v=>v/0.3048,      ms:  v=>v          },
-  m:     { gr:  v=>v/6.47989e-5,  g:   v=>v*1000     },
+  m:     { gr:  v=>v/GRAIN_KG,    g:   v=>v*1000     },
   sight: { mm:  v=>v*1000,        in:  v=>v/0.0254    },
   zero:  { m:   v=>v,             yd:  v=>v/0.9144    },
   temp:  { C:   v=>v,             F:   v=>v*9/5+32    },
-  press: { hPa: v=>v,             mbar:v=>v,           inHg:v=>v/33.8639   },
+  press: { hPa: v=>v,             mbar:v=>v,           inHg:v=>v/INHG_HPA  },
   wind:  { ms:  v=>v,             kmh: v=>v*3.6,       mph: v=>v/0.44704   },
   vital: { mm:  v=>v*10,           in:  v=>v/2.54      },
   chrono:{ mm:  v=>v*1000,         m:   v=>v,           in:  v=>v/0.0254    },
@@ -1109,10 +1124,10 @@ function getSI(field, valId, unitId) {
 // ── Pressure reference and elevation ──
 // A sea-level pressure (as from weather apps) is converted to the actual pressure on site
 // with the elevation h and that day's temperature T (weather-service reduction,
-// T₀ = T + L·h): p_site = p · (1 − L·h/T₀)^n, n = g·M_d/(R·L) = 5.255715.
+// T₀ = T + L·h): p_site = p · (1 − L·h/T₀)^n, n = g·M_d/(R*·L) = 5.255876.
 // At h = 0 the factor is exactly 1. A pressure on site is used as entered.
 const LAPSE_K_PER_M = 0.0065;
-const BARO_EXP      = 9.80665 * 0.028964 / (8.31446 * LAPSE_K_PER_M);
+const BARO_EXP      = 9.80665 * M_DRY / (R_STAR * LAPSE_K_PER_M);
 const PRESS_BOUNDS_HPA = { sea: [850, 1100], station: [400, 1100] };   // value as entered
 const PRESS_BOUND_SLACK_HPA = 0.1;   // accepts the rounded inHg bounds shown (25.10, 11.81 inHg)
 const ELEV_MIN_M = -500, ELEV_MAX_M = 6000;
@@ -1501,17 +1516,17 @@ function calcAtmo(temp_C, press_hPa, rh_pct) {
   if (!(e < press_hPa)) return { rho: NaN, vs: NaN, T };   // vapour pressure must stay below the total pressure
   const P_d = (press_hPa - e) * 100;
   const e_Pa = e * 100;
-  const rho = (P_d * 0.028964 + e_Pa * 0.018016) / (8.31446 * T);
+  const rho = (P_d * M_DRY + e_Pa * M_VAP) / (R_STAR * T);
   // Humid air, exact ideal-gas mixture:
-  // c = 331.3·√(T/273.15)·√((γ_mix/γ_d)·(M_d/M_mix)), x = e/p (vapour mole fraction),
+  // c = c₀·√(T/273.15)·√((γ_mix/γ_d)·(M_d/M_mix)), x = e/p (vapour mole fraction),
   // c_p/R = 3.5 (dry air) and 4.04 (water vapour). The factor is exactly 1 at x = 0.
   const x      = e / press_hPa;
   const cpR_d  = 3.5, cpR_w = 4.04;
   const cpR_m  = (1 - x) * cpR_d + x * cpR_w;
   const gam_d  = cpR_d / (cpR_d - 1);
   const gam_m  = cpR_m / (cpR_m - 1);
-  const M_mix  = (1 - x) * 0.028964 + x * 0.018016;
-  const vs = 331.3 * Math.sqrt(T / 273.15) * Math.sqrt((gam_m / gam_d) * (0.028964 / M_mix));
+  const M_mix  = (1 - x) * M_DRY + x * M_VAP;
+  const vs = C0_MS * Math.sqrt(T / 273.15) * Math.sqrt((gam_m / gam_d) * (M_DRY / M_mix));
   return { rho, vs, T };
 }
 
@@ -1525,6 +1540,14 @@ function huntClass(m_kg, E100, E0, leadFree) {
   if (E0>=150) return 'K4';
   return '—';
 }
+// Short description shown under the class (v3.2). No class shows the description alone.
+const KLASS_DESC = {
+  K1: 'All game',
+  K2: 'Up to roe deer, lynx, wolverine, beaver, seals',
+  K3: 'E.g. fox, hare, badger, capercaillie, geese',
+  K4: 'Only listed small mammals and birds',
+  '—': 'No class (E₀ < 150 J)'
+};
 
 let chartTraj=null, chartWind=null;
 
@@ -1631,7 +1654,7 @@ function estimateZfp() {
   const sight_h = getSI('sight', 'sight_val', 'sight_unit');
   const BC_input= numVal(document.getElementById('bc_input').value);
   const bc_type = document.getElementById('bc_type').value;
-  const BC_final = BC_input * 703.07;
+  const BC_final = BC_input * BC_TO_SI;
   const dragModel = bc_type;
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
   const atZ = readDayAtmo('zero');
@@ -1836,7 +1859,7 @@ function optimizeZeroForVital() {
     errEl.style.display = 'block';
     return;
   }
-  const BC_final  = BC_input * 703.07;
+  const BC_final  = BC_input * BC_TO_SI;
   const dragModel = bc_type;
   const temp_zero_C    = getSI('temp',  'temp_zero_val', 'temp_unit');
   const atZ = readDayAtmo('zero');
@@ -1991,8 +2014,8 @@ function calculate() {
     const G0      = 9.80665;
     const g       = G0 * Math.cos(alpha);   // perpendicular to the line of sight
     const gAlong  = G0 * Math.sin(alpha);   // along the line of sight
-    // BC: same conversion as MATLAB (BC_final = BC_input * 703.07)
-    const BC_final = BC_input * 703.07;
+    // BC: lb/in² → kg/m² with the exact factor BC_TO_SI
+    const BC_final = BC_input * BC_TO_SI;
     const dragModel = bc_type;
 
     if (!(v0 > 0) || !(m_kg > 0) || !(BC_input > 0) || !(sight_h >= 0) || !(zero_m > 0)) {
@@ -2096,7 +2119,7 @@ function calculate() {
     const velLabel  = v0Unit === 'fps' ? 'fps' : 'm/s';
     const toVelDisp = v => v0Unit === 'fps' ? v / 0.3048 : v;
     const eLabel    = v0Unit === 'fps' ? 'ft·lbf' : 'J';
-    const toEDisp   = E => v0Unit === 'fps' ? E * 0.737562 : E;
+    const toEDisp   = E => v0Unit === 'fps' ? E / FTLBF_J : E;
     const ePrec     = 0;
 
     // Max range and step — read as display units, convert to metres
@@ -2230,8 +2253,11 @@ function calculate() {
     document.getElementById('c-ezero-unit').textContent = eLabel;
 
     const klassBadge = document.getElementById('c-klass-label');
-    klassBadge.textContent = has100 ? klass : '—';
-    klassBadge.className = (has100 && klass !== '—') ? ('klass-badge ' + klass.toLowerCase()) : 'klass-badge';
+    // The class follows the regulation also when E100 is missing: a missing E100 fails K1 to K3
+    // and E0 alone decides K4 (v3.2; the badge showed "—" before).
+    klassBadge.textContent = klass !== '—' ? klass : '';
+    klassBadge.className = klass !== '—' ? ('klass-badge ' + klass.toLowerCase()) : '';
+    document.getElementById('c-klass-desc').textContent = KLASS_DESC[klass];
 
     // Show/hide Phase 3 legend entry
     document.getElementById('phase3-legend').style.display = hasPhase3 ? 'inline' : 'none';

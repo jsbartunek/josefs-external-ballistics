@@ -288,10 +288,11 @@ canvas{display:block}
     <div style="margin-top:16px;font-size:10px;color:var(--muted)">
       © 2026 Josef Ström Bartůněk · Companion to <a href="https://jsbartunek.github.io/josefs-stability-calculator/" target="_blank" style="color:var(--accent);text-decoration:none">Josef's Stability Calculator</a> · Open source · GitHub Pages<br>
       Drag tables (G1, G7): <a href="https://github.com/gehtsoft-usa/BallisticCalculator1" target="_blank" style="color:var(--accent);text-decoration:none">Gehtsoft BallisticCalculator</a>, LGPL-2.1.<br>
-      <span style="margin-top:4px;display:inline-block">v3.2 · Oct 25, 2026 — exact physical constants and unit conversions; hunt class descriptions.</span>
+      <span style="margin-top:4px;display:inline-block">v3.3 · Oct 27, 2026 — zero range from a measured hit at any distance.</span>
       <details style="display:inline-block;margin-left:6px;cursor:pointer">
         <summary style="display:inline;color:var(--accent);text-decoration:none;list-style:none">Changelog ▾</summary>
         <div style="margin-top:6px;padding:8px 12px;background:var(--surface2);border-left:2px solid var(--border);line-height:1.7">
+          <b>v3.3</b> (Oct 27, 2026) — <b>Zero range from a measured hit</b> now works at any distance, also at or beyond the zero (the old search only looked for zeros at least 2 m beyond the measurement, so such a hit gave no answer). One measured hit fixes the launch angle, so the calculator solves that angle and follows the one trajectory it gives: the result is the zero range (the far crossing of the line of sight) with one Apply, a line saying whether the bullet is still rising, at its apex or already falling at the measurement distance, and the near crossing as information. The three rows Rising, Peak and Falling and their rule of thumb for the apex are gone; the apex is now where the vertical velocity changes sign. Clear messages when no zero exists within 1000 m, when the offset cannot be reached or when the bullet does not reach the distance. The estimate is also much faster. A shown estimate is cleared when the range unit changes (it stayed in the old unit). The hunt class energies are computed by one function; the values are unchanged.<br>
           <b>v3.2</b> (Oct 25, 2026) — <b>Exact constants.</b> Air now uses the coherent set of the ICAO standard atmosphere (ISO 2533): R* = 8.31432 J/(mol·K) and M<sub>d</sub> = 28.9644 g/mol (was 8.31446 and 28.964), which reproduces the standard density 1.2250 kg/m³; water vapour 18.01528 g/mol (IUPAC). The speed of sound at 0 °C is derived from the same constants, 331.3185 m/s (was the rounded 331.3). The BC conversion (703.0696, was 703.07), inHg (33.86389 hPa, was 33.8639), grains (the last digit of 0.06479891 g was missing) and ft·lbf are computed from their defining values. Air density rises by 0.003 % and the speed of sound by 0.006 %; the drop at 1000 m changes by less than 1 mm, and the barometric exponent becomes 5.2559 (was 5.2557). <b>Hunt class</b>: a short line under the class says which game it allows, and the tooltip lists the game per class with the sections of NFS 2023:8. Class 4 is now shown whenever the muzzle energy is at least 150 J, also when E₁₀₀ cannot be computed (the badge showed “—”). When no class applies, the card says “No class (E₀ &lt; 150 J)” instead of “—”.<br>
           <b>v3.1.1</b> (Oct 16, 2026) — <b>Results that no longer match the input</b> are dimmed and marked when a calculation stops on an input error (they stayed on screen looking valid). <b>Number checks</b>: a field must contain only a number — text such as “12abc” was read as 12, and invalid text in humidity, v₀ sensitivity, shooting angle or the v₀ spread was silently replaced by 0 or the default; invalid text is no longer replaced by 0 when you leave a field. Humidity must be 0–100 % (empty = 0). <b>Unit switches</b> stay correct when the browser blocks storage (the previous unit was read from storage). <b>Spin effects</b>: below S<sub>g</sub> 1.0 the bullet is expected to tumble; spin drift and jump are then computed at S<sub>g</sub> 1.0 and the status line says they are not reliable (Litz's relations were extrapolated below 1.0). Tooltips near the bottom of the window open upwards. The theme switch can be used with the keyboard. If the chart library cannot load, the table and cards are still shown.<br>
           <b>v3.1</b> (Oct 14, 2026) — <b>Pressure reference and elevation</b> for the zero day and the shooting day. Weather apps and reports almost always give pressure reduced to sea level, also for your own town; with <i>Sea level</i> the calculator converts the value to the actual pressure on site from the entered elevation and that day's temperature (weather-service reduction, T₀ = T + L·h). <i>On site</i> uses the value as entered. The default is sea level at 0 m, which gives exactly the same results as before; previously the field was meant as the pressure on site, while the shooting-day tooltip suggested weather-report values. The converted pressure on site is shown next to each elevation. New input checks: pressure 850–1100 hPa at sea level, 400–1100 hPa on site; elevation −500 to 6000 m (ft when the range unit is yd); temperature between −100 and +100 °C; the water vapour pressure must stay below the air pressure; max range and table step must be positive, the step no larger than the range, and at most 2000 table rows (a zero or empty field was silently replaced by 200 and 25); the v₀ spread must be smaller than v₀, and the Phase 3 change must leave v₀ positive. The sensitivity analysis perturbs the pressure as entered. <b>Tooltips</b>: a click or tap on “?” pins the tip, so it stays open while you scroll; long tips scroll inside; close with another click on “?”, a click or tap outside, or Escape. An unverified example in the zero-day pressure tooltip was removed.<br>
@@ -515,7 +516,7 @@ canvas{display:block}
               </div>
             </div>
             <div class="field">
-              <label>At distance <button class="tip-btn">?<div class="tip-box">The range at which you measured (or know) the bullet's vertical offset.<br><br>Common values: 80 m, 100 m, 150 m (or 100 yd, 200 yd).<br>Any distance is accepted — use whatever suits your range or known data.</div></button></label>
+              <label>At distance <button class="tip-btn">?<div class="tip-box">The range at which you measured (or know) the bullet's vertical offset.<br><br>Common values: 80 m, 100 m, 150 m (or 100 yd, 200 yd).<br>Any distance is accepted, also at or beyond the zero.</div></button></label>
               <div class="field-row">
                 <input type="text" inputmode="decimal" id="zfp_dist_val" value="">
                 <span class="unit" id="zfp_dist_unit_lbl">m</span>
@@ -528,21 +529,12 @@ canvas{display:block}
           </div>
           <div id="zfp-scenarios" style="margin-top:8px;border:1px solid var(--border2);border-radius:2px;font-family:var(--mono);font-size:11px">
             <div style="background:var(--surface2);padding:5px 10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Estimated zero range</div>
-            <div class="zfp-scenario-row" id="zfp-row-rising">
-              <div class="zfp-scenario-label"><span style="color:var(--muted)">↗ Rising</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet is still <b>climbing</b> at the measurement distance — you measured the offset before the trajectory reached its peak.<br><br>The zero range itself is the normal (downward) sight-line crossing further out. Typical when measuring much closer than the expected zero.</div></button></div>
-              <div class="zfp-scenario-val" id="zfp-val-rising">—</div>
-              <button class="zfp-apply-btn" id="zfp-apply-rising" onclick="applyZfpScenario('rising')" style="display:none">Apply →</button>
+            <div class="zfp-scenario-row" id="zfp-row">
+              <div class="zfp-scenario-label"><span style="color:var(--muted)">◎ Zero range</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The far crossing of the line of sight, the zero range in the hunter's sense.<br><br>One measured hit fixes the launch angle, so there are at most two crossings on one trajectory, and both give the same sight setting.</div></button></div>
+              <div class="zfp-scenario-val" id="zfp-val" style="opacity:.4">—</div>
+              <button class="zfp-apply-btn" id="zfp-apply" onclick="applyZfp()" style="display:none">Apply →</button>
             </div>
-            <div class="zfp-scenario-row" id="zfp-row-peak">
-              <div class="zfp-scenario-label"><span style="color:var(--muted)">▲ Peak</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The measurement distance coincides with the <b>highest point</b> of the bullet path — the trajectory is momentarily flat there.<br><br>Typical when the offset is small and close to the natural mid-range maximum of the current setup.</div></button></div>
-              <div class="zfp-scenario-val" id="zfp-val-peak">—</div>
-              <button class="zfp-apply-btn" id="zfp-apply-peak" onclick="applyZfpScenario('peak')" style="display:none">Apply →</button>
-            </div>
-            <div class="zfp-scenario-row" id="zfp-row-falling">
-              <div class="zfp-scenario-label"><span style="color:var(--muted)">↘ Falling</span><button class="tip-btn" style="margin-left:4px">?<div class="tip-box">The bullet has passed its peak and is <b>descending</b> at the measurement distance, but has not yet reached the zero.<br><br>The zero range is the (downward) sight-line crossing just beyond the measurement point.</div></button></div>
-              <div class="zfp-scenario-val" id="zfp-val-falling">—</div>
-              <button class="zfp-apply-btn" id="zfp-apply-falling" onclick="applyZfpScenario('falling')" style="display:none">Apply →</button>
-            </div>
+            <div id="zfp-info" style="display:none;padding:6px 10px 7px;border-top:1px solid var(--border2);font-size:10px;color:var(--muted);line-height:1.6"></div>
           </div>
           </div>
         </div>
@@ -897,7 +889,7 @@ canvas{display:block}
             <span style="color:var(--muted)">▸ Steep shots</span> — crosswind on slopes uses the lag-time rule (about ±18 mm at 600 m and ±70 mm at 1000 m on a 45° slope), and air density and speed of sound are held at the muzzle values (about +15 mm at 600 m on a 45° slope).<br>
             <span style="color:var(--muted)">▸ Pressure reference per day</span> — a sea-level value (as from weather apps) is converted to the actual pressure on site with the entered elevation and that day's temperature; a pressure on site is used as entered.<br>
             <span style="color:var(--muted)">▸ Phase 3 (propellant temperature) is experimental</span> — user-measured v₀ sensitivity [m/s/°C]. Disabled when k = 0.<br>
-            <span style="color:var(--muted)">▸ Velocity, energy and wind columns are shooting-day values</span> (incl. Phase 3); the hunt class uses E₁₀₀ in the ICAO standard atmosphere.
+            <span style="color:var(--muted)">▸ Velocity, energy and wind columns are shooting-day values</span> (incl. Phase 3); the hunt class uses E₁₀₀ in the ICAO standard atmosphere, without BC degradation.
           </div>
         </div>
 
@@ -1069,7 +1061,8 @@ function onUnitChange(field) {
         el.value = parseFloat(CONV_FROM.zero[newUnit](si).toFixed(1));
       }
     });
-    // Sync zfp unit labels
+    // Sync zfp unit labels; a shown result would be in the old unit, so clear it (v3.3)
+    resetZfpResult();
     const zfpOffsetUnit = newUnit === 'm' ? 'mm' : 'in';
     document.getElementById('zfp_offset_unit_lbl').textContent = zfpOffsetUnit;
     document.getElementById('zfp_dist_unit_lbl').textContent   = newUnit;
@@ -1308,15 +1301,9 @@ function initInputs() {
   });
   // zfp inputs: clear previous result when user edits offset/distance
   function clearZfpResults() {
-    ['rising','peak','falling'].forEach(function(s) {
-      var v = document.getElementById('zfp-val-' + s);
-      var a = document.getElementById('zfp-apply-' + s);
-      if (v) { v.textContent = '—'; v.style.opacity = '0.4'; }
-      if (a) a.style.display = 'none';
-    });
+    resetZfpResult();
     var err = document.getElementById('zfp-err');
-    if (err) err.textContent = '';
-    window._zfpResults = null;
+    if (err) { err.textContent = ''; err.style.display = 'none'; }
   }
   ['zfp_offset_val','zfp_dist_val'].forEach(function(id) {
     var el = document.getElementById(id);
@@ -1540,6 +1527,18 @@ function huntClass(m_kg, E100, E0, leadFree) {
   if (E0>=150) return 'K4';
   return '—';
 }
+// Hunt-class reference energies (v3.3). E0 = ½·m·v0² with the chronograph-corrected v0;
+// E100 from one reference pass in the ICAO standard atmosphere (15 °C, 1013.25 hPa, dry),
+// level, θ = 0 from height 0, no wind, no BC degradation. E100 is NaN when the bullet does not
+// reach 100 m. The class is a property of the ammunition in this rifle, not of the weather.
+function huntReferenceEnergies(m_kg, v0_true, BC_final, dragModel) {
+  const atmoStd = calcAtmo(15, 1013.25, 0);
+  const tr = integrate(0, v0_true, 0, atmoStd.rho, atmoStd.vs, BC_final, dragModel, 9.80665,
+                       Math.max(2.5, 3*110/v0_true + 1), 0.001, 120);
+  const v100 = interpV(tr, 100);
+  return { E0: 0.5 * m_kg * v0_true * v0_true, E100: 0.5 * m_kg * v100 * v100 };
+}
+
 // Short description shown under the class (v3.2). No class shows the description alone.
 const KLASS_DESC = {
   K1: 'All game',
@@ -1621,29 +1620,96 @@ function updateZfpUnitLabels() {
   document.getElementById('zfp_dist_unit_lbl').textContent = rangeUnit;
 }
 
+// Zero range from one measured hit (v3.3). One observation fixes the launch angle θ:
+// the height above the line of sight at d, D(d; θ), equals the offset, and D is strictly
+// increasing in θ. θ by bisection on ±0.30 rad, then one trace to L = max(1000 m, d).
+// Near zero = the first upward crossing of the line of sight at x > 0; far zero = the next
+// downward one (the zero range). Both lie on one trajectory and give the same θ. Apex where
+// vy changes sign, interpolated between the 1 ms nodes. No DOM access.
+// status: 'success' | 'farNotReached' | 'noZero' | 'outOfRange' | 'notReached' | 'noSolution'
+const ZFP_THETA_MAX = 0.30;   // rad (≈ 17°), the same bracket as the zero search
+function estimateZeroFromOffset(d_m, offset_m, v0, sight_h, rho, vs, BC_final, dragModel, g) {
+  const tMaxFor = x => Math.max(2.5, 3*x/v0 + 1);
+  function heightAt(theta) {
+    const tr = integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMaxFor(d_m + 10), 0.001, d_m + 10);
+    return interpY(tr, d_m);   // NaN when the trace ends before d
+  }
+  const yLo = heightAt(-ZFP_THETA_MAX), yHi = heightAt(ZFP_THETA_MAX);
+  if (!isFinite(yLo) || !isFinite(yHi)) return { status: 'notReached' };
+  if (offset_m < yLo || offset_m > yHi) return { status: 'outOfRange' };
+
+  let theta;
+  if (offset_m === yLo) theta = -ZFP_THETA_MAX;
+  else if (offset_m === yHi) theta = ZFP_THETA_MAX;
+  else {
+    let lo = -ZFP_THETA_MAX, hi = ZFP_THETA_MAX;
+    for (let iter = 0; iter < 60; iter++) {
+      const mid = (lo + hi) / 2;
+      const y = heightAt(mid);
+      if (!isFinite(y)) return { status: 'notReached' };
+      if (y > offset_m) hi = mid; else lo = mid;
+      if ((hi - lo) < 1e-12) break;
+    }
+    theta = (lo + hi) / 2;
+  }
+  if (!isFinite(theta)) return { status: 'noSolution' };
+
+  const L  = Math.max(1000, d_m);
+  const tr = integrate(theta, v0, sight_h, rho, vs, BC_final, dragModel, g, tMaxFor(L + 10), 0.001, L + 10);
+  const xEnd = Math.min(L, tr[tr.length - 1].x);
+  let near = NaN, far = NaN, apexX = NaN, apexY = NaN, wasAbove = false;
+  for (let i = 1; i < tr.length; i++) {
+    const p = tr[i - 1], q = tr[i];
+    if (p.x >= xEnd) break;
+    if (!isFinite(q.y) || !isFinite(q.vy)) return { status: 'noSolution' };
+    // Line-of-sight crossings, linear between nodes
+    if (p.y < 0 && q.y >= 0 && isNaN(near) && isNaN(far)) {
+      const x = p.x + (q.x - p.x) * (-p.y) / (q.y - p.y);
+      if (x > 0 && x <= xEnd) near = x;
+    }
+    if (p.y > 0 || q.y > 0) wasAbove = true;
+    if (wasAbove && p.y > 0 && q.y <= 0 && isNaN(far)) {
+      const x = p.x + (q.x - p.x) * p.y / (p.y - q.y);
+      if (x > 0 && x <= xEnd) far = x;
+    }
+    // Apex: vy changes sign from positive to non-positive
+    if (isNaN(apexX) && p.vy > 0 && q.vy <= 0) {
+      const f = p.vy / (p.vy - q.vy);
+      const x = p.x + f * (q.x - p.x);
+      if (x <= xEnd) { apexX = x; apexY = p.y + f * (q.y - p.y); }
+    }
+  }
+  let status;
+  if (!isNaN(far)) status = 'success';
+  else if (!isNaN(near) || apexY > 0 || (isNaN(apexX) && wasAbove)) status = 'farNotReached';
+  else status = 'noZero';
+  return { status, theta, near, far, apexX, apexY, L };
+}
+
+// Show the empty result row (dimmed "—", no Apply, no info lines)
+function resetZfpResult() {
+  const v = document.getElementById('zfp-val');
+  const a = document.getElementById('zfp-apply');
+  const info = document.getElementById('zfp-info');
+  if (v) { v.textContent = '—'; v.style.opacity = '0.4'; }
+  if (a) a.style.display = 'none';
+  if (info) { info.innerHTML = ''; info.style.display = 'none'; }
+  window._zfpZero = null;
+}
+
 function estimateZfp() {
   const rangeUnit  = document.getElementById('zero_unit').value;
   const offsetUnit = rangeUnit === 'm' ? 'mm' : 'in';
 
   const offsetRaw = numVal(document.getElementById('zfp_offset_val').value);
-  const distRaw   = numVal(document.getElementById('zfp_dist_val').value);
+  const distText  = document.getElementById('zfp_dist_val').value.trim().replace(',', '.');
+  const distRaw   = numVal(distText);
 
-  const errEl       = document.getElementById('zfp-err');
-
+  const errEl = document.getElementById('zfp-err');
   errEl.style.display = 'none';
+  resetZfpResult();
 
-  // Helper: reset all three rows to dimmed "—" and clear Apply buttons
-  function resetRows() {
-    ['rising','peak','falling'].forEach(function(s) {
-      var v = document.getElementById('zfp-val-' + s);
-      var a = document.getElementById('zfp-apply-' + s);
-      if (v) { v.textContent = '—'; v.style.opacity = '0.4'; v.className = 'zfp-scenario-val'; }
-      if (a) a.style.display = 'none';
-    });
-    window._zfpResults = null;
-  }
-
-  if (isNaN(offsetRaw) || isNaN(distRaw) || distRaw <= 0) { resetRows(); return; }
+  if (isNaN(offsetRaw) || isNaN(distRaw) || distRaw <= 0) return;
 
   // Convert to SI
   const offset_m = offsetUnit === 'mm' ? offsetRaw / 1000 : offsetRaw * 0.0254;
@@ -1662,9 +1728,8 @@ function estimateZfp() {
   const rh_zero_pct    = optVal(document.getElementById('rh_zero_val').value);
   const g_eff = 9.80665;   // zeroing is done on a level range — the shooting angle does not apply here
 
-  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h) || !(rh_zero_pct >= 0 && rh_zero_pct <= 100)) { resetRows(); return; }
+  if (isNaN(v0) || isNaN(BC_input) || isNaN(sight_h) || !(rh_zero_pct >= 0 && rh_zero_pct <= 100)) return;
   if (atZ.err) {
-    resetRows();
     errEl.textContent = atmoErrorText(atZ, 'zero-day');
     errEl.style.display = 'block';
     return;
@@ -1679,148 +1744,68 @@ function estimateZfp() {
   const chrono_m = getSI('chrono', 'chrono_cm', 'chrono_unit');
   const v0_true  = chronoCorrectV0(v0, chrono_m, { rho, vs }, BC_final, dragModel);
 
-  // Trajectory for a given zero candidate.
-  function trajForZero(z) {
-    const xNeeded = Math.max(z, dist_m) + 30;
-    const theta = findTheta(v0_true, sight_h, z, rho, vs, BC_final, dragModel, g_eff, xNeeded);
-    return integrate(theta, v0_true, sight_h, rho, vs, BC_final, dragModel, g_eff, 4.0, 0.001, xNeeded);
+  const r = estimateZeroFromOffset(dist_m, offset_m, v0_true, sight_h, rho, vs, BC_final, dragModel, g_eff);
+
+  // --- Render ---
+  const toDisp1 = x => CONV_FROM.zero[rangeUnit](x).toFixed(1);
+  const dStr    = distText + '\u00a0' + rangeUnit;            // d as typed
+  const lines   = [];
+  const valEl   = document.getElementById('zfp-val');
+  const applyEl = document.getElementById('zfp-apply');
+
+  if (r.status === 'success') {
+    const disp = parseFloat(toDisp1(r.far));               // nearest 0.1; Apply writes exactly this
+    valEl.textContent = disp + '\u00a0' + rangeUnit;
+    valEl.style.opacity = '';
+    applyEl.style.display = '';
+    window._zfpZero = disp;
   }
-
-  // Characterize trajectory at dist_m: interpolated y and vy, plus peak (y,x)
-  function characterize(z) {
-    const tr = trajForZero(z);
-    const y  = interpY(tr, dist_m);
-    // Interpolated vy at dist_m
-    let vy = NaN;
-    for (let i = 1; i < tr.length; i++) {
-      if (tr[i].x >= dist_m) {
-        const f = (dist_m - tr[i-1].x) / (tr[i].x - tr[i-1].x);
-        vy = tr[i-1].vy + f * (tr[i].vy - tr[i-1].vy);
-        break;
-      }
-    }
-    let peakY = -Infinity, peakX = 0;
-    for (let i = 0; i < tr.length; i++) {
-      if (tr[i].y > peakY) { peakY = tr[i].y; peakX = tr[i].x; }
-    }
-    return { y, vy, peakY, peakX };
-  }
-
-  // Bisect for Z where yAtDist(Z) = offset_m, within given Z bracket.
-  function bisectY(zLo, zHi) {
-    let a = zLo, b = zHi;
-    let fa = characterize(a).y - offset_m;
-    if (isNaN(fa)) return NaN;
-    for (let i = 0; i < 40; i++) {
-      const mid = (a + b) / 2;
-      const fm  = characterize(mid).y - offset_m;
-      if (isNaN(fm)) return NaN;
-      if (fa * fm <= 0) { b = mid; } else { a = mid; fa = fm; }
-      if ((b - a) < 0.05) break;
-    }
-    return (a + b) / 2;
-  }
-
-  // Sweep Z from dist_m + small margin up to Z_MAX. We only care about
-  // zeros BEYOND the measurement distance — the shooter has already
-  // passed the first sight-line crossing when they measured the offset.
-  const Z_MIN = dist_m + 2.0;  // Z must be beyond measurement point
-  const Z_MAX = Math.max(600, dist_m * 4);
-  const N = 160;
-  const scanZ = [], scanY = [], scanVy = [], scanPY = [], scanPX = [];
-  for (let i = 0; i <= N; i++) {
-    const z = Z_MIN + (Z_MAX - Z_MIN) * i / N;
-    const c = characterize(z);
-    scanZ.push(z);
-    scanY.push(isNaN(c.y) ? null : c.y);
-    scanVy.push(isNaN(c.vy) ? 0 : c.vy);
-    scanPY.push(c.peakY);
-    scanPX.push(c.peakX);
-  }
-
-  // Collect all sign-crossings of (y - offset_m) with their category.
-  // Category is determined by vy at dist_m (physical definition):
-  //   vy > 0 → bullet still climbing → Rising
-  //   vy < 0 → bullet past peak      → Falling
-  //   |vy| small AND peakX ≈ dist_m  → Peak
-  const crossings = { rising: [], peak: [], falling: [] };
-
-  function categorize(z, vy, peakX) {
-    // "Peak" = bullet is essentially at the apex at dist_m.
-    // Use two criteria: either peakX is close to dist_m, OR vy is small
-    // (the apex is the physical definition: vy=0). Both are numerically
-    // noisy near the apex, so accept if EITHER is true.
-    const peakXnear = Math.abs(peakX - dist_m) <= dist_m * 0.05;
-    const vyNear    = Math.abs(vy) < 0.08;
-    if (peakXnear || vyNear) return 'peak';
-    if (vy > 0) return 'rising';
-    return 'falling';
-  }
-
-  for (let i = 0; i < N; i++) {
-    if (scanY[i] === null || scanY[i+1] === null) continue;
-    if ((scanY[i] - offset_m) * (scanY[i+1] - offset_m) > 0) continue;
-    const z = bisectY(scanZ[i], scanZ[i+1]);
-    if (isNaN(z) || z <= 0) continue;
-    // Reclassify at the exact bisected Z for accuracy
-    const c = characterize(z);
-    const cat = categorize(z, c.vy, c.peakX);
-    crossings[cat].push(z);
-  }
-
-  // Pick preferred solution per category:
-  //   - If multiple rising solutions, take the longest Z
-  //   - If multiple falling solutions, take the shortest Z (first past peak)
-  //   - If multiple peak solutions, take the one with peakX closest to dist_m
-  let zeroRising  = NaN, zeroPeak = NaN, zeroFalling = NaN;
-  if (crossings.rising.length  > 0) zeroRising  = Math.max(...crossings.rising);
-  if (crossings.falling.length > 0) zeroFalling = Math.min(...crossings.falling);
-  if (crossings.peak.length > 0) {
-    let best = crossings.peak[0];
-    let bestErr = Math.abs(characterize(best).peakX - dist_m);
-    for (let k = 1; k < crossings.peak.length; k++) {
-      const err = Math.abs(characterize(crossings.peak[k]).peakX - dist_m);
-      if (err < bestErr) { best = crossings.peak[k]; bestErr = err; }
-    }
-    zeroPeak = best;
-  }
-
-  // --- Render results ---
-  window._zfpResults = { rising: zeroRising, peak: zeroPeak, falling: zeroFalling };
-
-  function renderRow(scenario, zeroSI) {
-    const valEl   = document.getElementById('zfp-val-' + scenario);
-    const applyEl = document.getElementById('zfp-apply-' + scenario);
-    if (isNaN(zeroSI) || zeroSI <= 0) {
-      valEl.textContent = '—';
-      valEl.className = 'zfp-scenario-val';
-      valEl.style.opacity = '0.4';
-      applyEl.style.display = 'none';
+  if (r.status === 'success' || r.status === 'farNotReached') {
+    if (isNaN(r.apexX)) {
+      lines.push('The bullet is still rising at ' + dStr + ' (apex beyond ' +
+                 CONV_FROM.zero[rangeUnit](r.L).toFixed(0) + '\u00a0' + rangeUnit + ').');
+    } else if (Math.abs(dist_m - r.apexX) <= 0.05) {
+      lines.push('The bullet is at its apex at ' + dStr + '.');
     } else {
-      const disp = parseFloat(CONV_FROM.zero[rangeUnit](zeroSI).toFixed(1));
-      valEl.textContent = disp + '\u00a0' + rangeUnit;
-      valEl.className = 'zfp-scenario-val';
-      valEl.style.opacity = '';
-      applyEl.style.display = '';
+      const apexStr = toDisp1(r.apexX) + '\u00a0' + rangeUnit;
+      lines.push(dist_m < r.apexX
+        ? 'The bullet is still rising at ' + dStr + ' (apex at ' + apexStr + ').'
+        : 'The bullet is already falling at ' + dStr + ' (apex at ' + apexStr + ').');
     }
   }
-
-  renderRow('rising',  zeroRising);
-  renderRow('peak',    zeroPeak);
-  renderRow('falling', zeroFalling);
+  if ((r.status === 'success' || r.status === 'farNotReached' || r.status === 'noZero') && !isNaN(r.near)) {
+    lines.push('First crosses the line of sight at ' + toDisp1(r.near) + '\u00a0' + rangeUnit + '.');
+  }
+  if (r.status === 'farNotReached') {
+    lines.push('The bullet does not come back down to the line of sight within ' +
+               CONV_FROM.zero[rangeUnit](r.L).toFixed(0) + '\u00a0' + rangeUnit + '.');
+  } else if (r.status === 'noZero') {
+    lines.push('With this hit the bullet never reaches the line of sight.');
+  } else if (r.status === 'outOfRange') {
+    lines.push('No launch angle within ±0.30 rad (±17°) gives this offset at ' + dStr +
+               '. Check the sign and the unit of the offset.');
+  } else if (r.status === 'notReached') {
+    lines.push('The bullet does not reach ' + dStr + '.');
+  } else if (r.status === 'noSolution') {
+    lines.push('No solution could be computed for this input.');
+  }
+  if (lines.length) {
+    const info = document.getElementById('zfp-info');
+    info.innerHTML = lines.join('<br>');
+    info.style.display = 'block';
+  }
 }
 
-function applyZfpScenario(scenario) {
-  const rangeUnit = document.getElementById('zero_unit').value;
-  const zeroSI = window._zfpResults && window._zfpResults[scenario];
-  if (!zeroSI || isNaN(zeroSI)) return;
-  const disp = parseFloat(CONV_FROM.zero[rangeUnit](zeroSI).toFixed(1));
+function applyZfp() {
+  const disp = window._zfpZero;
+  if (!(disp > 0)) return;
   document.getElementById('zero_val').value = disp;
   // collapse
   document.getElementById('zfp-body').style.display = 'none';
   document.getElementById('zfp-toggle-label').textContent = '\u25b6 Estimate zero range';
   document.getElementById('zfp_offset_val').value = '';
   document.getElementById('zfp_dist_val').value = '';
+  resetZfpResult();
   persistInputs();
   calculate();
 }
@@ -2211,14 +2196,8 @@ function calculate() {
     const v0Day   = hasPhase3 ? v0_true + delta_v0_phase3 : v0_true;
 
     // ── Hunt class (NFS 2023:8) ──
-    // E100 is a property of the ammunition in this rifle, not of the weather: computed with the
-    // chronograph-corrected v0, ICAO standard atmosphere (15 °C, 1013.25 hPa, dry), level, no wind.
-    const atmoStd  = calcAtmo(15, 1013.25, 0);
-    const trajClass = integrate(0, v0_true, 0, atmoStd.rho, atmoStd.vs, BC_final, dragModel, G0,
-                                Math.max(2.5, 3*110/v0_true + 1), 0.001, 120);
-    const v100 = interpV(trajClass, 100);
-    const E100 = 0.5 * m_kg * v100 * v100;
-    const E0   = 0.5 * m_kg * v0_true * v0_true;
+    // E0 and E100 from the reference pass (huntReferenceEnergies), not the shooting day.
+    const { E0, E100 } = huntReferenceEnergies(m_kg, v0_true, BC_final, dragModel);
     const leadFree = (document.getElementById('lead_free') || {value:'0'}).value === '1';
     const klass = huntClass(m_kg, E100, E0, leadFree);
 
@@ -2240,7 +2219,7 @@ function calculate() {
 
     // V@100m / V@100yd — shooting day (incl. Phase 3), follows the range unit like the wind card.
     // E100 and the hunt class stay at 100 m in the ICAO reference (defined by regulation).
-    const has100   = !isNaN(v100);
+    const has100   = !isNaN(E100);
     const vDay100  = interpV(trajDay, ref100m);
     document.getElementById('c-v100-label').textContent = `V@${label100}`;
     document.getElementById('c-v100').textContent = isNaN(vDay100) ? '—' : toVelDisp(vDay100).toFixed(0);
